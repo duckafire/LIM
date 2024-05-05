@@ -3,65 +3,36 @@
 
 #include "defs.h"
 
-int checkArgs(int argc, char *argv[]){
-	// 0: tin
-	// 1: tin --help
-	// 2: tin origin.lua newFile
-	// 3: tin origin.lua newFile --repl
+void checkArgs(int argc, char *argv[]){
+	char flags[FLAGS_QTT][7] = {"--help", "--repl"};
+	char blocked[10] = "/?*|>\"<>\\";
+	system("echo 1");
+	if(argc < 2) perr("None parameters of flags specified.");
+	if(argc > 4) perr("Argument overflow (max: 3).");
 
-	// sequence index
-	int id = 0;
-
-	// program flags
-	char flags[2][7] = {"--help", "--repl"};
-
-	// search invalid arguments
-	int max = argc;
-	if(argc > 4) max = 4;
-		
-	int jbreak = 0;
-
-	for(int i = 1; i < max; i++){
-		// check parameters
-		for(int j = 0; j < 2; j++){
-			if(argv[i], flags[j]){
-				// any flag
-				id++;
-				jbreak = 1;
-
-				// it is "--help"
-				if(id == 1){
-					jbreak = 2;
-					if(argc > 2) system("echo [tin] Some arguments were ignored.");
-				}
-
-				break;
+	system("echo 1");
+	if(argc == 2){
+		if(ckFlag(argv[1], flags)){
+			if(strcmp(argv[1], flags[0])){
+				system("echo HELP MESSAGE");
+			}else{
+				perr("Incorrect use of flag. Try: \"tin --help\".");
 			}
+		}else{
+			if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("Extension not supported. Only \"LUA\".");
+			perr("Name to new file not specified");
 		}
-		
-		// flag finded
-		if(jbreak == 1) continue; else if (jbreak == 2) break;
-		
-		// files
-		if(i == 2 || (i == 1 && strcmp(strchr(argv[i], '.'), ".lua") == 0)){
-			id++;
-			continue;
-		}else if(i == 1){
-			system("echo [tin] Extension not supported. Only \"LUA\".");
-			exit(1);
-		}
-		
-		// the argument #3 is optional
-		if(i == 3) break;
-
-		// madatory arguments not specified
-		system("echo [tin] Argument invalid. Try \"tin --help\".");
-		exit(1);
 	}
 
-	if(max < argc) system("echo [tin] Some arguments were ignored.");
+	system("echo 1");
+	for(int i = 1; i < 3; i++) ckChar(argv[i], blocked);
 
-	// sequence
-	return id;
+	system("echo 1");
+	if(ckFlag(argv[2], flags)) perr("Invalid use of flag. Try: \"tin <origin>.lua <newFileName> [flag]\"");
+	
+	system("echo 1");
+	if(argc == 4){
+		if(strcmp(argv[3], flags[1]) != 0) perr("Invalid use of \"--repl\". Try: \"tin <origin>.lua <newFileName> [flag]\"");
+	}
+	system("echo 1");
 }
-
