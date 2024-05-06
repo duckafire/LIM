@@ -1,6 +1,6 @@
 CC = @gcc
 
-FILES   = main arg
+FILES   = main arg tools write
 SFILES  = $(addprefix ./src/, $(FILES))
 SFILESC = $(addsuffix .c, $(SFILES))
 

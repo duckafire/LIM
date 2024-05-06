@@ -26,6 +26,25 @@ int main(int argc, char *argv[]){
 		system("echo # ==================================================");
 		return 0;
 	}
-	system("echo [ WORK IN PROGRESS ]");
+	
+	FILE *origin, *newFile;
+
+	// origin
+	origin = fopen(argv[1], "r");
+	if(origin == NULL) perr("The file (#1) specified not exist");
+
+	// newFileName
+	newFile = fopen(strcat(argv[2], ".lua"), "r");
+	if(newFile != NULL && id != 3) perr("The file (#2) specified already exist");
+
+	fclose(newFile);
+	newFile = fopen(argv[2], "w");
+	
+	// build
+	printInFile(origin, newFile);
+
+	// end
+	fclose(origin);
+	fclose(newFile);
 	return 0;
 }

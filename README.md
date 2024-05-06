@@ -8,8 +8,8 @@ __*WORK IN PROGRESS*__
 
 <br>
 
-# tin
 ###### v0.1.0
+# tin
 It is a small terminal program, created to compact files (libraries) of the TinyLibrary.
 
 <br>

@@ -5,6 +5,12 @@
 #include "defs.h"
 
 void printInFile(FILE *origin, FILE *newFile){
+	char cc;
+	while((cc = fgetc(origin)) != EOF){
+		fputc(cc, newFile);
+	}
+
+	/*
 	// lua reservad word
 	char keyword[22][9] = {
 		"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
@@ -51,4 +57,5 @@ void printInFile(FILE *origin, FILE *newFile){
 		word[strlen(word)] = cc;
 
 	}
+	*/
 }

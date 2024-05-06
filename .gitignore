@@ -1,1 +1,3 @@
 src/Makefile
+bin/origin.lua
+bin/new.lua
