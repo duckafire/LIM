@@ -6,6 +6,5 @@
 
 int main(int argc, char *argv[]){
 	checkArgs(argc, argv);
-	system("echo Hello World!");
 	return 0;
 }
