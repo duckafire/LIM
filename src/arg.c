@@ -3,40 +3,44 @@
 
 #include "defs.h"
 
-void checkArgs(int argc, char *argv[]){
+float checkArgs(int argc, char *argv[]){
 	char flags[FLAGS_QTT][7] = {"--help", "--repl"};
 	char blocked[10] = "/?*|>\"<>\\";
-	
-	system("echo 1");
-	if(argc < 2) perr("None parameters of flags specified.");
-	if(argc > 4) perr("Argument overflow (max: 3).");
 
-	system("echo 2");
+	// stage 1: quantity
+	if(argc < 2) perr("Try: \"tin --help\"");
+	if(argc > 4) perr("Argument overflow (max: 3)");
+
+	// stage 2: flag or build
 	if(argc == 2){
 		if(ckFlag(argv[1], flags)){
 			if(strcmp(argv[1], flags[0]) == 0){
-				system("echo HELP MESSAGE");
+				return 1.0; // tin --help
 			}else{
-				perr("Incorrect use of flag. Try: \"tin --help\".");
+				perr("Incorrect use of flag. Try: \"tin --help\"");
 			}
 		}else{
 			perr("Name to new file not specified");
 		}
 	}
 
-	system("echo 3");
+	// stage 3: files name syntax
 	for(int i = 1; i < 3; i++) ckChar(argv[i], blocked);
 	
-	if(strchr(argv[1], '.') == NULL) perr("File extension not specified.");
-	if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("File extension not supported. Only \"LUA\".");
+	if(strchr(argv[1], '.') == NULL) perr("File extension not specified");
+	if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("File extension not supported. Only \"LUA\"");
 
-	system("echo 4");
 	if(ckFlag(argv[2], flags)) perr("Invalid use of flag. Try: \"tin <origin>.lua <newFileName> [flag]\"");
 	
-	system("echo 5");
+	// stage 4: optional flag
 	if(argc == 4){
-		if(strcmp(argv[3], flags[1]) != 0) perr("Invalid use of \"--repl\". Try: \"tin <origin>.lua <newFileName> [flag]\"");
+		if(strcmp(argv[3], flags[1]) == 0){
+			return 3.0; // tin <file>.lua <newFileName> [--repl]
+		}else{
+			perr("Invalid use of \"--repl\". Try: \"tin <origin>.lua <newFileName> [flag]\"");
+	
+		}
 	}
 	
-	system("echo 6");
+	return 2.0; // tin <file>.lua <newFileName>
 }

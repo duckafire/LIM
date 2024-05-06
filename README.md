@@ -10,7 +10,7 @@ __*WORK IN PROGRESS*__
 
 # tin
 ###### v0.1.0
-It is a small terminal program, created to compact files of the TintLibrary.
+It is a small terminal program, created to compact files (libraries) of the TinyLibrary.
 
 <br>
 
