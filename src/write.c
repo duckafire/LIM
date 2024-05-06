@@ -5,29 +5,27 @@
 #include "defs.h"
 
 void printInFile(FILE *origin, FILE *newFile){
-	char cc;
-	while((cc = fgetc(origin)) != EOF){
-		fputc(cc, newFile);
-	}
-
-	/*
 	// lua reservad word
 	char keyword[22][9] = {
 		"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
 		"in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while",
 	};
-
+	
 	// current char; current word; add to file (boolean)
 	char cc, word[24];
 	int add;
+	
+	memset(word, '\0', 24);
 
-	while((cc = fgetc(file) != EOF)){
+	while((cc = fgetc(origin)) != EOF){
+		if(cc < 32 || cc == 127) continue;
+		
 		// it have not a graphic representation
 		if((cc < 32 || cc == 127) && cc != '\t') continue;
 
 		// if find a number and inital character of "word" in null
 		if(cc >= 47 && cc <= 57 && word[0] == '\0'){
-			fputc(cc, new);
+			fputc(cc, newFile);
 			continue;
 		}
 
@@ -44,18 +42,16 @@ void printInFile(FILE *origin, FILE *newFile){
 			}
 			
 			if(add){
-				fprintf(new, "%s", word);
+				fprintf(newFile, "%s", word);
 			}else{
-				fputc(word[-1], new);
+				fputc(word[-1], newFile);
 			}
 
-			memset(word, '\-1', 25);
+			memset(word, '\0', 25);
 			continue;
 		}
 
 		// update current word
 		word[strlen(word)] = cc;
-
 	}
-	*/
 }
