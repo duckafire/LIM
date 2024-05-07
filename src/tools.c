@@ -24,3 +24,12 @@ int ckFlag(char *word, char flags[][7]){
 	}
 	return 0;
 }
+
+void fileChar(char *_cc, char *_cf, FILE *origin){
+	if(*_cf != EOF){
+		*_cc = *_cf;
+		*_cf = fgetc(origin);
+	}else{
+		*_cc = fgetc(origin);
+	}
+}

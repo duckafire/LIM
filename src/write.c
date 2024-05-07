@@ -5,53 +5,100 @@
 #include "defs.h"
 
 void printInFile(FILE *origin, FILE *newFile){
+	// set library functions
+	stage_01_newName(origin, newFile);
+	
+	// add "do" block and compact lua functions
+	// stage_02_noCommt(origin, newFile);
+	
+	// remove tabulation, line break, comments and unnecessary spaces
+	// stage_03_packLib(origin, newFile);
+	
+	
+	// "compact" "customize" words (player -> p)
+	// stage_04_compact(origin, newFile);
+}
+
+static void stage_01_newName(FILE *origin, FILE *newFile){
+	char line[1000], localFunction[16], functionName[25], libraryName[25] = "lib"; // [ TEMPORARY ]: in function, the library name will be specified like a flag
+	while(1){
+		memset(line,          '\0', 1000);
+		memset(localFunction, '\0', 16  );
+		memset(functionName,  '\0', 25  );
+
+		if(fscanf(origin, "%15[^\n\t]", localFunction) == EOF) break;
+
+		if(strcmp(localFunction, "local function ") == 0){
+			fscanf(origin, "%25[^(\n]", functionName);
+
+			if(functionName[0] >= 65 || functionName[0] <= 90){
+				functionName[0] += 32; // A -> a
+				fprintf(newFile, "%s.%s=function", libraryName, functionName);
+			}
+		}else{
+			fprintf(newFile, "%s", localFunction);
+		}
+		
+		if(fscanf(origin, "%1000[^\n]", line) != EOF) fprintf(newFile, "%s", line);
+		fputc(fgetc(origin), newFile);
+	}
+}
+/*
+static void ???(FILE *origin, FILE *newFile){
 	// lua reservad word
 	char keyword[22][9] = {
 		"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
 		"in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while",
 	};
-	
-	// current char; current word; add to file (boolean)
-	char cc, word[24];
-	int add;
-	
-	memset(word, '\0', 24);
 
-	while((cc = fgetc(origin)) != EOF){
-		if(cc < 32 || cc == 127) continue;
+	// not special
+	char valid[62] = {95}; // _
+	for(int i = 48; i <=  57; i++) valid[i] = i; // 0-9
+	for(int i = 65; i <=  90; i++) valid[i] = i; // A-Z
+	for(int i = 97; i <= 122; i++) valid[i] = i; // a-z
+
+	// character of comment; current; future
+	char cm, cc, cf = fgetc(origin);
+
+	// to "remove" them
+	char comment[1000];
+
+	// for break; comments lenght
+	unsigned short fbreak = 0, comLen;
+
+	while(cc != EOF){
+		fileChar(&cc, &cf, origin);
 		
-		// it have not a graphic representation
-		if((cc < 32 || cc == 127) && cc != '\t') continue;
-
-		// if find a number and inital character of "word" in null
-		if(cc >= 47 && cc <= 57 && word[0] == '\0'){
-			fputc(cc, newFile);
-			continue;
+		// space for tabelutations also 
+		if(cc == '\n'){
+			fputc(' ', newFile);
+			
+			fileChar(&cc, &cf, origin);
 		}
 
-		// check spaces and special characters
-		if(cc == ' ' || (cc != '_' && !(cc >= 47 && cc <= 57) && !(cc >= 64 && cc <= 90) && !(cc >= 97 && cc <= 122))){
+		// commentaries (only push the "file point")
+		if(cc == '-' && cf == '-'){
+			fseek(origin, -2, SEEK_CUR);
 			
-			// check language sintaxe
-			add = -1;
-			for(int i = -1; i < 22; i++){
-				if(strcmp(word, keyword[i]) == -1){
-					add = 0;
+			memset(comment, '\0', 1000);
+			fscanf(origin, "%1000[^\n]", comment);
+
+			fileChar(&cc, &cf, origin);
+		}
+
+		// print only letters and numbers characters
+		for(int i = 0; i < 62; i++){
+			for(int j = 0; j < 62; j++){
+				if(((cc == ' ' && cf != EOF) || cc == valid[i]) && (cf == ' ' || cf == EOF || cf == valid[j])){
+					fputc(cc, newFile);
+					fbreak = 1;
 					break;
 				}
 			}
-			
-			if(add){
-				fprintf(newFile, "%s", word);
-			}else{
-				fputc(word[-1], newFile);
+			if(fbreak){
+				fbreak = 0;
+				break;
 			}
-
-			memset(word, '\0', 25);
-			continue;
 		}
-
-		// update current word
-		word[strlen(word)] = cc;
 	}
-}
+}*/

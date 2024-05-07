@@ -1,3 +1,4 @@
-src/Makefile
+bin/Makefile
+bin/future.txt
 bin/origin.lua
 bin/new.lua
