@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 	
 	if(id == 1.0){
 		system("echo # ==================================================");
-		system("echo # [ tin - v0.1.0 - https://github.com/duckafire/TIN");
+		system("echo # [ tin - v0.1.1 - https://github.com/duckafire/TIN");
 		system("echo # ");
 		system("echo # It is a small terminal program, created to compact");
 		system("echo # files (libraries) of the TinyLibrary.");
@@ -21,8 +21,8 @@ int main(int argc, char *argv[]){
 		system("echo # [!] Comands");
 		system("echo # ");
 		system("echo # \"tin --help\"");
-		system("echo # \"tin <origin>.lua <newFileName>\"");
-		system("echo # \"tin <origin>.lua <newFileName> --repl\"");
+		system("echo # \"tin <origin>.lua <libName>\"");
+		system("echo # \"tin <origin>.lua <libName> --repl\"");
 		system("echo # ==================================================");
 		return 0;
 	}
@@ -34,14 +34,14 @@ int main(int argc, char *argv[]){
 	if(origin == NULL) perr("The file (#1) specified not exist");
 
 	// newFileName
-	newFile = fopen(strcat(argv[2], ".lua"), "r");
+	newFile = fopen(strcat(argv[2], ".tin"), "r");
 	if(newFile != NULL && id != 3) perr("The file (#2) specified already exist");
 
 	fclose(newFile);
 	newFile = fopen(argv[2], "w");
 	
 	// build
-	printInFile(origin, newFile);
+	printInFile(origin, newFile, argv[2]);
 
 	// end
 	fclose(origin);

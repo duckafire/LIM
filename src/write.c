@@ -4,9 +4,9 @@
 
 #include "defs.h"
 
-void printInFile(FILE *origin, FILE *newFile){
+void printInFile(FILE *origin, FILE *newFile, char *libName){
 	// set library functions
-	stage_01_newName(origin, newFile);
+	stage_01_newName(origin, newFile, libName);
 	
 	// add "do" block and compact lua functions
 	// stage_02_noCommt(origin, newFile);
@@ -19,8 +19,8 @@ void printInFile(FILE *origin, FILE *newFile){
 	// stage_04_compact(origin, newFile);
 }
 
-static void stage_01_newName(FILE *origin, FILE *newFile){
-	char line[1000], localFunction[16], functionName[25], libraryName[25] = "lib"; // [ TEMPORARY ]: in function, the library name will be specified like a flag
+static void stage_01_newName(FILE *origin, FILE *newFile, char *libName){
+	char line[1000], localFunction[16], functionName[25];
 	while(1){
 		memset(line,          '\0', 1000);
 		memset(localFunction, '\0', 16  );
@@ -33,7 +33,7 @@ static void stage_01_newName(FILE *origin, FILE *newFile){
 
 			if(functionName[0] >= 65 || functionName[0] <= 90){
 				functionName[0] += 32; // A -> a
-				fprintf(newFile, "%s.%s=function", libraryName, functionName);
+				fprintf(newFile, "%s.%s=function", libName, functionName);
 			}
 		}else{
 			fprintf(newFile, "%s", localFunction);

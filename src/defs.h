@@ -15,8 +15,8 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 
 // write
-void printInFile(FILE *origin, FILE *newFile);
-static void stage_01_newName(FILE *origin, FILE *newFile);
+void printInFile(FILE *origin, FILE *newFile, char *libName);
+static void stage_01_newName(FILE *origin, FILE *newFile, char *libName);
 // static void stage_02_noCommt(FILE *origin, FILE *newFile);
 // static void stage_03_packLib(FILE *origin, FILE *newFile);
 // static void stage_04_compact(FILE *origin, FILE *newFile);
