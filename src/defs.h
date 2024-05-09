@@ -1,12 +1,13 @@
 #ifndef __STARTED_TIN
 #define __STARTED_TIN
 
-#define FLAGS_QTT 2
+#define FLAGS_QTT 4
 
 #include <stdio.h>
 
 // arg.c
-float checkArgs(int argc, char *argv[]);
+int getFlags(int argc, char *argv[]);
+char *checkArgs(int argc, char *argv[], short replace);
 
 // tools
 void perr(char *msg);

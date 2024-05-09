@@ -3,38 +3,46 @@
 
 #include "defs.h"
 
-float checkArgs(int argc, char *argv[]){
-	char flags[FLAGS_QTT][7] = {"--help", "--repl"};
-	char blocked[10] = "/?*|>\"<>\\";
+// char flags[FLAGS_QTT][7] = {"--help", "--rule", "--back", "--repl"};
+// char blocked[10] = "/?*|>\"<>\\";
 
-	// stage 1: quantity
-	if(argc < 2) perr("Try: \"tin --help\"");
-	if(argc > 4) perr("Argument overflow (max: 3)");
+int getFlags(int argc, char *argv[]){
+	// none, null, -v, -h, -r
+	//   -1,    0,   1, 2,  3
+	
+	if(argc == 0) return 0;
 
-	// stage 2: flag or build
-	if(argc == 2){
-		if(ckFlag(argv[1], flags)){
-			if(strcmp(argv[1], flags[0]) == 0) return 1.0; // tin --help
-
-			perr("Incorrect use of flag. Try: \"tin --help\"");
+	if(argv[1][0] == '-'){
+		if(strlen(argv[1]) == 2){
+			char flags[3] = {'v', 'h', 'r'};
+			for(int i = 0; i < 3; i++) if(argv[1][1] == flags[i]) return i + 1;
 		}
-		perr("Name to new file not specified");
+		perr("Invalid flag");
 	}
 
-	// stage 3: files name syntax
-	for(int i = 1; i < 3; i++) ckChar(argv[i], blocked);
-	
-	if(strchr(argv[1], '.') == NULL) perr("File extension not specified");
-	if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("File extension not supported. Only \"LUA\"");
+	return -1;
+}
 
-	if(ckFlag(argv[2], flags)) perr("Invalid use of flag. Try: \"tin <origin>.lua <libName> [flag]\"");
-	
-	// stage 4: optional flag
-	if(argc == 4){
-		if(strcmp(argv[3], flags[1]) == 0) return 3.0; // tin <file>.lua <libName> [--repl]
+char *checkArgs(int argc, char *argv[], short replace){
+	short qtt = 2;
+	if(!replace) qtt = 1; // less "-r"
+			      
+	// get origin
+	if(argc == qtt) perr("\"origin\" not specified");
 
-		perr("Invalid use of \"--repl\". Try: \"tin <origin>.lua <libName> [flag]\"");
+	if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("Extension not supported. Only \"LUA\"");
+
+	// library name not specified
+	if(argc == qtt + 1){
+		// len - 4 + 8 + 1
+		char temp[strlen(argv[1] + 5)];
+
+		for(int i = 0; i < strlen(argv[1]) - 4; i++) temp[i] = argv[1][i];
+
+		strcat(temp, ".limfile");
+		//return temp;
+		return NULL;
 	}
-	
-	return 2.0; // tin <file>.lua <libName>
+
+	return argv[2];
 }

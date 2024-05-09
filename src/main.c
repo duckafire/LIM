@@ -5,46 +5,48 @@
 #include "defs.h"
 
 int main(int argc, char *argv[]){
-	// 1: tin --help
-	// 2: tin <file>.lua <newFileName>
-	// 3: tin <file>.lua <newFileName> --repl
-	
-	float id = checkArgs(argc, argv);
-	
-	if(id == 1.0){
-		system("echo # ==================================================");
-		system("echo # [ tin - v0.1.1 - https://github.com/duckafire/TIN");
-		system("echo # ");
-		system("echo # It is a small terminal program, created to compact");
-		system("echo # files (libraries) of the TinyLibrary.");
-		system("echo # ");
-		system("echo # [!] Comands");
-		system("echo # ");
-		system("echo # \"tin --help\"");
-		system("echo # \"tin <origin>.lua <libName>\"");
-		system("echo # \"tin <origin>.lua <libName> --repl\"");
-		system("echo # ==================================================");
+	int flag = getFlags(argc, argv);
+
+	// none
+	if(flag == 0){
+		system("echo [ LIM - Lua lIbrary coMpactor - https://github.com/duckafire/LIM ]");
 		return 0;
 	}
-	
-	FILE *origin, *newFile;
 
-	// origin
+	if(flag >= 1 && flag <= 2 && argc > 2) perr("Argument overflow");
+
+	// version
+	if(flag == 1){
+		system("echo [ LIM - v0.2.1 - MIT ]");
+		return 0;
+	}
+
+	// help
+	if(flag == 2){
+		// message (use stdout)
+		return 0;
+	}
+
+	/*
+	// tin <origin>.lua <libName>
+	FILE *origin, *newFile;
+	
 	origin = fopen(argv[1], "r");
 	if(origin == NULL) perr("The file (#1) specified not exist");
 
-	// newFileName
+	// tin <origin>.lua <libName>
 	newFile = fopen(strcat(argv[2], ".tin"), "r");
 	if(newFile != NULL && id != 3) perr("The file (#2) specified already exist");
 
 	fclose(newFile);
 	newFile = fopen(argv[2], "w");
 	
-	// build
+	// start build
 	printInFile(origin, newFile, argv[2]);
 
-	// end
+	// program end
 	fclose(origin);
 	fclose(newFile);
+	*/
 	return 0;
 }
