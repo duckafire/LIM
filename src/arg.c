@@ -3,9 +3,6 @@
 
 #include "defs.h"
 
-// char flags[FLAGS_QTT][7] = {"--help", "--rule", "--back", "--repl"};
-// char blocked[10] = "/?*|>\"<>\\";
-
 int getFlags(int argc, char *argv[]){
 	// none, null, -v, -h, -r
 	//   -1,    0,   1, 2,  3
@@ -15,7 +12,7 @@ int getFlags(int argc, char *argv[]){
 	if(argv[1][0] == '-'){
 		if(strlen(argv[1]) == 2){
 			char flags[3] = {'v', 'h', 'r'};
-			for(int i = 0; i < 3; i++) if(argv[1][1] == flags[i]) return i + 1;
+			for(int i = 0; i <= 3; i++) if(argv[1][1] == flags[i]) return i + 1;
 		}
 		perr("Invalid flag");
 	}
@@ -24,25 +21,43 @@ int getFlags(int argc, char *argv[]){
 }
 
 char *checkArgs(int argc, char *argv[], short replace){
-	short qtt = 2;
-	if(!replace) qtt = 1; // less "-r"
-			      
+	// origin; libName (+1); quantity of arguments expected - all with "-r"
+	short argID = 1;
+	if(replace == 3) argID = 2; // without "-r"
+
 	// get origin
-	if(argc == qtt) perr("\"origin\" not specified");
+	if(argc == argID) perr("<origin> not specified");
 
-	if(strcmp(strchr(argv[1], '.'), ".lua") != 0) perr("Extension not supported. Only \"LUA\"");
-
-	// library name not specified
-	if(argc == qtt + 1){
-		// len - 4 + 8 + 1
-		char *temp = malloc((size_t)strlen(argv[1] + 5));
-
-		for(int i = 0; i < strlen(argv[1]) - 4; i++) temp[i] = argv[1][i];
-
-		strcat(temp, ".limfile");
-		
-		return temp;
+	if(strchr(argv[argID], '.') != NULL){
+		if(strcmp(strchr(argv[argID], '.'), ".lua") != 0) perr("Extension not supported. Only \"LUA\"");
+	}else{
+		perr("<origin> extension not specified (.lua)");
 	}
 
-	return argv[2];
+	// libName: specified; not specified
+	int add = 8;
+	if(argc == argID + 1){
+		argID--;
+		add = 4;
+	}
+
+	int len = strlen(argv[argID + 1]) + add;
+	char *name = malloc(len);
+	memset(name, '\0', len);
+
+	strcat(name, argv[argID + 1]);
+	if(add == 4) name[len - 8] = '\0';
+	strcat(name, ".limfile");
+
+	return name;
+}
+
+void argValid(char *argv){
+	char blocked[10] = "/\\:*?\"<>";
+	
+	for(int i = 0; i < strlen(argv); i++){
+		for(int j = 0; j < strlen(blocked); j++){
+			if(argv[i] == blocked[j]) perr("Invalid character finded.");
+		}
+	}
 }

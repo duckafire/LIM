@@ -13,6 +13,7 @@ static void messages(int flag);
 // arg.c
 int getFlags(int argc, char *argv[]);
 char *checkArgs(int argc, char *argv[], short replace);
+void argValid(char *argv);
 
 // tools
 void perr(char *msg);

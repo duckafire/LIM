@@ -6,7 +6,7 @@
 #include "defs.h"
 
 void perr(char *msg){
-	fprintf(stderr, "[LIM] %s", msg);
+	fprintf(stderr, "[LIM] %s\n", msg);
 	exit(1);
 }
 

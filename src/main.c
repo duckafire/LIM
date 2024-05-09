@@ -6,11 +6,20 @@
 
 int main(int argc, char *argv[]){
 	int flag = getFlags(argc, argv);
-
 	if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
-
 	messages(flag);
 
+	char *origin  = argv[1];
+	char *libName = checkArgs(argc, argv, flag);
+	
+	if(flag == 3) origin = argv[2];
+	
+	argValid(origin );
+	argValid(libName);
+
+	if((flag != 3 && argc > 3) || (flag == 3 && argc > 4)) perr("Argument overflow");
+	free(libName);
+	pout(1, "Work in progress");
 	/*
 	// tin <origin>.lua <libName>
 	FILE *origin, *newFile;
