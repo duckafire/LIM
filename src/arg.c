@@ -10,7 +10,7 @@ int getFlags(int argc, char *argv[]){
 	// none, null, -v, -h, -r
 	//   -1,    0,   1, 2,  3
 	
-	if(argc == 0) return 0;
+	if(argc == 1) return 0;
 
 	if(argv[1][0] == '-'){
 		if(strlen(argv[1]) == 2){
@@ -35,13 +35,13 @@ char *checkArgs(int argc, char *argv[], short replace){
 	// library name not specified
 	if(argc == qtt + 1){
 		// len - 4 + 8 + 1
-		char temp[strlen(argv[1] + 5)];
+		char *temp = malloc((size_t)strlen(argv[1] + 5));
 
 		for(int i = 0; i < strlen(argv[1]) - 4; i++) temp[i] = argv[1][i];
 
 		strcat(temp, ".limfile");
-		//return temp;
-		return NULL;
+		
+		return temp;
 	}
 
 	return argv[2];

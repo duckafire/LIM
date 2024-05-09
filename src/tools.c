@@ -1,12 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "defs.h"
 
 void perr(char *msg){
-	fprintf(stderr, "#\n# [lim] %s.\n#", msg);
+	fprintf(stderr, "[LIM] %s", msg);
 	exit(1);
+}
+
+void pout(int qtt, ...){
+	va_list msg;
+	va_start(msg, qtt);
+
+	for(int i = 0; i < qtt; i++) fprintf(stdout, "%s\n", va_arg(msg, char*));
+
+	va_end(msg);
+	exit(0);
 }
 
 void ckChar(char *word, char *blocked){

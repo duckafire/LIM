@@ -36,9 +36,8 @@ This tool can be used to compact `lua` libraries to use on Tic80 or other fantar
 ## Rules
 
 1. Functions declared with `local function`, that start in the beginning of the line, they will be added to the library.
-2. Variables and tables declared with `local`, that start in the beginning of the line, they will not be compacted.
+2. Variables and tables declared with `local` (or `_G.`), that start in the beginning of the line, they will not be compacted.
 3. All words (except the reserved) prefixed by tabulation and space, they will be compacted.
-4. Coment blocks cannot be must used, since they cannot be compacted.
 
 <br>
 

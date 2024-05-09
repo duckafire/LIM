@@ -7,25 +7,9 @@
 int main(int argc, char *argv[]){
 	int flag = getFlags(argc, argv);
 
-	// none
-	if(flag == 0){
-		system("echo [ LIM - Lua lIbrary coMpactor - https://github.com/duckafire/LIM ]");
-		return 0;
-	}
+	if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
 
-	if(flag >= 1 && flag <= 2 && argc > 2) perr("Argument overflow");
-
-	// version
-	if(flag == 1){
-		system("echo [ LIM - v0.2.1 - MIT ]");
-		return 0;
-	}
-
-	// help
-	if(flag == 2){
-		// message (use stdout)
-		return 0;
-	}
+	messages(flag);
 
 	/*
 	// tin <origin>.lua <libName>
@@ -49,4 +33,53 @@ int main(int argc, char *argv[]){
 	fclose(newFile);
 	*/
 	return 0;
+}
+
+static void messages(int flag){
+	// none
+	if(flag == 0){
+		pout(2, 
+			"[ LIM - Lua lIbrary coMpactor - https://github.com/duckafire/LIM ]",
+			"Try: \"lim -h\""
+		);
+	}
+
+	// version
+	if(flag == 1){
+		char msg[18 + VERSION_LEN] = "[ LIM - v";
+		
+		strcat(msg, VERSION_CUR);
+		strcat(msg, " - MIT ]");
+		
+		pout(1, msg);
+	}
+
+	// help
+	if(flag == 2){
+		pout(23, 
+			"[ LIM - Infomations ]",
+			" ",
+			"[!] Flags [!]",
+			"* -v : Print the running version and the current license.",
+			"* -h : Print all informations about LIM.",
+			"* -r : Force the replacement of an already existig library,",
+			"       if [libName] equals its name.",
+			" ",
+			"[!] Structure [!]",
+			"* \"lim [-v ; -h]\"",
+			"* \"lim [-r] <origin>.lua [libName]\"",
+			" ",
+			"[!] Rules [!]",
+			"1. Functions declared with \"local function\", that start in",
+			"   the beginning of the line, they will be added to the",
+			"   library. E.g.: local function name() -> lib.name=function()",
+			"2. Variables and tables declared with \"local\" (or \"_G.\"),",
+			"   that start in the beginning of the line, they will not be",
+			"   compacted.",
+			"3. All words (except the reseved) prefixed by tabulations or",
+			"   space, they will be compacted.",
+			" ",
+			"[ LIM - Infomations ]"
+		);
+	}
 }
