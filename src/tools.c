@@ -14,7 +14,7 @@ void pout(int qtt, ...){
 	va_list msg;
 	va_start(msg, qtt);
 
-	for(int i = 0; i < qtt; i++) fprintf(stdout, "%s.\n", va_arg(msg, char*));
+	for(int i = 0; i < qtt; i++) fprintf(stdout, "%s\n", va_arg(msg, char*));
 
 	va_end(msg);
 	exit(0);
@@ -43,4 +43,10 @@ void fileChar(char *_cc, char *_cf, FILE *origin){
 	}else{
 		*_cc = fgetc(origin);
 	}
+}
+
+void clearSpace(FILE *file){
+	char cc;
+	while((cc = fgetc(file)) == ' ');
+	fseek(file, -1, SEEK_CUR);
 }

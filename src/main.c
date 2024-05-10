@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 	newFile = fopen(libName, "w");
 	
 	// compact process
-	printInFile(origin, newFile, argv[2]);
+	printInFile(origin, newFile, libName);
 
 	fclose(origin);
 	fclose(newFile);

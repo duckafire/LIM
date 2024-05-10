@@ -5,7 +5,7 @@
 #include "defs.h"
 
 void printInFile(FILE *origin, FILE *newFile, char *libName){
-	// get library functions, variables and tables
+	// get library functions, variables and tables; remove unnecessary line feed
 	stage_01_define(origin, newFile, libName);
 	
 	// remover unnercessary spaces and tabulations
@@ -19,29 +19,55 @@ void printInFile(FILE *origin, FILE *newFile, char *libName){
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
-	char word[9], cc;
+	char init[6], func[9], name[50], cc;
+	int qtt = 0;
 
-	int _fscanf(void){
-		memset(word, '\0', 9);
-		return (fscanf(origin, "%8[^ \n.]", word));
-	}
+	memset(init, '\0',  6); // local/_G
+	memset(func, '\0',  9); // function
+	memset(name, '\0', 50); // function name
 
-	while(_fscanf() != -1){
-		// declaration of "tool"
-		if(strcmp(word, "local") == 0 && strcmp(word, "_G")){
-			_fscanf();
-			if(strcmp(word, "function") == 0){
-				_fscanf();
-				fprintf(newFile, "%s.%s=function", libName, word);
+	// remove extension of the library name
+	int len = strlen(libName) - 8;
+	char *lib;
+
+	lib = malloc(len);
+	memset(lib, '\0', len);
+	
+	for(int i = 0; i < len; i++) lib[i] = libName[i];
+
+	// get local/_G
+	while(fscanf(origin, "%6[^\n. ]", init) != -1){
+		
+		if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
+			clearSpace(origin);
+			// get function reservad word
+			fscanf(origin, "%8[^\n]", func);
+
+			if(strcmp(func, "function") == 0){
+				clearSpace(origin);
+				// get name of the function
+				fscanf(origin, "%50[^\n(]", name);
+
+				fprintf(newFile, "%s.%s=function", lib, name);
 			}else{
-				fprintf(newFile, "^%s", word);
+				fseek(origin, -strlen(func), SEEK_CUR);
+				fprintf(newFile, "^%s ", init);
 			}
 		}else{
-			fprintf(newFile, "%s", word);
+			fseek(origin, -strlen(init), SEEK_CUR);
 		}
 
-		// print the rest of the line
-		while((cc = fgetc(origin)) != '\n') fputc(cc, newFile);
-		fputc('\n', newFile);
+		qtt = 0;
+		while((cc = fgetc(origin)) != '\n'){
+			qtt++;
+			fputc(cc, newFile);
+		}
+		if(qtt > 0) fputc('\n', newFile);
+
+		memset(init, '\0',  6);
+		memset(func, '\0',  9);
+		memset(name, '\0', 50);
 	}
+
+	free(lib);
 }

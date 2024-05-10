@@ -2,7 +2,7 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.2.2"
+#define VERSION_CUR "0.2.3"
 #define VERSION_LEN 5
 
 #include <stdio.h>
@@ -21,6 +21,7 @@ void pout(int qtt, ...);
 void ckChar(char *word, char *blocked);
 int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
+void clearSpace(FILE *file);
 
 // write
 void printInFile(FILE *origin, FILE *newFile, char *libName);

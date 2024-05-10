@@ -45,7 +45,7 @@ char *checkArgs(int argc, char *argv[], short replace){
 	char *name = malloc(len);
 	memset(name, '\0', len);
 
-	strcat(name, argv[argID + 1]);
+	strcpy(name, argv[argID + 1]);
 	if(add == 4) name[len - 8] = '\0';
 	strcat(name, ".limfile");
 
