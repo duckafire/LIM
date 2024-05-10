@@ -1,5 +1,4 @@
 bin/Makefile
 bin/*.txt
 bin/*.lua
-bin/*.tin
-
+bin/*.limfile

@@ -5,42 +5,39 @@
 #include "defs.h"
 
 int main(int argc, char *argv[]){
+	// check all arguments
 	int flag = getFlags(argc, argv);
 	if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
 	messages(flag);
 
-	char *origin  = argv[1];
+	char *oriName = argv[1];
 	char *libName = checkArgs(argc, argv, flag);
 	
-	if(flag == 3) origin = argv[2];
+	if(flag == 3) oriName = argv[2];
 	
-	argValid(origin );
+	argValid(oriName);
 	argValid(libName);
 
 	if((flag != 3 && argc > 3) || (flag == 3 && argc > 4)) perr("Argument overflow");
-	free(libName);
-	pout(1, "Work in progress");
-	/*
-	// tin <origin>.lua <libName>
+	
+	// check all files
 	FILE *origin, *newFile;
 	
-	origin = fopen(argv[1], "r");
-	if(origin == NULL) perr("The file (#1) specified not exist");
+	origin = fopen(oriName, "r");
+	if(origin == NULL) perr("The <origin> specified not exist");
 
-	// tin <origin>.lua <libName>
-	newFile = fopen(strcat(argv[2], ".tin"), "r");
-	if(newFile != NULL && id != 3) perr("The file (#2) specified already exist");
+	newFile = fopen(libName, "r");
+	if(newFile != NULL && flag != 3) perr("Already exist a \"limfile\" with name");
 
 	fclose(newFile);
-	newFile = fopen(argv[2], "w");
+	newFile = fopen(libName, "w");
 	
-	// start build
+	// compact process
 	printInFile(origin, newFile, argv[2]);
 
-	// program end
 	fclose(origin);
 	fclose(newFile);
-	*/
+	free(libName);
 	return 0;
 }
 
