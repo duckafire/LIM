@@ -2,7 +2,7 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.2.3"
+#define VERSION_CUR "0.3.3"
 #define VERSION_LEN 5
 
 #include <stdio.h>
@@ -26,8 +26,6 @@ void clearSpace(FILE *file);
 // write
 void printInFile(FILE *origin, FILE *newFile, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
-// static void stage_02_(FILE *origin, FILE *newFile);
-// static void stage_03_(FILE *origin, FILE *newFile);
-// static void stage_04_(FILE *origin, FILE *newFile);
+static void stage_02_lualib(FILE *origin, FILE *newFile);
 
 #endif
