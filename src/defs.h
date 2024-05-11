@@ -2,7 +2,7 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.3.3"
+#define VERSION_CUR "0.0.0"
 #define VERSION_LEN 5
 
 #include <stdio.h>

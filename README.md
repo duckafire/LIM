@@ -8,7 +8,7 @@ __*WORK IN PROGRESS*__
 
 <br>
 
-# LIM - Lua lIbraries coMpactor - v0.2.1
+# LIM - Lua lIbraries coMpactor - v0.0.0
 It is a small terminal program, created to compact libraries of the TinyLibrary.
 This tool can be used to compact `lua` libraries to use on Tic80 or other fantary consoles, like `pico8`.
 
