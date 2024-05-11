@@ -68,13 +68,22 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 }
 
 static void stage_02_lualib(FILE *origin, FILE *newFile){
-	// lua library; tables from 22, before only functions (basic "pack")
-	char resMain[32][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "bit32", "courotine", "debug", "io", "math", "os", "package", "string", "table"};
+	// lua library; tables from 23, before only functions (basic "pack")
+	char resMain[31][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "courotine", "debug", "io", "math", "os", "package", "string", "table"};
+	
 	// functions to lua library tables
-	char resSub[9][2][5] = {
-		{"", ""},
-		{"", ""},
+	char resSub[9][27][15] = {
+		/*courotine*/{"close", "create", "isyieldable", "resume", "running", "status", "wrap", "yield"},
+		/*debug    */{"debug", "gethook", "getinfo", "getlocal", "getmetatable", "getregistry", "getupvalue", "getuservalue", "sethook", "setlocal", "setmetatable", "setupvalue", "setuservalue", "traceback", "upvalueid", "upvaluejoin"},
+		/*math     */{"abs", "acos", "asin", "atan", "ceil", "cos", "deg", "exp", "floor", "fmod", "huge", "log", "max", "maxinteger", "min", "mininteger", "modf", "pi", "rad", "random", "randomseed", "sin", "sqrt", "tan", "tointeger", "type", "ult"},
+		/*io       */{"clock", "date", "difftime", "execute", "exit", "getenv", "remove", "rename", "setlocale", "time", "tmpname"},
+		/*math     */{"config", "cpath", "loaded", "loadlib", "path", "preload", "searchers", "searchpath"},
+		/*os       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
+		/*package  */{"char", "charpattern", "codepoint", "codes", "len", "offset"},
+		/*string   */{"byte", "char", "dump", "find", "format", "gmatch", "gsub", "len", "lower", "match", "pack", "packsize", "rep", "reverse", "sub", "unpack", "upper"},
+		/*table    */{"concat", "insert", "move", "pack", "remove", "sort", "unpack"}
 	};
+
 	// current character; current word; references to functions
 	char cc, word[10], ref[3];
 	// new word finded; index to "resMain"; index to "resSub"
