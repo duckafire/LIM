@@ -2,3 +2,4 @@ bin/Makefile
 bin/*.txt
 bin/*.lua
 bin/*.limfile
+examples/

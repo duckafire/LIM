@@ -7,10 +7,10 @@
 
 void printInFile(FILE *origin, FILE *newFile, char *libName){
 	// get library functions, variables and tables; remove unnecessary line feed
-	stage_01_define(origin, newFile, libName);
+	// stage_01_define(origin, newFile, libName);
 	
 	// search lua libraries and replce them by refences; remove unnecessary tabulations
-	// stage_02_lualib(origin, newFile);
+	stage_02_lualib(origin, newFile);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -68,90 +68,99 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 }
 
 static void stage_02_lualib(FILE *origin, FILE *newFile){
-	// lua library; tables from 23, before only functions (basic "pack")
-	char resMain[31][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "courotine", "debug", "io", "math", "os", "package", "string", "table"};
+		// lua library; tables from 23, before only functions (basic "pack")    
+    char resMain[33][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "coroutine", "debug", "math", "os", "package", "io", "utf8", "string", "table"};
 	
 	// functions to lua library tables
 	char resSub[9][27][15] = {
 		/*courotine*/{"close", "create", "isyieldable", "resume", "running", "status", "wrap", "yield"},
 		/*debug    */{"debug", "gethook", "getinfo", "getlocal", "getmetatable", "getregistry", "getupvalue", "getuservalue", "sethook", "setlocal", "setmetatable", "setupvalue", "setuservalue", "traceback", "upvalueid", "upvaluejoin"},
 		/*math     */{"abs", "acos", "asin", "atan", "ceil", "cos", "deg", "exp", "floor", "fmod", "huge", "log", "max", "maxinteger", "min", "mininteger", "modf", "pi", "rad", "random", "randomseed", "sin", "sqrt", "tan", "tointeger", "type", "ult"},
-		/*io       */{"clock", "date", "difftime", "execute", "exit", "getenv", "remove", "rename", "setlocale", "time", "tmpname"},
-		/*math     */{"config", "cpath", "loaded", "loadlib", "path", "preload", "searchers", "searchpath"},
-		/*os       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
-		/*package  */{"char", "charpattern", "codepoint", "codes", "len", "offset"},
+		/*os       */{"clock", "date", "difftime", "execute", "exit", "getenv", "remove", "rename", "setlocale", "time", "tmpname"},
+		/*package  */{"config", "cpath", "loaded", "loadlib", "path", "preload", "searchers", "searchpath"},
+		/*io       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
+		/*utf8     */{"char", "charpattern", "codepoint", "codes", "len", "offset"},
 		/*string   */{"byte", "char", "dump", "find", "format", "gmatch", "gsub", "len", "lower", "match", "pack", "packsize", "rep", "reverse", "sub", "unpack", "upper"},
 		/*table    */{"concat", "insert", "move", "pack", "remove", "sort", "unpack"}
 	};
 
-	// current character; current word; references to functions
-	char cc, word[10], ref[3];
-	// new word finded; index to "resMain"; index to "resSub"
-	int  newWord = 0, mainID = 0, subID = 0;
-	// search in file
+	// current character; current word; current sub-word
+	char cc = 'a', word[15], subw[15];
+
+	// one new word was finded; index to "main" word; index to "sub" word
+	int newWord = 1, mainID = 0, subID = 0;
+
 	while((cc = fgetc(origin)) != EOF){
-		// clear
-		memset(word, '\0', 10);
-		// check if it is a first character "valid" (a-z)
-		if(newWord && (cc >= 97 || cc <= 122)){
-			// word finded
-			newWord = 0;
-			// to compensate "cc"
+		memset(word, '\0', 15);
+		memset(subw, '\0', 15);
+
+		mainID = subID = -1;
+
+		// cc = (a-z)
+		if(newWord && cc >= 97 && cc <= 122){
+            newWord = 0;
+
+			// compense "cc"
 			fseek(origin, -1, SEEK_CUR);
+			
 			// get word finded
-			fscanf(origin, "%10[^\n.]", word);
-			// clear indexes
-			mainID = subID = 0;
-			// compare the word with all reserved words
-			for(int i = 0; i < 32; i++){ // reserved = 32
-				// compare
+			fscanf(origin, "%15[^\n.(]", word);
+
+			// serach reserved word
+			for(int i = 0; i < 33; i++){
+                fprintf(stdout, "[%s - %s] \n", word, resMain[i]);
 				if(strcmp(word, resMain[i]) == 0){
-					// index finded
-					mainID = i;
-					// check if it is a table
-					if(mainID >= 22){
+					mainID = i; // word index
+						
+					 // check if it is a "table library"
+					 if(mainID >= 24){
 						// jump '.'
 						fseek(origin, 1, SEEK_CUR);
-						// get new word finded
-						fscanf(origin, "%10[^\n(]");
-						// unnecessary?
-						// clearSpace(origin);
-						for(int j = 0; j < 2; j++){ // sub-reserved = "2"
-							// compare the new word finded with all reserved functions
-							if(strcmp(word, resSub[i][j]) == 0){
-								// index finded
-								subID = 0;
-								// end search of sub
+
+						// get sub word finded
+						fscanf(origin, "%15[^\n(]", subw);
+
+						// search reserved sub word
+                        for(int j = 0; j < 27; j++){
+							// void strings
+                            if(subw[0] < 32 || resSub[i - 22][j][0] < 32) break;
+						    
+                            // compare
+                            if(strcmp(subw, resSub[i - 23][j]) == 0){
+                                subID = j; // sub index
 								break;
 							}
 						}
 					}
-				// end search of main
 				break; // 'i'
 				}
 			}
-		}else{
-			// it is not a valid character
-			fputc(cc, newFile);
 		}
+	
 		// finded end of the last word
 		if(cc == ' ' || cc == '\n' || cc == '\t') newWord = 1;
-		// check if a index was obtained
-		if(mainID != 0){
-			// defealt reference (only main)
-			ref[0] = resMain[mainID][0];
-			ref[1] = resMain[mainID][2];
-			ref[2] = NULL;
-			// reference with sub
-			if(subID == 0){
-				ref[0] = resMain[mainID][0];
-				ref[1] = resSub[ subID ][0];
-				ref[2] = resSub[ subID ][2];
-			}
-			// write reference (replace original word)
-			for(int i = 0; i < 3; i++) fputc(toupper(ref[i]), newFile);
-		//}else{
-		//	fprintf(newFile, "%s", word);
+		
+		// without function
+		if(mainID >= 0 && mainID < 24){
+            fprintf(newFile, "+%c%d", toupper(word[0]), mainID);
+			continue;
 		}
+
+		// with function
+		if(mainID >= 24 && subID > -1){
+			fprintf(newFile, "~%c%c%d", toupper(word[0]), toupper(subw[0]), subID);
+			continue;
+		}
+
+		// word finded but it it not a reserved word
+		if(word[0] != '\0'){
+			fprintf(newFile, "^%s", word);
+				
+			if(mainID >= 24 && subID == 0) fputc('.', newFile); // '.' jumped
+		    continue;
+        }
+
+		// it is not a valid character
+		fputc(cc, newFile);
 	}
 }
