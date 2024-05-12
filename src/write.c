@@ -68,17 +68,19 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 }
 
 static void stage_02_lualib(FILE *origin, FILE *newFile){
-		// lua library; tables from 23, before only functions (basic "pack")    
-    char resMain[33][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "coroutine", "debug", "math", "os", "package", "io", "utf8", "string", "table"};
+	// lua library; tables from 23, before only functions (basic "pack")    
+    char resFunc[24][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcal"};
 	
+    char resTable[9][15] = {"coroutine", "debug", "io", "math", "os", "package", "utf8", "string", "table"};
+
 	// functions to lua library tables
-	char resSub[9][27][15] = {
+	char tableFunc[9][27][15] = {
 		/*courotine*/{"close", "create", "isyieldable", "resume", "running", "status", "wrap", "yield"},
 		/*debug    */{"debug", "gethook", "getinfo", "getlocal", "getmetatable", "getregistry", "getupvalue", "getuservalue", "sethook", "setlocal", "setmetatable", "setupvalue", "setuservalue", "traceback", "upvalueid", "upvaluejoin"},
+		/*io       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
 		/*math     */{"abs", "acos", "asin", "atan", "ceil", "cos", "deg", "exp", "floor", "fmod", "huge", "log", "max", "maxinteger", "min", "mininteger", "modf", "pi", "rad", "random", "randomseed", "sin", "sqrt", "tan", "tointeger", "type", "ult"},
 		/*os       */{"clock", "date", "difftime", "execute", "exit", "getenv", "remove", "rename", "setlocale", "time", "tmpname"},
 		/*package  */{"config", "cpath", "loaded", "loadlib", "path", "preload", "searchers", "searchpath"},
-		/*io       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
 		/*utf8     */{"char", "charpattern", "codepoint", "codes", "len", "offset"},
 		/*string   */{"byte", "char", "dump", "find", "format", "gmatch", "gsub", "len", "lower", "match", "pack", "packsize", "rep", "reverse", "sub", "unpack", "upper"},
 		/*table    */{"concat", "insert", "move", "pack", "remove", "sort", "unpack"}
@@ -87,7 +89,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	// current character; current word; current sub-word
 	char cc = 'a', word[15], subw[15];
 
-	// one new word was finded; index to "main" word; index to "sub" word
+    // booleans; indexes
 	int newWord = 1, mainID = 0, subID = 0;
 
 	while((cc = fgetc(origin)) != EOF){
@@ -106,33 +108,36 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 			// get word finded
 			fscanf(origin, "%15[^\n.(]", word);
 
+            for(int i = 0; i < 24; i++){
+                if(strcmp(word, resFunc[i]) == 0){
+                    mainID = i;
+                    break;
+                }
+            }
+
 			// serach reserved word
-			for(int i = 0; i < 33; i++){
-                fprintf(stdout, "[%s - %s] \n", word, resMain[i]);
-				if(strcmp(word, resMain[i]) == 0){
+			for(int i = 0; i < 9; i++){
+				if(strcmp(word, resTable[i]) == 0){
 					mainID = i; // word index
-						
-					 // check if it is a "table library"
-					 if(mainID >= 24){
-						// jump '.'
-						fseek(origin, 1, SEEK_CUR);
 
-						// get sub word finded
-						fscanf(origin, "%15[^\n(]", subw);
+					// jump '.'
+					fseek(origin, 1, SEEK_CUR);
 
-						// search reserved sub word
-                        for(int j = 0; j < 27; j++){
-							// void strings
-                            if(subw[0] < 32 || resSub[i - 22][j][0] < 32) break;
+					// get sub word finded
+					fscanf(origin, "%15[^\n(]", subw);
+
+					// search reserved sub word
+                    for(int j = 0; j < 27; j++){
+						// void strings
+                        if(subw[0] < 32 || tableFunc[i][j][0] < 32) break;
 						    
-                            // compare
-                            if(strcmp(subw, resSub[i - 23][j]) == 0){
-                                subID = j; // sub index
-								break;
-							}
+                        // compare
+                        if(strcmp(subw, tableFunc[i][j]) == 0){
+                            subID = j; // sub index
+                            break;
 						}
 					}
-				break; // 'i'
+				break; // 'i' 2
 				}
 			}
 		}
@@ -140,14 +145,14 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		// finded end of the last word
 		if(cc == ' ' || cc == '\n' || cc == '\t') newWord = 1;
 		
-		// without function
-		if(mainID >= 0 && mainID < 24){
+		// only function
+		if(subID == -1 && mainID != -1){
             fprintf(newFile, "+%c%d", toupper(word[0]), mainID);
 			continue;
 		}
 
-		// with function
-		if(mainID >= 24 && subID > -1){
+		// table with function
+		if(subID != -1 && mainID != -1){
 			fprintf(newFile, "~%c%c%d", toupper(word[0]), toupper(subw[0]), subID);
 			continue;
 		}
