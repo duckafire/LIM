@@ -82,7 +82,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 
 	// functions to lua library tables
 	char tableFunc[9][27][15] = {
-		/*courotine*/{"close", "create", "isyieldable", "resume", "running", "status", "wrap", "yield"},
+        /*coroutine*/{"close", "create", "isyieldable", "resume", "running", "status", "wrap", "yield"},
 		/*debug    */{"debug", "gethook", "getinfo", "getlocal", "getmetatable", "getregistry", "getupvalue", "getuservalue", "sethook", "setlocal", "setmetatable", "setupvalue", "setuservalue", "traceback", "upvalueid", "upvaluejoin"},
 		/*io       */{"close", "flush", "input", "lines", "open", "output", "popen", "read", "tmpfile", "type", "write"},
 		/*math     */{"abs", "acos", "asin", "atan", "ceil", "cos", "deg", "exp", "floor", "fmod", "huge", "log", "max", "maxinteger", "min", "mininteger", "modf", "pi", "rad", "random", "randomseed", "sin", "sqrt", "tan", "tointeger", "type", "ult"},
@@ -94,17 +94,16 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	};
 
 	// current character; current word; current sub-word
-	char cc = 'a', isFunc = 0, word[15], subw[15];
+	char cc = 'a', word[15], subw[15];
 
     // booleans; indexes
-	int newWord = 1, mainID = 0, subID = 0;
+	int newWord = 1, funcID, tableID, subID;
 
 	while((cc = fgetc(origin)) != EOF){
 		memset(word, '\0', 15);
 		memset(subw, '\0', 15);
 
-		mainID = subID = -1;
-        isFunc = 0;
+		funcID = tableID = subID = -1;
 
         if(cc == '_'){
             if((cc = fgetc(origin)) == '_'){
@@ -127,8 +126,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 
             for(int i = 0; i < 24; i++){
                 if(strcmp(word, resFunc[i]) == 0){
-                    mainID = i;
-                    //isFunc = 1;
+                    funcID = i;
                     break;
                 }
             }
@@ -136,8 +134,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 			// serach reserved word
 			for(int i = 0; i < 9; i++){
 				if(strcmp(word, resTable[i]) == 0){
-					mainID = i; // word index
-                    //isFunc = 0;
+					tableID = i; // word index
 
 					// jump '.'
 					fseek(origin, 1, SEEK_CUR);
@@ -165,19 +162,19 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		if(cc == ' ' || cc == '\n' || cc == '\t') newWord = 1;
 		
 		// only function
-		if(subID == -1 && mainID != -1){// && isFunc){
-            fprintf(newFile, "@%c%d@", toupper(word[0]), mainID);
+		if(funcID != -1){
+            fprintf(newFile, "@%c%d@", toupper(word[0]), funcID);
 			continue;
 		}
 
 		// table with function
-		if(subID != -1 && mainID != -1){
+		if(tableID != -1 && subID != -1){
 			fprintf(newFile, "@%c%c%d@", toupper(word[0]), toupper(subw[0]), subID);
 			continue;
 		}
 
 		// word finded but it it not a reserved word
-		if(word[0] != '\0'){// || !isFunc){
+		if(word[0] != '\0' || tableID != -1){
 			fprintf(newFile, "@%s@", word);
 				
 			if(subID == -1) fputc('.', newFile); // '.' jumped
