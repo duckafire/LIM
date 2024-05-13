@@ -9,8 +9,15 @@ void printInFile(FILE *origin, FILE *newFile, char *libName){
 	// get library functions, variables and tables; remove unnecessary line feed
 	// stage_01_define(origin, newFile, libName);
 	
+    rewind(origin);
+    rewind(newFile);
+
 	// search lua libraries and replce them by refences; remove unnecessary tabulations
 	stage_02_lualib(origin, newFile);
+	
+    rewind(origin);
+    rewind(newFile);
+
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -43,10 +50,10 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 				// get name of the function
 				fscanf(origin, "%50[^\n(]", name);
 
-				fprintf(newFile, "%s.%s=function", lib, name);
+				fprintf(newFile, "@%s.%s=function@", lib, name);
 			}else{
 				fseek(origin, -strlen(func), SEEK_CUR);
-				fprintf(newFile, "^%s ", init);
+				fprintf(newFile, "@%s @", init);
 			}
 		}else{
 			fseek(origin, -strlen(init), SEEK_CUR);
@@ -69,7 +76,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 
 static void stage_02_lualib(FILE *origin, FILE *newFile){
 	// lua library; tables from 23, before only functions (basic "pack")    
-    char resFunc[24][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcal"};
+    char resFunc[24][15] = { "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall"};
 	
     char resTable[9][15] = {"coroutine", "debug", "io", "math", "os", "package", "utf8", "string", "table"};
 
@@ -87,7 +94,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	};
 
 	// current character; current word; current sub-word
-	char cc = 'a', word[15], subw[15];
+	char cc = 'a', isFunc = 0, word[15], subw[15];
 
     // booleans; indexes
 	int newWord = 1, mainID = 0, subID = 0;
@@ -97,6 +104,16 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		memset(subw, '\0', 15);
 
 		mainID = subID = -1;
+        isFunc = 0;
+
+        if(cc == '_'){
+            if((cc = fgetc(origin)) == '_'){
+                fscanf(origin, "%15[a-z]", word);
+                fprintf(newFile, "@__%s@", word);
+                continue;
+            }
+            fseek(origin, -1, SEEK_CUR);
+        }
 
 		// cc = (a-z)
 		if(newWord && cc >= 97 && cc <= 122){
@@ -111,6 +128,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
             for(int i = 0; i < 24; i++){
                 if(strcmp(word, resFunc[i]) == 0){
                     mainID = i;
+                    //isFunc = 1;
                     break;
                 }
             }
@@ -119,6 +137,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 			for(int i = 0; i < 9; i++){
 				if(strcmp(word, resTable[i]) == 0){
 					mainID = i; // word index
+                    //isFunc = 0;
 
 					// jump '.'
 					fseek(origin, 1, SEEK_CUR);
@@ -146,22 +165,22 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		if(cc == ' ' || cc == '\n' || cc == '\t') newWord = 1;
 		
 		// only function
-		if(subID == -1 && mainID != -1){
-            fprintf(newFile, "+%c%d", toupper(word[0]), mainID);
+		if(subID == -1 && mainID != -1){// && isFunc){
+            fprintf(newFile, "@%c%d@", toupper(word[0]), mainID);
 			continue;
 		}
 
 		// table with function
 		if(subID != -1 && mainID != -1){
-			fprintf(newFile, "~%c%c%d", toupper(word[0]), toupper(subw[0]), subID);
+			fprintf(newFile, "@%c%c%d@", toupper(word[0]), toupper(subw[0]), subID);
 			continue;
 		}
 
 		// word finded but it it not a reserved word
-		if(word[0] != '\0'){
-			fprintf(newFile, "^%s", word);
+		if(word[0] != '\0'){// || !isFunc){
+			fprintf(newFile, "@%s@", word);
 				
-			if(mainID >= 24 && subID == 0) fputc('.', newFile); // '.' jumped
+			if(subID == -1) fputc('.', newFile); // '.' jumped
 		    continue;
         }
 
@@ -169,3 +188,62 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		fputc(cc, newFile);
 	}
 }
+/*
+static void stage_03_spaces(FILE *origin, FILE *newFile, char *newFile){
+    char cc, cf;
+
+    // swap tabulations and line feed by spaces
+    while((cc = fgetc(origin)) != EOF){
+        if(cc == '\t' || cc == '\n'){
+            fputc(' ', newFile);
+            continue;
+        }
+        fputc(cc, newFile);
+    }
+
+    rewind(origin);
+
+    // remove unnecessary spaces
+    while((cc = fgetc(origin)) != EOF){
+        if(cf != EOF){
+            cf = fgetc(origin);
+            fseek(origin, -1, SEEK_CUR);
+        }
+
+        if(cc != ' ' || firstChar(cc)){
+            fputc(cc, origin);
+            continue;
+        }
+    }
+}
+
+static void stage_04_cmpact(FILE *origin, FILE *newFile, char *libName){
+    char cc, word[25];
+    int isReserved = 0;
+
+    while((cc = fgetc(origin)) != EOF){
+        if(firstChar(cc)){
+            fputc(cc, newFile);
+            continue;
+        }
+
+        isReserved = 0;
+
+        if(word[0] == 0){
+            while((cc = fgetc(origin)) != 1) fputc(cc, origin);
+            continue;
+        }
+
+        if(!isReserved || strcmp(word, libName) == 0){
+            fprintf(newFile, "%s", libName);
+        }
+
+        // [...]
+    }
+
+    // ADD
+    // // references
+    // // pack
+    // // table
+}
+*/

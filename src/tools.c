@@ -50,3 +50,8 @@ void clearSpace(FILE *file){
 	while((cc = fgetc(file)) == ' ');
 	fseek(file, -1, SEEK_CUR);
 }
+
+int firstChar(char c){
+    // _, A-Z, a-z
+    return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
+}

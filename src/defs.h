@@ -22,10 +22,13 @@ void ckChar(char *word, char *blocked);
 int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
+int firstChar(char cc);
 
 // write
 void printInFile(FILE *origin, FILE *newFile, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_lualib(FILE *origin, FILE *newFile);
+// static void stage_03_spaces(FILE *origin, FILE *newFile, char *newFile){
+// static void stage_04_cmpact(FILE *origin, FILE *newFile, char *libName){
 
 #endif
