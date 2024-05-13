@@ -9,15 +9,21 @@ void printInFile(FILE *origin, FILE *newFile, char *libName){
 	// get library functions, variables and tables; remove unnecessary line feed
 	// stage_01_define(origin, newFile, libName);
 	
-    rewind(origin);
-    rewind(newFile);
+    //rewind(origin);
+    //rewind(newFile);
 
-	// search lua libraries and replce them by refences; remove unnecessary tabulations
-	stage_02_lualib(origin, newFile);
+	//search lua libraries and replce them by refences; remove unnecessary some tabulations
+	//stage_02_lualib(origin, newFile);
 	
+    //rewind(origin);
+    //rewind(newFile);
+    
+    // remove the last tabuleations, line feed, comments and unnecessary spaces
+    stage_03_spaces(origin, newFile);
+    
     rewind(origin);
     rewind(newFile);
-
+    
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -185,35 +191,73 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		fputc(cc, newFile);
 	}
 }
-/*
-static void stage_03_spaces(FILE *origin, FILE *newFile, char *newFile){
-    char cc, cf;
 
-    // swap tabulations and line feed by spaces
-    while((cc = fgetc(origin)) != EOF){
-        if(cc == '\t' || cc == '\n'){
-            fputc(' ', newFile);
-            continue;
-        }
-        fputc(cc, newFile);
-    }
+static void stage_03_spaces(FILE *origin, FILE *newFile){
+    char cc, cf, cmt[3];
+    int isCmt, isInvBar;//, isSpecial = 1;
 
-    rewind(origin);
-
-    // remove unnecessary spaces
     while((cc = fgetc(origin)) != EOF){
         if(cf != EOF){
             cf = fgetc(origin);
             fseek(origin, -1, SEEK_CUR);
         }
+/*
+        if(cc == ' ' && isSpecial == 1) isSpecial = 2;
+        if(cc != ' ' && !firstChar(cc) && isSpecial != 2) isSpecial = 1; else isSpecial = 0;
+        if(isSpecial == 2) continue;
+*/
+        if(cc == '-'){
 
-        if(cc != ' ' || firstChar(cc)){
-            fputc(cc, origin);
+            if(fgetc(origin) == '-' && fgetc(origin) != '['){
+                while(fgetc(origin) != '\n');
+                continue;
+            }
+            
+            isCmt = 0;
+            fseek(origin, -1, SEEK_CUR);
+            memset(cmt, '\0', 4);
+            fscanf(origin, "%2s", cmt);
+
+            if(strcmp(cmt, "[[") == 0){
+                isCmt = 1;
+                while((cc = fgetc(origin)) != EOF){
+                    if(cc = ']'){
+                        if((cc = fgetc(origin)) == ']') break;
+                    }
+                }
+            }
+
+            if(isCmt){
+                continue;
+            }else{
+                fseek(origin, -strlen(cmt), SEEK_CUR);
+            }
+        }
+
+		if(cc == '"' || cc == '\''){
+            fputc(cc, newFile);
+			cf = cc;
+
+			while((cc = fgetc(origin)) != EOF){
+				fputc(cc, newFile);
+				if(cc == cf && !isInvBar) break;
+				if(cc == '\\') isInvBar = 1; else isInvBar = 0;
+            }
+			
+			continue;
+		}
+
+        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf)){
+            fputc(' ', newFile);
             continue;
+        }
+        
+        if(cc != ' ' && cc != '\t' && cc != '\n'){
+            fputc(cc, newFile);
         }
     }
 }
-
+/*
 static void stage_04_cmpact(FILE *origin, FILE *newFile, char *libName){
     char cc, word[25];
     int isReserved = 0;

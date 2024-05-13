@@ -28,7 +28,7 @@ int firstChar(char cc);
 void printInFile(FILE *origin, FILE *newFile, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_lualib(FILE *origin, FILE *newFile);
-// static void stage_03_spaces(FILE *origin, FILE *newFile, char *newFile){
+static void stage_03_spaces(FILE *origin, FILE *newFile);
 // static void stage_04_cmpact(FILE *origin, FILE *newFile, char *libName){
 
 #endif
