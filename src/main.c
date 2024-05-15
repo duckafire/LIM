@@ -62,12 +62,12 @@ static void messages(int flag){
 
 	// help
 	if(flag == 2){
-		pout(23, 
+		pout(25, 
 			"[ LIM - Infomations ]",
 			" ",
 			"[!] Flags [!]",
 			"* -v : Print the running version and the current license.",
-			"* -h : Print all informations about LIM.",
+			"* -h : Print informations about LIM.",
 			"* -r : Force the replacement of an already existig library,",
 			"       if [libName] equals its name.",
 			" ",
@@ -84,7 +84,9 @@ static void messages(int flag){
 			"   compacted.",
 			"3. All words (except the reseved) prefixed by tabulations or",
 			"   space, they will be compacted.",
-			" ",
+			"4. Do not create strings with '[[  ]]' ",
+            "5. Do not ise '@' in code (reserved words). ",
+            " ",
 			"[ LIM - Infomations ]"
 		);
 	}
