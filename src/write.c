@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-void printInFile(FILE *origin, FILE *newFile, char *libName){
+void printInFile(FILE *origin, FILE *newFile, FILE **fileName, char *libName){
 	// get library functions, variables and tables; remove unnecessary line feed
 	// stage_01_define(origin, newFile, libName);
 	
@@ -19,7 +19,7 @@ void printInFile(FILE *origin, FILE *newFile, char *libName){
     //rewind(newFile);
     
     // remove the last tabuleations, line feed, comments and unnecessary spaces
-    stage_03_spaces(origin, newFile);
+    stage_03_spaces(origin, newFile, fileName, libName);
     
     rewind(origin);
     rewind(newFile);
@@ -192,27 +192,31 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	}
 }
 
-static void stage_03_spaces(FILE *origin, FILE *newFile){
+static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName){
+    // current/future character; comment
     char cc, cf, cmt[3];
-    int isCmt, isInvBar;//, isSpecial = 1;
 
+    // it is a commentary; it is a inverted bar
+    int isCmt, isInvBar;
+
+    // to read "newFile" (library will that compacted)
+    FILE *readNew;
+
+    // remove unnecessary spaces, respecting string; remove comments
     while((cc = fgetc(origin)) != EOF){
         if(cf != EOF){
             cf = fgetc(origin);
             fseek(origin, -1, SEEK_CUR);
         }
-/*
-        if(cc == ' ' && isSpecial == 1) isSpecial = 2;
-        if(cc != ' ' && !firstChar(cc) && isSpecial != 2) isSpecial = 1; else isSpecial = 0;
-        if(isSpecial == 2) continue;
-*/
-        if(cc == '-'){
 
+        // comments
+        if(cc == '-'){
+            // line
             if(fgetc(origin) == '-' && fgetc(origin) != '['){
                 while(fgetc(origin) != '\n');
                 continue;
             }
-            
+            // block
             isCmt = 0;
             fseek(origin, -1, SEEK_CUR);
             memset(cmt, '\0', 4);
@@ -233,7 +237,7 @@ static void stage_03_spaces(FILE *origin, FILE *newFile){
                 fseek(origin, -strlen(cmt), SEEK_CUR);
             }
         }
-
+        // string
 		if(cc == '"' || cc == '\''){
             fputc(cc, newFile);
 			cf = cc;
@@ -246,12 +250,22 @@ static void stage_03_spaces(FILE *origin, FILE *newFile){
 			
 			continue;
 		}
-
+        // spaces
         if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf)){
-            fputc(' ', newFile);
+            ///*
+            fclose(newFile);
+            *newAdress = fopen(fileName, "a");
+            newFile = *newAdress;
+
+            readNew = fopen(fileName, "r");
+            fseek(readNew, -1, SEEK_END);
+            if(firstChar(fgetc(readNew))) fputc(' ', newFile);
+            fclose(readNew);
+            //*/
+            //fputc(' ', newFile);
             continue;
         }
-        
+        // others
         if(cc != ' ' && cc != '\t' && cc != '\n'){
             fputc(cc, newFile);
         }
