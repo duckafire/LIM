@@ -7,13 +7,13 @@
 
 void printInFile(FILE *origin, FILE *newFile, FILE **fileName, char *libName){
 	// get library functions, variables and tables; remove unnecessary line feed
-	//stage_01_define(origin, newFile, libName);
+	stage_01_define(origin, newFile, libName);
 	
-    //rewind(origin);
-    //rewind(newFile);
+    rewind(origin);
+    rewind(newFile);
 
 	// search lua libraries and replce them by refences; remove unnecessary some tabulations
-	//stage_02_lualib(origin, newFile);
+	stage_02_lualib(origin, newFile);
 
     //rewind(origin);
     //rewind(newFile);
@@ -116,7 +116,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
         if(cc == '_'){
             if((cc = fgetc(origin)) == '_'){
                 fscanf(origin, "%15[a-z]", word);
-                fprintf(newFile, "__%s", word);//--
+                fprintf(newFile, "@__%s@", word);
                 continue;
             }
             fseek(origin, -1, SEEK_CUR);
@@ -173,19 +173,19 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		
 		// only function
 		if(funcID != -1){
-            fprintf(newFile, "%c%d", toupper(word[0]), funcID);//--
+            fprintf(newFile, "@%c%d@", toupper(word[0]), funcID);
 			continue;
 		}
 
 		// table with function
 		if(tableID != -1 && subID != -1){
-			fprintf(newFile, "%c%c%d", toupper(word[0]), toupper(subw[0]), subID);//--
+			fprintf(newFile, "@%c%c%d@", toupper(word[0]), toupper(subw[0]), subID);
 			continue;
 		}
 
 		// word finded but it it not a reserved word
 		if(word[0] != '\0' || tableID != -1){
-			fprintf(newFile, "%s", word);//--
+			fprintf(newFile, "@%s@", word);
 				
 			if(subID == -1) fputc('.', newFile); // '.' jumped
 		    continue;
