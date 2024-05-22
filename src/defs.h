@@ -23,9 +23,10 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
+int binScan(FILE *file, char *regex, char *word);
 
 // write
-void printInFile(FILE *origin, FILE *newFile, FILE **fileName, char *libName);
+void printInFile(FILE *origin, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_lualib(FILE *origin, FILE *newFile);
 static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName);

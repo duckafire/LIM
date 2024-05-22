@@ -2,4 +2,6 @@ bin/Makefile
 bin/*.txt
 bin/*.lua
 bin/*.limfile
+bin/tmpfile.c
+bin/tmp
 examples/
