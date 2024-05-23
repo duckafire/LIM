@@ -4,14 +4,18 @@
 
 #include "defs.h"
 
+FILE *origin, *newFile;    
+char *libName;
+
 int main(int argc, char *argv[]){
-	// check all arguments
+	// CHECK ALL ARGUMENTS
 	int flag = getFlags(argc, argv);
 	if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
 	messages(flag);
 
-	char *oriName = argv[1];
-	char *libName = checkArgs(argc, argv, flag);
+	char *oriName;    
+    oriName = argv[1];
+	libName = checkArgs(argc, argv, flag);
 	
 	if(flag == 3) oriName = argv[2];
 	
@@ -20,23 +24,21 @@ int main(int argc, char *argv[]){
 
 	if((flag != 3 && argc > 3) || (flag == 3 && argc > 4)) perr("Argument overflow");
 	
-	// check all files
-	FILE *origin, *newFile;
-	
+	// START PROCESS
+    atexit(cleanup);
+
 	origin = fopen(oriName, "r");
 	if(origin == NULL) perr("The <origin> specified not exist");
+    copyOrigin();
 
 	newFile = fopen(libName, "r");
 	if(newFile != NULL && flag != 3) perr("Already exist a \"limfile\" with name");
 	
-	// compact process
-	printInFile(origin, libName);
+	//startProcess(origin, libName);
 
-	fclose(origin);
-	fclose(newFile);
-	free(libName);
 	return 0;
 }
+
 
 static void messages(int flag){
 	// none
@@ -88,3 +90,40 @@ static void messages(int flag){
 		);
 	}
 }
+
+void copyOrigin(void){
+    // buffer to store file content
+    long size = fileLenght(origin);
+
+    char transfer[size];
+    memset(transfer, '\0', size);
+
+    perr("BETA");
+    // get content
+    fscanf(origin, "%700s", transfer);
+    //fgets(transfer, size, origin);
+
+    FILE *temp;
+    temp = fopen("car.txt", "w");
+    fprintf(temp, "%d - %d", strlen(transfer), size);
+    fclose(temp);
+    
+    // close "font" file
+    fclose(origin);
+
+    // create a new file, copy content to it and close it
+    origin = fopen(".limfile", "w");
+    fputs(transfer, origin);
+    fclose(origin);
+
+    // reopen it in read mode
+    origin = fopen(".limfile", "r");
+}
+
+void cleanup(void){
+	fclose(origin);
+	fclose(newFile);
+	free(libName);
+    //remove(".limfile");
+}
+

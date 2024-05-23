@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-void printInFile(FILE *origin, char *libName){
+void startProcess(FILE *origin, char *libName){
 	FILE *tmp, *new;
     char _char;
     tmp = tmpfile();

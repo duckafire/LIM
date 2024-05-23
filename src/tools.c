@@ -56,12 +56,19 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-void *saveStage(FILE *new, FILE **tmp){
-    // get size of temporary file
-    fseek(*tmp, 0L, SEEK_END);
-    int size = ftell(*tmp);
-    fseek(*tmp, 0,  SEEK_SET);
- 
+long fileLenght(FILE *file){
+    long lenght;
+    
+    fseek(file, 0, SEEK_END);
+    lenght = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    return lenght;
+}
+
+void *saveState(FILE *new, FILE **tmp){
+    long size = fileLenght(*tmp);
+
     // set and clear buffer
     char transfer[size];
     memset(transfer, '\0', size);

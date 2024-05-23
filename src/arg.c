@@ -29,7 +29,7 @@ char *checkArgs(int argc, char *argv[], short replace){
 	if(argc == argID) perr("<origin> not specified");
 
 	if(strchr(argv[argID], '.') != NULL){
-		if(strcmp(strchr(argv[argID], '.'), ".lua") != 0) perr("Extension not supported. Only \"LUA\"");
+		if(strcmp(strchr(argv[argID], '.'), ".lua") != 0) perr("Extension not supported. Only \".lua\"");
 	}else{
 		perr("<origin> extension not specified (.lua)");
 	}

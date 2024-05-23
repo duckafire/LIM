@@ -9,6 +9,8 @@
 
 // main.c
 static void messages(int flag);
+void copyOrigin(void);
+void cleanup(void);
 
 // arg.c
 int getFlags(int argc, char *argv[]);
@@ -23,10 +25,11 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-void *saveStage(FILE *new, FILE **tmp){
+long fileLenght(FILE *file);
+void *saveState(FILE *new, FILE **tmp);
 
 // write
-void printInFile(FILE *origin, char *libName);
+void startProcess(FILE *origin, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_lualib(FILE *origin, FILE *newFile);
 static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName);
