@@ -23,7 +23,7 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-int binScan(FILE *file, char *regex, char *word);
+void *saveStage(FILE *new, FILE **tmp){
 
 // write
 void printInFile(FILE *origin, char *libName);

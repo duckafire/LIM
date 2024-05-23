@@ -56,45 +56,21 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-/*
-int binScan(FILE *file, char *regex, char *word){
-    int size = sizeof(word), reverse = 0;
-    char temp[size];
+void *saveStage(FILE *new, FILE **tmp){
+    // get size of temporary file
+    fseek(*tmp, 0L, SEEK_END);
+    int size = ftell(*tmp);
+    fseek(*tmp, 0,  SEEK_SET);
+ 
+    // set and clear buffer
+    char transfer[size];
+    memset(transfer, '\0', size);
 
-    // get word in file
-    fread(temp, 1, size, file);
+    // copy file (binary to ASCII)
+    fread(transfer, size, 1, *tmp);
+    fputs(transfer, new);
 
-    // finish with one break
-    void loop(void){
-        for(int i = 0; i < size; i++){
-            
-            for(int j = 0; j < strlen(regex); j++){
-                if(regex[j] == '^' && !reverse){
-                    reverse = 1;
-                    continue;
-                }
-
-                // [123]
-                if(!reverse){
-                    for(int l = 0; l < strlen(regex); l++){
-                        if(temp[i] != regex[l]) return;
-                        if(regex[l] == '^') break;
-                    }
-                    continue;
-                }
-
-                // [^456]
-                if(temp[i] == regex[i]) return;
-            }
-
-            // without "anomaly"
-            word[size + 1] = temp[i];
-        
-        }
-    }
-
-    loop();
-    word[size + 1] = '\0';
-    return strlen(word);
+    // clear temporary file
+    fclose(*tmp);
+    *tmp = tmpfile();
 }
-*/

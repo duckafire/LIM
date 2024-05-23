@@ -12,15 +12,7 @@ void printInFile(FILE *origin, char *libName){
     
     // get library functions, variables and tables; remove unnecessary line feed
 	stage_01_define(origin, tmp, libName);
-	
-    new = fopen(libName, "w");
-    while(fread(_char, sizeof(char), 1, tmp) > 0){
-        fwrite(_char, 1, sizeof(_char), origin);
-    }
-    fclose(origin);
-    fclose(tmp);
-
-    tmp = tmpfile();
+    saveState(new, &tmp);
 
 	// search lua libraries and replce them by refences; remove unnecessary some tabulations
 	//stage_02_lualib(origin, newFile);
