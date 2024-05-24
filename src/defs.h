@@ -25,11 +25,10 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-long fileLenght(FILE *file);
-void *saveState(FILE *new, FILE **tmp);
+void saveState(FILE **origin, FILE **newFile, char *libName);
 
 // write
-void startProcess(FILE *origin, char *libName);
+void startProcess(FILE **origin, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_lualib(FILE *origin, FILE *newFile);
 static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName);

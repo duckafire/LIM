@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
 	newFile = fopen(libName, "r");
 	if(newFile != NULL && flag != 3) perr("Already exist a \"limfile\" with name");
 	
-	//startProcess(origin, libName);
+	startProcess(&origin, libName);
 
 	return 0;
 }
@@ -92,31 +92,22 @@ static void messages(int flag){
 }
 
 void copyOrigin(void){
-    // buffer to store file content
-    long size = fileLenght(origin);
+    // trash not deleted
+    remove(".limfile");
 
-    char transfer[size];
-    memset(transfer, '\0', size);
+    // new file
+    FILE *newOrigin;
+    newOrigin = fopen(".limfile", "w");
 
-    perr("BETA");
-    // get content
-    fscanf(origin, "%700s", transfer);
-    //fgets(transfer, size, origin);
+    // copy file
+    char cc;
+    while((cc = fgetc(origin)) != EOF) fputc(cc, newOrigin);
 
-    FILE *temp;
-    temp = fopen("car.txt", "w");
-    fprintf(temp, "%d - %d", strlen(transfer), size);
-    fclose(temp);
-    
-    // close "font" file
+    // close "font"
     fclose(origin);
+    fclose(newOrigin);
 
-    // create a new file, copy content to it and close it
-    origin = fopen(".limfile", "w");
-    fputs(transfer, origin);
-    fclose(origin);
-
-    // reopen it in read mode
+    // open new file to read
     origin = fopen(".limfile", "r");
 }
 

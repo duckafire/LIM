@@ -5,23 +5,25 @@
 
 #include "defs.h"
 
-void startProcess(FILE *origin, char *libName){
-	FILE *tmp, *new;
-    char _char;
-    tmp = tmpfile();
+void startProcess(FILE **origin, char *libName){
+	FILE *newFile;
+    newFile = tmpfile();
     
     // get library functions, variables and tables; remove unnecessary line feed
-	stage_01_define(origin, tmp, libName);
-    saveState(new, &tmp);
+	stage_01_define(*origin, newFile, libName);
+    saveState(origin, &newFile, libName);
 
 	// search lua libraries and replce them by refences; remove unnecessary some tabulations
 	//stage_02_lualib(origin, newFile);
+    //saveState(new, &tmp, libName);
 
     // remove the last tabuleations, line feed, comments and unnecessary spaces
     //stage_03_spaces(origin, newFile, fileName, libName);
+    //saveState(new, &tmp, libName);
     
     // ???
     //stage_04_cmpact(origin, newFile);
+    //saveState(new, &tmp, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){

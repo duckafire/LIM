@@ -56,28 +56,27 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-long fileLenght(FILE *file){
-    long lenght;
-    
-    fseek(file, 0, SEEK_END);
-    lenght = ftell(file);
-    fseek(file, 0, SEEK_SET);
+void saveState(FILE **origin, FILE **newFile, char *libName){
+    // get file lenght
+    fseek(*newFile, 0, SEEK_END);
+    long size = ftell(*newFile);
+    fseek(*newFile, 0, SEEK_SET);
 
-    return lenght;
-}
-
-void *saveState(FILE *new, FILE **tmp){
-    long size = fileLenght(*tmp);
+    // clear and open to update
+    fclose(*origin);
+    *origin = fopen(".limfile", "w");
 
     // set and clear buffer
     char transfer[size];
     memset(transfer, '\0', size);
 
     // copy file (binary to ASCII)
-    fread(transfer, size, 1, *tmp);
-    fputs(transfer, new);
+    fread(transfer, size, 1, *newFile);
+    fprintf(*origin, "%s", transfer);
 
-    // clear temporary file
-    fclose(*tmp);
-    *tmp = tmpfile();
+    // close and open 
+    fclose(*origin);
+    fclose(*newFile);
+    *origin = fopen(".limfile", "r");
+    *newFile = tmpfile();
 }
