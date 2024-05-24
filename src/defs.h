@@ -5,6 +5,13 @@
 #define VERSION_CUR "0.0.0"
 #define VERSION_LEN 5
 
+#define ID0 "@0" // library function
+#define ID1 "@1" // "local" or global (_G) variable (or table)
+#define ID2 "@2" // metamethods
+#define ID3 "@3" // reserved functions ("basic")
+#define ID4 "@4" // reserved table, with its function (only if it is valid)
+#define ID5 "@5" // strings
+
 #include <stdio.h>
 
 // main.c
@@ -26,6 +33,7 @@ void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
 void saveState(FILE **origin, FILE **newFile, char *libName);
+void jumpToID(FILE *origin, FILE *newFile);
 
 // write
 void startProcess(FILE **origin, char *libName);

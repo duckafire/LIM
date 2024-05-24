@@ -12,18 +12,18 @@ void startProcess(FILE **origin, char *libName){
     // get library functions, variables and tables; remove unnecessary line feed
 	stage_01_define(*origin, newFile, libName);
     saveState(origin, &newFile, libName);
-
-	// search lua libraries and replce them by refences; remove unnecessary some tabulations
-	//stage_02_lualib(origin, newFile);
-    //saveState(new, &tmp, libName);
+	
+    // search lua libraries and replace them by refences; remove unnecessary some tabulations; add indexation
+	//stage_02_lualib(*origin, newFile);
+    //saveState(origin, &newFile, libName);
 
     // remove the last tabuleations, line feed, comments and unnecessary spaces
-    //stage_03_spaces(origin, newFile, fileName, libName);
-    //saveState(new, &tmp, libName);
-    
+    //stage_03_spaces(*origin, newFile, fileName, libName);
+    //saveState(origin, &newFile, libName);
+
     // ???
-    //stage_04_cmpact(origin, newFile);
-    //saveState(new, &tmp, libName);
+    //stage_04_cmpact(*origin, newFile);
+    //saveState(origin, &newFile, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -36,31 +36,38 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 
 	// remove extension of the library name
 	int len = strlen(libName) - 8;
-	char *lib;
-
-	lib = malloc(len);
+	char lib[len];
 	memset(lib, '\0', len);
-	
 	for(int i = 0; i < len; i++) lib[i] = libName[i];
 
 	// get local/_G
 	while(fscanf(origin, "%6[^\n. ]", init) != -1){
-		
-		if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
+        if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
 			clearSpace(origin);
 			// get function reservad word
-			fscanf(origin, "%8[^\n]", func);
+			fscanf(origin, "%8[^\n=]", func);
 
 			if(strcmp(func, "function") == 0){
 				clearSpace(origin);
 				// get name of the function
 				fscanf(origin, "%50[^\n(]", name);
 
-				fprintf(newFile, "@%s.%s=function@", lib, name);
+				fprintf(newFile, "%s%s.%s=function%s", ID0, lib, name, ID0);
 			}else{
-				fseek(origin, -strlen(func), SEEK_CUR);
-				fprintf(newFile, "@%s @", init);
-			}
+                // remove spaces
+                for(int i = 0; i < strlen(func); i++){
+                    if(func[i] == ' '){
+                        func[i] = '\0';
+                        break;
+                    }
+                }
+                // func = variable/table name
+				if(strcmp(init, "local") == 0){
+                    fprintf(newFile, "%s%s %s%s", ID1, init, func, ID1);
+                }else{
+                    fprintf(newFile, "%s%s%s%s", ID1, init, func, ID1);
+			    }
+            }
 		}else{
 			fseek(origin, -strlen(init), SEEK_CUR);
 		}
@@ -76,8 +83,6 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 		memset(func, '\0',  9);
 		memset(name, '\0', 50);
 	}
-
-	free(lib);
 }
 
 static void stage_02_lualib(FILE *origin, FILE *newFile){
@@ -106,15 +111,18 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	int newWord = 1, funcID, tableID, subID;
 
 	while((cc = fgetc(origin)) != EOF){
-		memset(word, '\0', 15);
+		jumpToID(origin, newFile);
+        
+        memset(word, '\0', 15);
 		memset(subw, '\0', 15);
 
 		funcID = tableID = subID = -1;
 
+        // metamethods
         if(cc == '_'){
             if((cc = fgetc(origin)) == '_'){
                 fscanf(origin, "%15[a-z]", word);
-                fprintf(newFile, "@__%s@", word);
+                fprintf(newFile, "%s__%s%s", ID2, word, ID2);
                 continue;
             }
             fseek(origin, -1, SEEK_CUR);
@@ -137,7 +145,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
                 }
             }
 
-            // serach reserved word
+            // search reserved word
 			for(int i = 0; i < 9; i++){
 				// word was finded
                 if(funcID != -1) break;
@@ -171,21 +179,22 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 		
 		// only function
 		if(funcID != -1){
-            fprintf(newFile, "@%c%d@", toupper(word[0]), funcID);
+            fprintf(newFile, "%s%c%d%s", ID2, toupper(word[0]), funcID, ID2);
 			continue;
 		}
 
 		// table with function
 		if(tableID != -1 && subID != -1){
-			fprintf(newFile, "@%c%c%d@", toupper(word[0]), toupper(subw[0]), subID);
+			fprintf(newFile, "%s%c%c%d%s", ID3, toupper(word[0]), toupper(subw[0]), subID, ID3);
 			continue;
 		}
 
 		// word finded but it it not a reserved word
 		if(word[0] != '\0' || tableID != -1){
-			fprintf(newFile, "@%s@", word);
-				
-			if(subID == -1) fputc('.', newFile); // '.' jumped
+            fprintf(newFile, "%s", word);
+			
+            fseek(origin, -1, SEEK_CUR);
+			if(fgetc(origin) == '.' && subID == -1) fputc('.', newFile); // '.' jumped
 		    continue;
         }
 
@@ -239,9 +248,10 @@ static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char 
                 fseek(origin, -strlen(cmt), SEEK_CUR);
             }
         }
+
         // string
 		if(cc == '"' || cc == '\''){
-            fputc(cc, newFile);
+            fprintf(newFile, "%s%c", ID5, cc);
 			cf = cc;
 
 			while((cc = fgetc(origin)) != EOF){
@@ -250,8 +260,10 @@ static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char 
 				if(cc == '\\') isInvBar = 1; else isInvBar = 0;
             }
 			
+            fputs(ID5, newFile);
 			continue;
 		}
+        
         // spaces
         if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf)){
             ///*
