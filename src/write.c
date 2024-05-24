@@ -13,12 +13,12 @@ void startProcess(FILE **origin, char *libName){
 	stage_01_define(*origin, newFile, libName);
     saveState(origin, &newFile, libName);
 	
-    // search lua libraries and replace them by refences; remove unnecessary some tabulations; add indexation
-	//stage_02_lualib(*origin, newFile);
-    //saveState(origin, &newFile, libName);
-
     // remove the last tabuleations, line feed, comments and unnecessary spaces
-    //stage_03_spaces(*origin, newFile, fileName, libName);
+    stage_02_spaces(*origin, newFile);
+    saveState(origin, &newFile, libName);
+    
+    // search lua libraries and replace them by refences; remove unnecessary some tabulations; add indexation
+	//stage_03_lualib(*origin, newFile);
     //saveState(origin, &newFile, libName);
 
     // ???
@@ -85,7 +85,83 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 	}
 }
 
-static void stage_02_lualib(FILE *origin, FILE *newFile){
+static void stage_02_spaces(FILE *origin, FILE *newFile){
+    // current/future character; comment block
+    char cc, cf, cmt[3], lastAdded, lastLast;
+
+    // it is a commentary; it is a inverted bar
+    int isCmt, isInvBar;
+
+    // remove unnecessary spaces, respecting string; remove comments
+    while((cc = fgetc(origin)) != EOF){
+        if(cf != EOF){
+            cf = fgetc(origin);
+            fseek(origin, -1, SEEK_CUR);
+        }
+        // comments
+        if(cc == '-'){
+            // line
+            if(fgetc(origin) == '-' && fgetc(origin) != '['){
+                while(fgetc(origin) != '\n');
+                continue;
+            }
+            // block
+            isCmt = 0;
+            fseek(origin, -1, SEEK_CUR);
+            memset(cmt, '\0', 4);
+            fscanf(origin, "%2s", cmt);
+
+            if(strcmp(cmt, "[[") == 0){
+                isCmt = 1;
+                while((cc = fgetc(origin)) != EOF){
+                    if(cc = ']'){
+                        if((cc = fgetc(origin)) == ']'){
+                            fseek(origin, 1, SEEK_CUR);
+                            break;
+                        }
+                    }
+                }
+            }
+            // confim if it is a comment
+            if(isCmt){
+                continue;
+            }else{
+                fseek(origin, -strlen(cmt), SEEK_CUR);
+            }
+        }
+        // string
+		if(cc == '"' || cc == '\''){
+            fprintf(newFile, "%s%c", ID5, cc);
+			cf = cc;
+
+			while((cc = fgetc(origin)) != EOF){
+				fputc(cc, newFile);
+                if(cc == cf && !isInvBar) break;
+				if(cc == '\\') isInvBar = 1; else isInvBar = 0;
+            }
+			
+            fputs(ID5, newFile);
+            lastLast = lastAdded;
+			lastAdded = cc;
+            continue;
+		}
+        // spaces
+        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf) && (firstChar(lastAdded) || (lastAdded >= 48 && lastAdded <= 57 && firstChar(lastLast)))){
+           fputc(' ', newFile);
+           lastLast = lastAdded;
+           lastAdded = ' ';
+           continue;
+        }
+        // others
+        if(cc >= 32 && cc != ' '){
+            fputc(cc, newFile);
+            lastLast = lastAdded;
+            lastAdded = cc;
+        }
+    }
+}
+
+static void stage_03_lualib(FILE *origin, FILE *newFile){
 	// lua library; tables from 23, before only functions (basic "pack")    
     char resFunc[69][15] = {"assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs", "load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring", "type", "warn", "xpcall", "btn", "btnp", "circ", "circb", "clip", "cls", "elli", "ellib", "exit", "fget",  "font", "fset", "key", "keyp", "line", "map", "memcpy", "memset", "mget", "mouse", "mset", "music", "peek", "peek1", "peek2", "peek4", "pix", "pmem", "poke", "poke1", "poke2", "poke4", "rect", "rectb", "reset", "sfx", "spr",  "sync", "time", "trace", "tri", "trib", "tstamp", "ttri", "vbank"};
 	
@@ -136,7 +212,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 			fseek(origin, -1, SEEK_CUR);
 			
 			// get word finded
-			fscanf(origin, "%15[^\n.( ]", word);
+			fscanf(origin, "%15[^.( ]", word);
 
             for(int i = 0; i < 69; i++){
                 if(strcmp(word, resFunc[i]) == 0){
@@ -157,7 +233,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 					fseek(origin, 1, SEEK_CUR);
 
 					// get sub word finded
-					fscanf(origin, "%15[^\n(]", subw);
+					fscanf(origin, "%15[^(]", subw);
 
 					// search reserved sub word
                     for(int j = 0; j < 27; j++){
@@ -175,7 +251,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 			}
 		}
 		// finded end of the last word
-		if(cc == ' ' || cc == '\n' || cc == '\t') newWord = 1;
+		if(cc == ' ') newWord = 1;
 		
 		// only function
 		if(funcID != -1){
@@ -203,90 +279,7 @@ static void stage_02_lualib(FILE *origin, FILE *newFile){
 	}
 }
 
-static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName){
-    // current/future character; comment
-    char cc, cf, cmt[3];
-
-    // it is a commentary; it is a inverted bar
-    int isCmt, isInvBar;
-
-    // to read "newFile" (library will that compacted)
-    FILE *readNew;
-
-    // remove unnecessary spaces, respecting string; remove comments
-    while((cc = fgetc(origin)) != EOF){
-        if(cf != EOF){
-            cf = fgetc(origin);
-            fseek(origin, -1, SEEK_CUR);
-        }
-
-        // comments
-        if(cc == '-'){
-            // line
-            if(fgetc(origin) == '-' && fgetc(origin) != '['){
-                while(fgetc(origin) != '\n');
-                continue;
-            }
-            // block
-            isCmt = 0;
-            fseek(origin, -1, SEEK_CUR);
-            memset(cmt, '\0', 4);
-            fscanf(origin, "%2s", cmt);
-
-            if(strcmp(cmt, "[[") == 0){
-                isCmt = 1;
-                while((cc = fgetc(origin)) != EOF){
-                    if(cc = ']'){
-                        if((cc = fgetc(origin)) == ']') break;
-                    }
-                }
-            }
-
-            if(isCmt){
-                continue;
-            }else{
-                fseek(origin, -strlen(cmt), SEEK_CUR);
-            }
-        }
-
-        // string
-		if(cc == '"' || cc == '\''){
-            fprintf(newFile, "%s%c", ID5, cc);
-			cf = cc;
-
-			while((cc = fgetc(origin)) != EOF){
-				fputc(cc, newFile);
-				if(cc == cf && !isInvBar) break;
-				if(cc == '\\') isInvBar = 1; else isInvBar = 0;
-            }
-			
-            fputs(ID5, newFile);
-			continue;
-		}
-        
-        // spaces
-        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf)){
-            ///*
-            fclose(newFile);
-            *newAdress = fopen(fileName, "a");
-            newFile = *newAdress;
-
-            readNew = fopen(fileName, "r");
-            fseek(readNew, -1, SEEK_END);
-            if(firstChar(fgetc(readNew))) fputc(' ', newFile);
-            fclose(readNew);
-            //*/
-            //fputc(' ', newFile);
-            continue;
-        }
-        // others
-        if(cc != ' ' && cc != '\t' && cc != '\n'){
-            fputc(cc, newFile);
-        }
-    }
-}
-
-static void stage_04_cmpact(FILE *origin, FILE *newFile){
+//static void stage_04_cmpact(FILE *origin, FILE *newFile){
     // "BDR", "BOOT", "MENU", "SCN", "TIC"
 
     // add "@" to init of ALL reserved words, in ALL stages
@@ -295,4 +288,4 @@ static void stage_04_cmpact(FILE *origin, FILE *newFile){
     // // references
     // // pack
     // // table
-}
+//}

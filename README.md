@@ -42,6 +42,7 @@ This tool can be used to compact `lua` libraries to use on Tic80 or other fantar
 3. All words (except the reserved) prefixed by tabulation and space, they will be compacted.
 4. Do not create strings with ´[[ ]]´.
 5. Do not use ´@´ in code ([reserved word](https://github.com/duckafire/LIM/tree/main/RESERVED_WORDS.txt "All reserved words of the LIM")).
+6. Variable and table names cannot finish with two numbers followed (e.g.: `car12` -> `car12_`/`car12n`/`car12th`/`...`).
 
 <br>
 

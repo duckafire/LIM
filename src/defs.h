@@ -38,8 +38,8 @@ void jumpToID(FILE *origin, FILE *newFile);
 // write
 void startProcess(FILE **origin, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
-static void stage_02_lualib(FILE *origin, FILE *newFile);
-static void stage_03_spaces(FILE *origin, FILE *newFile, FILE **newAdress, char *fileName);
-static void stage_04_cmpact(FILE *origin, FILE *newFile);
+static void stage_02_spaces(FILE *origin, FILE *newFile);
+static void stage_03_lualib(FILE *origin, FILE *newFile);
+//static void stage_04_cmpact(FILE *origin, FILE *newFile);
 
 #endif
