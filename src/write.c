@@ -9,21 +9,17 @@ void startProcess(FILE **origin, char *libName){
 	FILE *newFile;
     newFile = tmpfile();
     
-    // get library functions, variables and tables; remove unnecessary line feed
-	stage_01_define(*origin, newFile, libName);
-    saveState(origin, &newFile, libName);
+    // add funcions to library; add indexes to protect words
+	//stage_01_define(*origin, newFile, libName);
+    //saveState(origin, &newFile, libName);
 	
-    // remove the last tabuleations, line feed, comments and unnecessary spaces
-    stage_02_spaces(*origin, newFile);
-    saveState(origin, &newFile, libName);
+    // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
+    //stage_02_spaces(*origin, newFile);
+    //saveState(origin, &newFile, libName);
     
-    // search lua libraries and replace them by refences; remove unnecessary some tabulations; add indexation
-	//stage_03_lualib(*origin, newFile);
-    //saveState(origin, &newFile, libName);
-
-    // ???
-    //stage_04_cmpact(*origin, newFile);
-    //saveState(origin, &newFile, libName);
+	// add reference to lua functions
+    stage_03_lualib(*origin, newFile);
+    saveState(origin, &newFile, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -187,12 +183,13 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 	int newWord = 1, funcID, tableID, subID;
 
 	while((cc = fgetc(origin)) != EOF){
-		jumpToID(origin, newFile);
-        
         memset(word, '\0', 15);
 		memset(subw, '\0', 15);
 
 		funcID = tableID = subID = -1;
+
+        // indexed with "@n"
+        if(protectedWords(origin, newFile, &cc, 1)) continue;
 
         // metamethods
         if(cc == '_'){
@@ -212,7 +209,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 			fseek(origin, -1, SEEK_CUR);
 			
 			// get word finded
-			fscanf(origin, "%15[^.( ]", word);
+			fscanf(origin, "%15[a-zA-Z8_]", word);
 
             for(int i = 0; i < 69; i++){
                 if(strcmp(word, resFunc[i]) == 0){
@@ -229,11 +226,14 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
                 if(strcmp(word, resTable[i]) == 0){
 					tableID = i; // word index
 
-					// jump '.'
-					fseek(origin, 1, SEEK_CUR);
+					// get '.'; if it will not finded, it is not a valid lua table-functions
+					if((cc = fgetc(origin)) != '.'){
+                        //fputc('#', newFile);
+                        break;
+                    }
 
-					// get sub word finded
-					fscanf(origin, "%15[^(]", subw);
+                    // get sub word finded
+					fscanf(origin, "%15[a-zA-Z8_⁽]", subw);
 
 					// search reserved sub word
                     for(int j = 0; j < 27; j++){
@@ -269,23 +269,14 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 		if(word[0] != '\0' || tableID != -1){
             fprintf(newFile, "%s", word);
 			
-            fseek(origin, -1, SEEK_CUR);
-			if(fgetc(origin) == '.' && subID == -1) fputc('.', newFile); // '.' jumped
-		    continue;
+            if(tableID != -1){
+                fseek(origin, -1, SEEK_CUR);
+                for(int i = 0; i <= 1; i++) fputc(fgetc(origin), newFile);
+            }
+            continue;
         }
 
 		// it is not a valid character
-		fputc(cc, newFile);
+        fputc(cc, newFile);
 	}
 }
-
-//static void stage_04_cmpact(FILE *origin, FILE *newFile){
-    // "BDR", "BOOT", "MENU", "SCN", "TIC"
-
-    // add "@" to init of ALL reserved words, in ALL stages
-
-    // ADD
-    // // references
-    // // pack
-    // // table
-//}

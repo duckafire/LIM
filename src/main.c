@@ -85,8 +85,8 @@ static void messages(int flag){
 			"   space, they will be compacted.",
 			"4. Do not create strings with '[[  ]]' ",
             "5. Do not ise '@' in code (reserved words). ",
-            "6. Variable and table names cannot finish with two numbers"
-            "   followed (e.g.: `car12` -> car12_).
+            "6. Variable and table names cannot finish with two numbers",
+            "   followed (e.g.: `car12` -> car12_).",
             " ",
 			"[ LIM - Infomations ]"
 		);

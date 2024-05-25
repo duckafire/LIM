@@ -80,3 +80,34 @@ void saveState(FILE **origin, FILE **newFile, char *libName){
     *origin = fopen(".limfile", "r");
     *newFile = tmpfile();
 }
+
+int protectedWords(FILE *origin, FILE *newFile, char *cc, short printID){
+    char id;
+    
+    if(*cc == '@'){
+        id = fgetc(origin);
+
+        if(printID) fprintf(newFile, "%c%c", *cc, id);
+
+        while(1){
+            *cc = fgetc(origin);
+
+            if(*cc == '@'){
+                // check if it is the end
+                if((*cc = fgetc(origin)) == id){
+                    if(printID) fprintf(newFile, "%c%c", *cc, id);
+                    break;
+                }
+                // it never write "@n"
+                continue;
+            }
+            if(*cc == EOF) break;
+
+            fputc(*cc, newFile);
+        }
+        // if the conditions is true, they are protected words
+        return 1;
+    }
+
+    return 0;
+}
