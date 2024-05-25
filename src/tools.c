@@ -73,8 +73,8 @@ void saveState(FILE **origin, FILE **newFile, char *libName){
     // copy file (binary to ASCII)
     fread(transfer, size, 1, *newFile);
     fprintf(*origin, "%s", transfer);
-
-    // close and open 
+    
+    // close and (re)open 
     fclose(*origin);
     fclose(*newFile);
     *origin = fopen(".limfile", "r");
@@ -95,7 +95,7 @@ int protectedWords(FILE *origin, FILE *newFile, char *cc, short printID){
             if(*cc == '@'){
                 // check if it is the end
                 if((*cc = fgetc(origin)) == id){
-                    if(printID) fprintf(newFile, "%c%c", *cc, id);
+                    if(printID) fprintf(newFile, "@%c", *cc);
                     break;
                 }
                 // it never write "@n"

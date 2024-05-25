@@ -42,13 +42,14 @@ char *checkArgs(int argc, char *argv[], short replace){
 	}
 
 	int len = strlen(argv[argID + 1]) + add;
-	char *name = malloc(len);
+    char *name = malloc(len);
 	memset(name, '\0', len);
 
 	strcpy(name, argv[argID + 1]);
 	if(add == 4) name[len - 8] = '\0';
 	strcat(name, ".limfile");
 
+    // this pointer is returned to "libName", then it will be free in "main.c"
 	return name;
 }
 

@@ -5,21 +5,20 @@
 
 #include "defs.h"
 
-void startProcess(FILE **origin, char *libName){
-	FILE *newFile;
-    newFile = tmpfile();
+void startProcess(FILE **origin, FILE **newFile, char *libName){
+    *newFile = tmpfile();
     
     // add funcions to library; add indexes to protect words
-	//stage_01_define(*origin, newFile, libName);
-    //saveState(origin, &newFile, libName);
+	stage_01_define(*origin, *newFile, libName);
+    saveState(origin, newFile, libName);
 	
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
-    //stage_02_spaces(*origin, newFile);
-    //saveState(origin, &newFile, libName);
+    stage_02_spaces(*origin, *newFile);
+    saveState(origin, newFile, libName);
     
 	// add reference to lua functions
-    stage_03_lualib(*origin, newFile);
-    saveState(origin, &newFile, libName);
+    stage_03_lualib(*origin, *newFile);
+    saveState(origin, newFile, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -37,7 +36,8 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 	for(int i = 0; i < len; i++) lib[i] = libName[i];
 
 	// get local/_G
-	while(fscanf(origin, "%6[^\n. ]", init) != -1){
+    int a;
+	while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
         if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
 			clearSpace(origin);
 			// get function reservad word
@@ -251,7 +251,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 			}
 		}
 		// finded end of the last word
-		if(cc == ' ') newWord = 1;
+		if(!firstChar(cc) || (cc >= 48 && cc <= 57) || cc == '_') newWord = 1;
 		
 		// only function
 		if(funcID != -1){

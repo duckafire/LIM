@@ -4,11 +4,14 @@
 
 #include "defs.h"
 
-FILE *origin, *newFile;    
-char *libName;
+FILE *origin = NULL, *newFile = NULL;    
+char *libName = NULL;
 
 int main(int argc, char *argv[]){
-	// CHECK ALL ARGUMENTS
+    // ADD TO CLEANUP
+    atexit(cleanup);
+	
+    // CHECK ALL ARGUMENTS
 	int flag = getFlags(argc, argv);
 	if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
 	messages(flag);
@@ -25,16 +28,15 @@ int main(int argc, char *argv[]){
 	if((flag != 3 && argc > 3) || (flag == 3 && argc > 4)) perr("Argument overflow");
 	
 	// START PROCESS
-    atexit(cleanup);
-
 	origin = fopen(oriName, "r");
 	if(origin == NULL) perr("The <origin> specified not exist");
     copyOrigin();
 
 	newFile = fopen(libName, "r");
 	if(newFile != NULL && flag != 3) perr("Already exist a \"limfile\" with name");
-	
-	startProcess(&origin, libName);
+	if(newFile != NULL) fclose(newFile);
+
+	startProcess(&origin, &newFile, libName);
 
 	return 0;
 }
@@ -114,9 +116,9 @@ void copyOrigin(void){
 }
 
 void cleanup(void){
-	fclose(origin);
-	fclose(newFile);
-	free(libName);
+	if(origin  != NULL) fclose(origin);
+	if(newFile != NULL) fclose(newFile);
+	if(libName != NULL) free(libName);
     //remove(".limfile");
 }
 
