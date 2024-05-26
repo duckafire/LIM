@@ -5,29 +5,34 @@
 
 #include "defs.h"
 
+FILE *libTool, *libGlobal, *libLocal, *libFunc;
+
 void startProcess(FILE **origin, FILE **newFile, char *libName){
-    *newFile = tmpfile();
+    *newFile  = tmpfile();
+    libTool   = tmpfile();
+    libGlobal = tmpfile();
+    libLocal  = tmpfile();
+    libFunc   = tmpfile();
     
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
     saveState(origin, newFile, libName);
 	
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
-    stage_02_spaces(*origin, *newFile);
-    saveState(origin, newFile, libName);
+    //stage_02_spaces(*origin, *newFile);
+    //saveState(origin, newFile, libName);
     
 	// add reference to lua functions
-    stage_03_lualib(*origin, *newFile);
-    saveState(origin, newFile, libName);
+    //stage_03_lualib(*origin, *newFile);
+    //saveState(origin, newFile, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
-	char init[6], func[9], name[50], cc;
+	char init[6], func[50], cc;
 	int qtt = 0;
 
 	memset(init, '\0',  6); // local/_G
-	memset(func, '\0',  9); // function
-	memset(name, '\0', 50); // function name
+	memset(func, '\0', 50); // "function" and its name
 
 	// remove extension of the library name
 	int len = strlen(libName) - 8;
@@ -36,19 +41,20 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 	for(int i = 0; i < len; i++) lib[i] = libName[i];
 
 	// get local/_G
-    int a;
 	while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
         if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
 			clearSpace(origin);
 			// get function reservad word
-			fscanf(origin, "%8[^\n=]", func);
+            fscanf(origin, "%50[^\n= ]", func);
 
 			if(strcmp(func, "function") == 0){
 				clearSpace(origin);
 				// get name of the function
-				fscanf(origin, "%50[^\n(]", name);
+                memset(func, '\0', 50);
+				fscanf(origin, "%50[^(]", func);
 
-				fprintf(newFile, "%s%s.%s=function%s", ID0, lib, name, ID0);
+				fprintf(newFile, "%s%s.%s=function%s", ID0, lib, func, ID0);
+                wordsBuffer(libTool, func);
 			}else{
                 // remove spaces
                 for(int i = 0; i < strlen(func); i++){
@@ -60,8 +66,10 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
                 // func = variable/table name
 				if(strcmp(init, "local") == 0){
                     fprintf(newFile, "%s%s %s%s", ID1, init, func, ID1);
+                    wordsBuffer(libLocal, func);
                 }else{
                     fprintf(newFile, "%s%s%s%s", ID1, init, func, ID1);
+                    wordsBuffer(libGlobal, func);
 			    }
             }
 		}else{
@@ -76,8 +84,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 		if(qtt > 0) fputc('\n', newFile);
 
 		memset(init, '\0',  6);
-		memset(func, '\0',  9);
-		memset(name, '\0', 50);
+		memset(func, '\0', 50);
 	}
 }
 
@@ -279,4 +286,11 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 		// it is not a valid character
         fputc(cc, newFile);
 	}
+}
+
+void cleanupWrite(void){
+    fclose(libTool);
+    fclose(libGlobal);
+    fclose(libLocal);
+    fclose(libFunc);
 }

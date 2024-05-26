@@ -9,7 +9,7 @@ char *libName = NULL;
 
 int main(int argc, char *argv[]){
     // ADD TO CLEANUP
-    atexit(cleanup);
+    atexit(cleanupMain);
 	
     // CHECK ALL ARGUMENTS
 	int flag = getFlags(argc, argv);
@@ -115,10 +115,11 @@ void copyOrigin(void){
     origin = fopen(".limfile", "r");
 }
 
-void cleanup(void){
+void cleanupMain(void){
 	if(origin  != NULL) fclose(origin);
 	if(newFile != NULL) fclose(newFile);
 	if(libName != NULL) free(libName);
     //remove(".limfile");
+    cleanupWrite();
 }
 
