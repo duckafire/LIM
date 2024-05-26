@@ -16,15 +16,23 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
-    saveState(origin, newFile, libName);
-	
+    saveState(origin, newFile);
+
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
-    //stage_02_spaces(*origin, *newFile);
-    //saveState(origin, newFile, libName);
+    stage_02_spaces(*origin, *newFile);
+    saveState(origin, newFile);
     
 	// add reference to lua functions
-    //stage_03_lualib(*origin, *newFile);
-    //saveState(origin, newFile, libName);
+    stage_03_lualib(*origin, *newFile);
+    saveState(origin, newFile);
+
+    // compact words not reserved and not protected (and remote its index: '@')
+    stage_04_compct(*origin, *newFile);
+    
+    //fclose(*origin);
+    //*origin = fopen(libName, "r"); // final file (library)
+    
+    saveState(origin, newFile);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -190,13 +198,13 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 	int newWord = 1, funcID, tableID, subID;
 
 	while((cc = fgetc(origin)) != EOF){
+        // indexed with "@n"
+        if(protectedWords(origin, newFile, cc, 1)) continue;
+        
         memset(word, '\0', 15);
 		memset(subw, '\0', 15);
 
 		funcID = tableID = subID = -1;
-
-        // indexed with "@n"
-        if(protectedWords(origin, newFile, &cc, 1)) continue;
 
         // metamethods
         if(cc == '_'){
@@ -288,7 +296,76 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 	}
 }
 
+static void stage_04_compct(FILE *origin, FILE *newFile){
+        char reserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
+    
+    short finded; // ..reserved (or protected) word
+    char cc, word[9], protected[50];
+    FILE *buffers[4] = {libTool, libGlobal, libLocal, libFunc};
+
+    short t = 0;
+    char msg[10] = "OVERFLOW";
+    void call(char *n){t++; if(t >= 10000){ strcat(msg, n); perr(msg);}}
+
+    while((cc = fgetc(origin)) != EOF){
+        call("1");
+        // indexed with "@n"
+        if(protectedWords(origin, newFile, cc, 0)) continue;
+        
+        finded = 0;
+        memset(word, '\0', 9);
+
+        // valid string (init with a NaN)
+        if(firstChar(cc)){
+            fseek(origin, -1, SEEK_CUR);
+            fscanf(origin, "%9[a-zA-Z0-9_]", word);
+
+            // check lua keywords
+            for(int i = 0; i < 21; i++){
+                if(strcmp(word, reserved[i]) == 0){
+                    finded = 1;
+                    break;
+                }
+            }
+
+            // check library keywords
+            if(!finded){
+                // view all buffers
+                for(int i = 0; i < 4; i++){
+                    fseek(buffers[i], 0, SEEK_SET);
+
+                    // find in the list
+                    while(!feof(buffers[i])){
+                        call("2");
+                        memset(protected, '\0', sizeof(protected));
+                        fread(protected, sizeof(protected), 1, buffers[i]);
+
+                        if(strcmp(word, protected) == 0){
+                            finded = 1;
+                            break;
+                        }
+                    }
+                    // word finded
+                    if(finded) break;
+                }
+            }
+            // write word finded in buffer
+            if(finded){
+                fprintf(newFile, "%s", word);
+                continue;
+            }
+        }
+        // default: special characters and numbers
+        if(word[0] != '\0'){
+            fputc(word[0], newFile);
+            continue;
+        }
+        fputc(cc, newFile);
+    }
+}
+
 void cleanupWrite(void){
+    // by security
     fclose(libTool);
     fclose(libGlobal);
     fclose(libLocal);

@@ -32,8 +32,8 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-void saveState(FILE **origin, FILE **newFile, char *libName);
-int protectedWords(FILE *origin, FILE *newFile, char *cc, short printID);
+void saveState(FILE **origin, FILE **newFile);
+int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 void wordsBuffer(FILE *buffer, char *word);
 
 // write
@@ -41,6 +41,15 @@ void startProcess(FILE **origin, FILE **newFile, char *libName);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
 static void stage_02_spaces(FILE *origin, FILE *newFile);
 static void stage_03_lualib(FILE *origin, FILE *newFile);
+static void stage_04_compct(FILE *origin, FILE *newFile);
 void cleanupWrite(void);
+
+// jump protected words (@n word @n) and remove their indexes
+// get string (a-z; A-Z; 0-9; _)
+// jump strings started with number and null
+// if the getted string is valid ->
+// // check if the word is reserevd by LUA, if not, it will compacted, else it will not be.
+// else ->
+// // compact
 
 #endif

@@ -56,7 +56,7 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-void saveState(FILE **origin, FILE **newFile, char *libName){
+void saveState(FILE **origin, FILE **newFile){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
     long size = ftell(*newFile);
@@ -81,29 +81,31 @@ void saveState(FILE **origin, FILE **newFile, char *libName){
     *newFile = tmpfile();
 }
 
-int protectedWords(FILE *origin, FILE *newFile, char *cc, short printID){
-    char id;
+int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
+    //fseek(origin, -1, SEEK_CUR);
     
-    if(*cc == '@'){
+    char id;//, last = fgetc(origin);
+    
+    if(cc == '@'){
         id = fgetc(origin);
 
-        if(printID) fprintf(newFile, "%c%c", *cc, id);
+        if(printID) fprintf(newFile, "%c%c", cc, id);// else if(firstChar(last)) fputc(' ', newFile);
 
         while(1){
-            *cc = fgetc(origin);
+            cc = fgetc(origin);
 
-            if(*cc == '@'){
+            if(cc == '@'){
                 // check if it is the end
-                if((*cc = fgetc(origin)) == id){
-                    if(printID) fprintf(newFile, "@%c", *cc);
+                if((cc = fgetc(origin)) == id){
+                    //last = fgetc(origin); // *next
+                    if(printID) fprintf(newFile, "@%c", cc); //else if(firstChar(last)) fputc(' ', newFile);
                     break;
                 }
-                // it never write "@n"
                 continue;
             }
-            if(*cc == EOF) break;
+            if(cc == EOF) break;
 
-            fputc(*cc, newFile);
+            fputc(cc, newFile);
         }
         // if the conditions is true, they are protected words
         return 1;
@@ -113,35 +115,21 @@ int protectedWords(FILE *origin, FILE *newFile, char *cc, short printID){
 }
 
 void wordsBuffer(FILE *buffer, char *word){
-    short a = 0;
-    
     // buffer to store searched words
     char store[50];
 
     rewind(buffer);
 
     // searsh word in buffer
-    fprintf(stdout, "Current in the buffer:\n");
     while(fread(store, 50, 1, buffer) != 0){
-        a++;
-        if(a>=100) perr("OVERFLOW");
-
-        fprintf(stdout, "[%s] ; ", store);
         // check if the word already was writed in buffer
-        //if(strcmp(word, store) == 0) return;
+        if(strcmp(word, store) == 0) return;
     }
-    fputc('\n', stdout);
+
     // fill
     strcpy(store, word);
     for(int i = strlen(store); i <= sizeof(store); i++) store[i] = '\0';
 
     // save word
     fwrite(store, sizeof(store), 1, buffer);
-
-    fprintf(stdout, "Word passed:\n[%s]\n\n", store);
-
-    fprintf(stdout, "=====\nAll buffer:\n");
-    rewind(buffer);
-    while(fread(store, sizeof(store), 1, buffer) != 0) fprintf(stdout, "%s-", store);
-    fprintf(stdout, "\n=====\n\n");
 }
