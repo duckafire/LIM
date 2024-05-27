@@ -56,7 +56,7 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-void saveState(FILE **origin, FILE **newFile){
+void saveState(FILE **origin, FILE **newFile, char *libName){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
     long size = ftell(*newFile);
@@ -64,7 +64,7 @@ void saveState(FILE **origin, FILE **newFile){
 
     // clear and open to update
     fclose(*origin);
-    *origin = fopen(".limfile", "w");
+    *origin = fopen(libName, "w");
 
     // set and clear buffer
     char transfer[size];
@@ -77,19 +77,17 @@ void saveState(FILE **origin, FILE **newFile){
     // close and (re)open 
     fclose(*origin);
     fclose(*newFile);
-    *origin = fopen(".limfile", "r");
+    *origin = fopen(libName, "r");
     *newFile = tmpfile();
 }
 
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
-    //fseek(origin, -1, SEEK_CUR);
-    
-    char id;//, last = fgetc(origin);
+    char id;
     
     if(cc == '@'){
         id = fgetc(origin);
 
-        if(printID) fprintf(newFile, "%c%c", cc, id);// else if(firstChar(last)) fputc(' ', newFile);
+        if(printID) fprintf(newFile, "%c%c", cc, id);
 
         while(1){
             cc = fgetc(origin);
@@ -97,8 +95,7 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
             if(cc == '@'){
                 // check if it is the end
                 if((cc = fgetc(origin)) == id){
-                    //last = fgetc(origin); // *next
-                    if(printID) fprintf(newFile, "@%c", cc); //else if(firstChar(last)) fputc(' ', newFile);
+                    if(printID) fprintf(newFile, "@%c", cc);
                     break;
                 }
                 continue;

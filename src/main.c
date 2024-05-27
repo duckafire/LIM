@@ -119,7 +119,7 @@ void cleanupMain(void){
 	if(origin  != NULL) fclose(origin);
 	if(newFile != NULL) fclose(newFile);
 	if(libName != NULL) free(libName);
-    //remove(".limfile");
+    remove(".limfile");
     cleanupWrite();
 }
 

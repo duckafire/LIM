@@ -16,23 +16,19 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
-    saveState(origin, newFile);
+    saveState(origin, newFile, ".limfile");
 
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
     stage_02_spaces(*origin, *newFile);
-    saveState(origin, newFile);
+    saveState(origin, newFile, ".limfile");
     
 	// add reference to lua functions
     stage_03_lualib(*origin, *newFile);
-    saveState(origin, newFile);
+    saveState(origin, newFile, ".limfile");
 
     // compact words not reserved and not protected (and remote its index: '@')
     stage_04_compct(*origin, *newFile);
-    
-    //fclose(*origin);
-    //*origin = fopen(libName, "r"); // final file (library)
-    
-    saveState(origin, newFile);
+    saveState(origin, newFile, libName);
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){

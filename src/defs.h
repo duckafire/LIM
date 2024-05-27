@@ -32,7 +32,7 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-void saveState(FILE **origin, FILE **newFile);
+void saveState(FILE **origin, FILE **newFile, char *libName);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 void wordsBuffer(FILE *buffer, char *word);
 
