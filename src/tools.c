@@ -130,3 +130,73 @@ void wordsBuffer(FILE *buffer, char *word){
     // save word
     fwrite(store, sizeof(store), 1, buffer);
 }
+
+// referenceHead(refHead, NULL,     NULL, NULL, NULL);
+// referenceHead(refHead, *newFile, ----, NULL, libName);
+// referenceHead(refHead, *newFile, ----, ----, libName);
+void referencesHead(FILE *buffer, FILE *newFile, char *orgFunct, char *orgTable, char *reference, char *libName){
+    char *func[50], *refe[5];
+    
+    memset(func, '\0', 50);
+    memset(refe, '\0',  5);
+
+    fseek(buffer, 0, SEEK_SET);
+    
+    // add to buffer
+    if(newFile == NULL){
+        // get characters
+        if(orgTable != NULL){
+            strcpy(func, orgTable);
+            strcat(func, ".");
+        }
+        strcat(func, orgFunc);
+
+        // fill
+        for(int i = strlen(func); i < sizeof(func); i++) func[i] = '\0';
+        for(int i = strlen(refe); i < sizeof(refe); i++) refe[i] = '\0';
+
+        // check if its was already added
+        char getted[50];
+        while(!feof(buffer)){
+            memset(getted, '\0', 50);
+            fread(getted, sizeof(get), 1, buffer);
+            
+            if(strcmp(func, getted) == 0) return;
+
+            fseek(buffer, sizeof(refe), SEEK_CUR);
+        }
+
+        // add
+        fseek(buffer, 0, SEEK_END);
+        fwrite(func, sizeof(func), 1, buffer);
+        fwrite(refe, sizeof(refe), 1, buffer);
+
+        return;
+    }
+    
+    // add to final file (library)
+    fseek(newFile, 0, SEEK_SET);
+    
+    fprintf(newFile, "local %s={}\ndo local ", libName);
+
+    void add(char *name){
+        while(1){
+            memset(name, '\0', sizeof(name));
+
+            fread(name, sizeof(name), 1, buffer);
+
+            fprintf(newFile, "%s", name);
+            
+            if(!feof(buffer)){
+                fputs(', ', newFile);
+            }else{
+                break;
+            }
+        }
+    }
+
+    add(func);
+    add(refe)
+
+    fprintf(newFile, " end\n--local reference=%s", libName);
+}

@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-FILE *libTool, *libGlobal, *libLocal, *libFunc;
+FILE *libTool, *libGlobal, *libLocal, *libFunc, *refHead;
 
 void startProcess(FILE **origin, FILE **newFile, char *libName){
     *newFile  = tmpfile();
@@ -13,6 +13,7 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     libGlobal = tmpfile();
     libLocal  = tmpfile();
     libFunc   = tmpfile();
+    refHead   = tmpfile();
     
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
@@ -299,12 +300,7 @@ static void stage_04_compct(FILE *origin, FILE *newFile){
     char cc, word[9], protected[50];
     FILE *buffers[4] = {libTool, libGlobal, libLocal, libFunc};
 
-    short t = 0;
-    char msg[10] = "OVERFLOW";
-    void call(char *n){t++; if(t >= 10000){ strcat(msg, n); perr(msg);}}
-
     while((cc = fgetc(origin)) != EOF){
-        call("1");
         // indexed with "@n"
         if(protectedWords(origin, newFile, cc, 0)) continue;
         
@@ -332,7 +328,6 @@ static void stage_04_compct(FILE *origin, FILE *newFile){
 
                     // find in the list
                     while(!feof(buffers[i])){
-                        call("2");
                         memset(protected, '\0', sizeof(protected));
                         fread(protected, sizeof(protected), 1, buffers[i]);
 
@@ -366,4 +361,5 @@ void cleanupWrite(void){
     fclose(libGlobal);
     fclose(libLocal);
     fclose(libFunc);
+    fclose(refHead);
 }

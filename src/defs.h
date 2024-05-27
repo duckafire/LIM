@@ -35,6 +35,7 @@ int firstChar(char cc);
 void saveState(FILE **origin, FILE **newFile, char *libName);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 void wordsBuffer(FILE *buffer, char *word);
+void referencesHead(FILE *buffer, FILE *newFile, char *orgFunct, char *orgTable, char *reference, char *libName);
 
 // write
 void startProcess(FILE **origin, FILE **newFile, char *libName);
@@ -43,13 +44,5 @@ static void stage_02_spaces(FILE *origin, FILE *newFile);
 static void stage_03_lualib(FILE *origin, FILE *newFile);
 static void stage_04_compct(FILE *origin, FILE *newFile);
 void cleanupWrite(void);
-
-// jump protected words (@n word @n) and remove their indexes
-// get string (a-z; A-Z; 0-9; _)
-// jump strings started with number and null
-// if the getted string is valid ->
-// // check if the word is reserevd by LUA, if not, it will compacted, else it will not be.
-// else ->
-// // compact
 
 #endif
