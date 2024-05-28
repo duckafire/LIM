@@ -32,10 +32,11 @@ int ckFlag(char *word, char flags[][7]);
 void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
-void saveState(FILE **origin, FILE **newFile, char *libName);
+void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 void wordsBuffer(FILE *buffer, char *word);
-void referencesHead(FILE *buffer, FILE *newFile, char *orgFunct, char *orgTable, char *reference, char *libName);
+void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe);
+void declare(char *name, short jump);
 
 // write
 void startProcess(FILE **origin, FILE **newFile, char *libName);

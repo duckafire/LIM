@@ -56,7 +56,7 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
-void saveState(FILE **origin, FILE **newFile, char *libName){
+void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
     long size = ftell(*newFile);
@@ -66,6 +66,39 @@ void saveState(FILE **origin, FILE **newFile, char *libName){
     fclose(*origin);
     *origin = fopen(libName, "w");
 
+    // start "do" block and decalre references
+    if(buffer != NULL){
+        char func[15], refe[5];
+
+        // write references and its values
+        void declare(char *name, short jump){
+            while(1){
+                perr("tools.c: saveStage");
+                memset(name, '\0', sizeof(name));
+
+                if(jump == 1) fseek(buffer, 30, SEEK_CUR); // jump lua functions/table
+                if(fread(name, sizeof(name), 1, buffer) == 0) break;
+                if(jump == 2) fseek(buffer,  5, SEEK_CUR); // jump lim reference
+
+                fprintf(*newFile, "%s", name);
+                
+                if(!feof(buffer)){
+                    fputc(',', *newFile);
+                }else{
+                    break;
+                }
+            }
+        }
+        // package init
+        fseek(*newFile, 0, SEEK_SET);
+
+        fprintf(*newFile, "local %s={}\ndo local ", libName);
+
+        declare(refe, 1);
+        fputc('=', *newFile);
+        declare(func, 2);
+    }
+
     // set and clear buffer
     char transfer[size];
     memset(transfer, '\0', size);
@@ -73,6 +106,9 @@ void saveState(FILE **origin, FILE **newFile, char *libName){
     // copy file (binary to ASCII)
     fread(transfer, size, 1, *newFile);
     fprintf(*origin, "%s", transfer);
+
+    // close "do" block
+    if(buffer != NULL) fprintf(*newFile, " end\n--local reference=%s", libName);
     
     // close and (re)open 
     fclose(*origin);
@@ -131,72 +167,39 @@ void wordsBuffer(FILE *buffer, char *word){
     fwrite(store, sizeof(store), 1, buffer);
 }
 
-// referenceHead(refHead, NULL,     NULL, NULL, NULL);
-// referenceHead(refHead, *newFile, ----, NULL, libName);
-// referenceHead(refHead, *newFile, ----, ----, libName);
-void referencesHead(FILE *buffer, FILE *newFile, char *orgFunct, char *orgTable, char *reference, char *libName){
-    char *func[50], *refe[5];
-    
-    memset(func, '\0', 50);
-    memset(refe, '\0',  5);
+void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe){
+    // ORiGinal; "refe" size if 5
+    const short size = 30;
 
+    char func[size];
+    memset(func, '\0', size); // clear and "fill"
+
+    // get words
+    if(orgTable != NULL){
+        strcat(func, orgTable);
+        strcat(func, ".");
+    }
+    strcat(func, orgFunct);
+
+    // fill string of the reference
+    for(int i = strlen(refe); i < sizeof(refe); i++) refe[i] = '\0';
+
+    // check if its was already added
+    char getted[size];
     fseek(buffer, 0, SEEK_SET);
-    
-    // add to buffer
-    if(newFile == NULL){
-        // get characters
-        if(orgTable != NULL){
-            strcpy(func, orgTable);
-            strcat(func, ".");
-        }
-        strcat(func, orgFunc);
 
-        // fill
-        for(int i = strlen(func); i < sizeof(func); i++) func[i] = '\0';
-        for(int i = strlen(refe); i < sizeof(refe); i++) refe[i] = '\0';
+    while(!feof(buffer)){
+        perr("tools.c: refeBuffer");
+        memset(getted, '\0', size);
+        fread(getted, sizeof(getted), 1, buffer);
+        
+        if(strcmp(func, getted) == 0) return;
 
-        // check if its was already added
-        char getted[50];
-        while(!feof(buffer)){
-            memset(getted, '\0', 50);
-            fread(getted, sizeof(get), 1, buffer);
-            
-            if(strcmp(func, getted) == 0) return;
-
-            fseek(buffer, sizeof(refe), SEEK_CUR);
-        }
-
-        // add
-        fseek(buffer, 0, SEEK_END);
-        fwrite(func, sizeof(func), 1, buffer);
-        fwrite(refe, sizeof(refe), 1, buffer);
-
-        return;
-    }
-    
-    // add to final file (library)
-    fseek(newFile, 0, SEEK_SET);
-    
-    fprintf(newFile, "local %s={}\ndo local ", libName);
-
-    void add(char *name){
-        while(1){
-            memset(name, '\0', sizeof(name));
-
-            fread(name, sizeof(name), 1, buffer);
-
-            fprintf(newFile, "%s", name);
-            
-            if(!feof(buffer)){
-                fputs(', ', newFile);
-            }else{
-                break;
-            }
-        }
+        // jump reference
+        fseek(buffer, sizeof(refe), SEEK_CUR);
     }
 
-    add(func);
-    add(refe)
-
-    fprintf(newFile, " end\n--local reference=%s", libName);
+    // add
+    fwrite(func, sizeof(func), 1, buffer);
+    fwrite(refe, sizeof(refe), 1, buffer);
 }

@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-FILE *libTool, *libGlobal, *libLocal, *libFunc, *refHead;
+FILE *libTool, *libGlobal, *libLocal, *libFunc, *refeHead;
 
 void startProcess(FILE **origin, FILE **newFile, char *libName){
     *newFile  = tmpfile();
@@ -13,23 +13,25 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     libGlobal = tmpfile();
     libLocal  = tmpfile();
     libFunc   = tmpfile();
-    refHead   = tmpfile();
+    refeHead  = tmpfile();
+
+    perr("Infinite loop!");
     
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
-    saveState(origin, newFile, ".limfile");
+    saveState(origin, newFile, ".limfile", NULL);
 
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
     stage_02_spaces(*origin, *newFile);
-    saveState(origin, newFile, ".limfile");
+    saveState(origin, newFile, ".limfile", NULL);
     
 	// add reference to lua functions
     stage_03_lualib(*origin, *newFile);
-    saveState(origin, newFile, ".limfile");
+    saveState(origin, newFile, ".limfile", NULL);
 
     // compact words not reserved and not protected (and remote its index: '@')
     stage_04_compct(*origin, *newFile);
-    saveState(origin, newFile, libName);
+    saveState(origin, newFile, libName, refeHead); // insert library to a "do" block and declare references
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
@@ -189,7 +191,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 	};
 
 	// current character; current word; current sub-word
-	char cc = 'a', word[15], subw[15];
+	char cc = 'a', word[15], subw[15], refe[5];
 
     // booleans; indexes
 	int newWord = 1, funcID, tableID, subID;
@@ -200,6 +202,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
         
         memset(word, '\0', 15);
 		memset(subw, '\0', 15);
+        memset(refe, '\0',  5);
 
 		funcID = tableID = subID = -1;
 
@@ -267,13 +270,21 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 		
 		// only function
 		if(funcID != -1){
-            fprintf(newFile, "%s%c%d%s", ID2, toupper(word[0]), funcID, ID2);
+            sprintf(refe, "%c%d", toupper(word[0]), funcID);
+            
+            fprintf(newFile, "%s%s%s", ID2, refe, ID2);
+            
+            refeBuffer(refeHead, word, NULL, refe);
 			continue;
 		}
 
 		// table with function
 		if(tableID != -1 && subID != -1){
-			fprintf(newFile, "%s%c%c%d%s", ID3, toupper(word[0]), toupper(subw[0]), subID, ID3);
+			sprintf(refe, "%c%c%d", toupper(word[0]), toupper(subw[0]), subID);
+            
+            fprintf(newFile, "%s%c%c%d%s", ID3, refe, ID3);
+
+            refeBuffer(refeHead, subw, word, refe);
 			continue;
 		}
 
@@ -361,5 +372,5 @@ void cleanupWrite(void){
     fclose(libGlobal);
     fclose(libLocal);
     fclose(libFunc);
-    fclose(refHead);
+    fclose(refeHead);
 }

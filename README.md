@@ -6,6 +6,7 @@
 
 <div align="center">
     <a href=""> <img alt="Version status" src="https://img.shields.io/badge/Version%20status-beta-%23dd8800" /></a>
+    <a href=""> <img alt="License"        src="https://img.shields.io/badge/License-MIT-%23a61f82"           /></a>
     <a href=""> <img alt="Last release"   src="https://img.shields.io/badge/Last%20release-v0.0.0-%2325a319" /></a>
     <a href=""> <img alt="Tic80 API"      src="https://img.shields.io/badge/Tic80%20API-1.0.2164-blue"       /></a>
     <a href=""> <img alt="LUA version"    src="https://img.shields.io/badge/LUA%20version-5.4-%236d1993"     /></a>
