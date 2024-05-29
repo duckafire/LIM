@@ -89,7 +89,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 
 static void stage_02_spaces(FILE *origin, FILE *newFile){
     // current/future character; comment block
-    char cc, cf, cmt[3], lastAdded, lastLast;
+    char cc, cf, cmt[3], lastAdded, lastLast; // #5: before last added
 
     // it is a commentary; it is a inverted bar
     int isCmt, isInvBar;
@@ -148,7 +148,7 @@ static void stage_02_spaces(FILE *origin, FILE *newFile){
             continue;
 		}
         // spaces
-        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf) && (firstChar(lastAdded) || (isNum(lastAdded) && firstChar(lastLast)))){
+        if((cc == ' ' || cc == '\t' || cc == '\n') && fCharOrNum(cf) && fCharOrNum(lastAdded)){
            fputc(' ', newFile);
            lastLast = lastAdded;
            lastAdded = ' ';

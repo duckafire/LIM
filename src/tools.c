@@ -60,6 +60,10 @@ int isNum(char c){
     return (c >= 48 && c <= 57);
 }
 
+int fCharOrNum(char c){
+    return (firstChar(c) || isNum(c));
+}
+
 void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
@@ -125,14 +129,19 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
 int addSpace(FILE *origin){
     // ... 9 @ [0] @ 1 A B ...
-    char last, next;
+    char last = ' ', next;
 
-    fseek(origin, -2, SEEK_CUR);
-    // ... [9] @ 0 @ 1 A B ...
+    if(ftell(origin) == 1){
+        fseek(origin, 1, SEEK_CUR);
+        // ... 9 @ 0 [@] 1 A B ...
+    }else{
+        fseek(origin, -2, SEEK_CUR);
+        // ... [9] @ 0 @ 1 A B ...
 
-    last = fgetc(origin);
-    fseek(origin, 2, SEEK_CUR);
-    // ... 9 @ 0 [@] 1 A B ...
+        last = fgetc(origin);
+        fseek(origin, 2, SEEK_CUR);
+        // ... 9 @ 0 [@] 1 A B ...
+    }
 
     while(1){
         next = fgetc(origin);
@@ -147,7 +156,7 @@ int addSpace(FILE *origin){
     } 
     // ... 9 @ 0 @ 1 A [B] ...
 
-    fseek(origin, -4, SEEK_CUR);
+    fseek(origin, -2, SEEK_CUR);
     // ... 9 @ [0] @ 1 A B ...
 
     return ((firstChar(last) || isNum(last)) && firstChar(next));
@@ -157,7 +166,7 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
     char id;
 
     if(cc == '@'){
-        //if(addSpace(origin)) fputc(' ', newFile);
+        if(addSpace(origin)) fputc(' ', newFile);
 
         id = fgetc(origin);
 
@@ -167,7 +176,7 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
             cc = fgetc(origin);
 
             if(cc == '@'){
-                //if(addSpace(origin)) fputc(' ', newFile);
+                if(addSpace(origin)) fputc(' ', newFile);
                 // check if it is the end
                 if((cc = fgetc(origin)) == id){
                     if(printID) fprintf(newFile, "@%c", cc);

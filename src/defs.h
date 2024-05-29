@@ -33,6 +33,7 @@ void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
 int isNum(char c);
+int fCharOrNum(char c);
 void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer);
 int addSpace(FILE *origin);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
