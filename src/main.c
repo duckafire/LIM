@@ -63,7 +63,7 @@ static void messages(int flag){
 
 	// help
 	if(flag == 2){
-		pout(27, 
+		pout(25, 
 			"[ LIM - Infomations ]",
 			" ",
 			"[!] Flags [!]",
@@ -83,11 +83,9 @@ static void messages(int flag){
 			"2. Variables and tables declared with \"local\" (or \"_G.\"),",
 			"   that start in the beginning of the line, they will not be",
 			"   compacted.",
-			"3. All words (except the reseved) prefixed by tabulations or",
-			"   space, they will be compacted.",
-			"4. Do not create strings with '[[  ]]' ",
-            "5. Do not ise '@' in code (reserved words). ",
-            "6. Variable and table names cannot finish with two numbers",
+			"3. Do not create strings with '[[  ]]' ",
+            "4. Do not ise '@' in code (reserved words). ",
+            "5. Variable and table names cannot finish with two numbers",
             "   followed (e.g.: `car12` -> car12_).",
             " ",
 			"[ LIM - Infomations ]"

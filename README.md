@@ -37,7 +37,7 @@ that's why it have support to the [Tic80 API](https://github.com/nesbox/TIC-80/w
 
 <br>
 
-## Structure
+## Structures
 * `lim [-v; -h]`
 * `lim [-r] <origin>.lua [libName]`
 

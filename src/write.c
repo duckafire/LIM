@@ -15,8 +15,6 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     libFunc   = tmpfile();
     refeHead  = tmpfile();
 
-    perr("Infinite loop!");
-    
     // add funcions to library; add indexes to protect words
 	stage_01_define(*origin, *newFile, libName);
     saveState(origin, newFile, ".limfile", NULL);
@@ -84,8 +82,8 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
 		}
 
 		qtt = 0;
-		while((cc = fgetc(origin)) != '\n'){
-			qtt++;
+		while((cc = fgetc(origin)) != '\n' && cc != EOF){
+            qtt++;
 			fputc(cc, newFile);
 		}
 		if(qtt > 0) fputc('\n', newFile);
@@ -156,7 +154,7 @@ static void stage_02_spaces(FILE *origin, FILE *newFile){
             continue;
 		}
         // spaces
-        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf) && (firstChar(lastAdded) || (lastAdded >= 48 && lastAdded <= 57 && firstChar(lastLast)))){
+        if((cc == ' ' || cc == '\t' || cc == '\n') && firstChar(cf) && (firstChar(lastAdded) || (isNum(lastAdded) && firstChar(lastLast)))){
            fputc(' ', newFile);
            lastLast = lastAdded;
            lastAdded = ' ';
@@ -266,12 +264,12 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 			}
 		}
 		// finded end of the last word
-		if(!firstChar(cc) || (cc >= 48 && cc <= 57) || cc == '_') newWord = 1;
+		if(!firstChar(cc) || isNum(cc) || cc == '_') newWord = 1;
 		
 		// only function
 		if(funcID != -1){
-            sprintf(refe, "%c%d", toupper(word[0]), funcID);
-            
+            sprintf(refe, "%c%d\0", toupper(word[0]), funcID);
+
             fprintf(newFile, "%s%s%s", ID2, refe, ID2);
             
             refeBuffer(refeHead, word, NULL, refe);
@@ -280,9 +278,9 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 
 		// table with function
 		if(tableID != -1 && subID != -1){
-			sprintf(refe, "%c%c%d", toupper(word[0]), toupper(subw[0]), subID);
-            
-            fprintf(newFile, "%s%c%c%d%s", ID3, refe, ID3);
+			sprintf(refe, "%c%c%d\0", toupper(word[0]), toupper(subw[0]), subID);
+
+            fprintf(newFile, "%s%s%s", ID3, refe, ID3);
 
             refeBuffer(refeHead, subw, word, refe);
 			continue;

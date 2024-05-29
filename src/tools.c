@@ -56,6 +56,10 @@ int firstChar(char c){
     return (c == '_' || (c >= 65 && c <= 90) || (c >= 97 && c <= 122));
 }
 
+int isNum(char c){
+    return (c >= 48 && c <= 57);
+}
+
 void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
@@ -73,29 +77,27 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
         // write references and its values
         void declare(char *name, short jump){
             while(1){
-                perr("tools.c: saveStage");
                 memset(name, '\0', sizeof(name));
 
                 if(jump == 1) fseek(buffer, 30, SEEK_CUR); // jump lua functions/table
                 if(fread(name, sizeof(name), 1, buffer) == 0) break;
+                printf("\n\n%s\n\n", name);
                 if(jump == 2) fseek(buffer,  5, SEEK_CUR); // jump lim reference
 
-                fprintf(*newFile, "%s", name);
+                fprintf(*origin, "%s", name);
                 
                 if(!feof(buffer)){
-                    fputc(',', *newFile);
+                    fputc(',', *origin);
                 }else{
                     break;
                 }
             }
         }
         // package init
-        fseek(*newFile, 0, SEEK_SET);
-
-        fprintf(*newFile, "local %s={}\ndo local ", libName);
+        fprintf(*origin, "local %s={}\ndo local ", libName);
 
         declare(refe, 1);
-        fputc('=', *newFile);
+        fputc('=', *origin);
         declare(func, 2);
     }
 
@@ -106,10 +108,19 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     // copy file (binary to ASCII)
     fread(transfer, size, 1, *newFile);
     fprintf(*origin, "%s", transfer);
+    printf("%s\n\n\n", transfer);
 
     // close "do" block
-    if(buffer != NULL) fprintf(*newFile, " end\n--local reference=%s", libName);
-    
+    if(buffer != NULL){        
+        // remove extension of the library name
+        int len = strlen(libName) - 8;
+        char lib[len];
+        memset(lib, '\0', len);
+        for(int i = 0; i < len; i++) lib[i] = libName[i];
+        
+        fprintf(*origin, " end\n--local reference=%s", lib);
+    }
+
     // close and (re)open 
     fclose(*origin);
     fclose(*newFile);
@@ -117,10 +128,42 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     *newFile = tmpfile();
 }
 
+int addSpace(FILE *origin){
+    // ... 9 @ [0] @ 1 A B ...
+    char last, next;
+
+    fseek(origin, -2, SEEK_CUR);
+    // ... [9] @ 0 @ 1 A B ...
+
+    last = fgetc(origin);
+    fseek(origin, 2, SEEK_CUR);
+    // ... 9 @ 0 [@] 1 A B ...
+
+    while(1){
+        next = fgetc(origin);
+        // ... 9 @ 0 @ [1] A B ...
+
+        if(next == '@'){
+            fseek(origin, 1, SEEK_CUR);
+            // ... 9 @ 0 @ 1 [A] B ...
+            continue;
+        }
+        break;
+    } 
+    // ... 9 @ 0 @ 1 A [B] ...
+
+    fseek(origin, -4, SEEK_CUR);
+    // ... 9 @ [0] @ 1 A B ...
+
+    return ((firstChar(last) || isNum(last)) && firstChar(next));
+}
+
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
     char id;
-    
+
     if(cc == '@'){
+        //if(addSpace(origin)) fputc(' ', newFile);
+
         id = fgetc(origin);
 
         if(printID) fprintf(newFile, "%c%c", cc, id);
@@ -129,6 +172,7 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
             cc = fgetc(origin);
 
             if(cc == '@'){
+                //if(addSpace(origin)) fputc(' ', newFile);
                 // check if it is the end
                 if((cc = fgetc(origin)) == id){
                     if(printID) fprintf(newFile, "@%c", cc);
@@ -168,8 +212,8 @@ void wordsBuffer(FILE *buffer, char *word){
 }
 
 void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe){
-    // ORiGinal; "refe" size if 5
     const short size = 30;
+    const short sizf = 5;
 
     char func[size];
     memset(func, '\0', size); // clear and "fill"
@@ -182,24 +226,22 @@ void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe){
     strcat(func, orgFunct);
 
     // fill string of the reference
-    for(int i = strlen(refe); i < sizeof(refe); i++) refe[i] = '\0';
+    for(int i = strlen(refe); i < sizf; i++) refe[i] = '\0';
 
     // check if its was already added
     char getted[size];
     fseek(buffer, 0, SEEK_SET);
 
     while(!feof(buffer)){
-        perr("tools.c: refeBuffer");
         memset(getted, '\0', size);
-        fread(getted, sizeof(getted), 1, buffer);
+        if(fread(getted, sizeof(getted), 1, buffer) == 0) break;
         
         if(strcmp(func, getted) == 0) return;
 
         // jump reference
-        fseek(buffer, sizeof(refe), SEEK_CUR);
+        fseek(buffer, sizf, SEEK_CUR);
     }
-
     // add
-    fwrite(func, sizeof(func), 1, buffer);
-    fwrite(refe, sizeof(refe), 1, buffer);
+    fwrite(func, size, 1, buffer);
+    fwrite(refe, sizf, 1, buffer);
 }
