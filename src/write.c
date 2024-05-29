@@ -7,7 +7,7 @@
 
 FILE *libTool, *libGlobal, *libLocal, *libFunc, *refeHead;
 
-void startProcess(FILE **origin, FILE **newFile, char *libName){
+void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
     *newFile  = tmpfile();
     libTool   = tmpfile();
     libGlobal = tmpfile();
@@ -16,34 +16,28 @@ void startProcess(FILE **origin, FILE **newFile, char *libName){
     refeHead  = tmpfile();
 
     // add funcions to library; add indexes to protect words
-	stage_01_define(*origin, *newFile, libName);
-    saveState(origin, newFile, ".limfile", NULL);
+	stage_01_define(*origin, *newFile, libNoExt);
+    saveState(origin, newFile, ".limfile", NULL, NULL);
 
     // protect strings; remove tabulations, unnecessary spaces, tabulations and line feed
     stage_02_spaces(*origin, *newFile);
-    saveState(origin, newFile, ".limfile", NULL);
+    saveState(origin, newFile, ".limfile", NULL, NULL);
     
 	// add reference to lua functions
     stage_03_lualib(*origin, *newFile);
-    saveState(origin, newFile, ".limfile", NULL);
+    saveState(origin, newFile, ".limfile", NULL, NULL);
 
     // compact words not reserved and not protected (and remote its index: '@')
     stage_04_compct(*origin, *newFile);
-    saveState(origin, newFile, libName, refeHead); // insert library to a "do" block and declare references
+    saveState(origin, newFile, libName, libNoExt, refeHead); // pack and references
 }
 
-static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
+static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 	char init[6], func[50], cc;
 	int qtt = 0;
 
 	memset(init, '\0',  6); // local/_G
 	memset(func, '\0', 50); // "function" and its name
-
-	// remove extension of the library name
-	int len = strlen(libName) - 8;
-	char lib[len];
-	memset(lib, '\0', len);
-	for(int i = 0; i < len; i++) lib[i] = libName[i];
 
 	// get local/_G
 	while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
@@ -58,7 +52,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libName){
                 memset(func, '\0', 50);
 				fscanf(origin, "%50[^(]", func);
 
-				fprintf(newFile, "%s%s.%s=function%s", ID0, lib, func, ID0);
+				fprintf(newFile, "%s%s.%s=function%s", ID0, libNoExt, func, ID0);
                 wordsBuffer(libTool, func);
 			}else{
                 // remove spaces

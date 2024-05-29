@@ -21,7 +21,7 @@ void cleanupMain(void);
 
 // arg.c
 int getFlags(int argc, char *argv[]);
-char *checkArgs(int argc, char *argv[], short replace);
+void checkArgs(int argc, char *argv[], short replace, char **libName, char **libNoExt);
 void argValid(char *argv);
 
 // tools
@@ -33,7 +33,7 @@ void fileChar(char *_cc, char *_cf, FILE *origin);
 void clearSpace(FILE *file);
 int firstChar(char cc);
 int isNum(char c);
-void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer);
+void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer);
 int addSpace(FILE *origin);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 void wordsBuffer(FILE *buffer, char *word);
@@ -41,8 +41,8 @@ void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe);
 void declare(char *name, short jump);
 
 // write
-void startProcess(FILE **origin, FILE **newFile, char *libName);
-static void stage_01_define(FILE *origin, FILE *newFile, char *libName);
+void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt);
+static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt);
 static void stage_02_spaces(FILE *origin, FILE *newFile);
 static void stage_03_lualib(FILE *origin, FILE *newFile);
 static void stage_04_compct(FILE *origin, FILE *newFile);

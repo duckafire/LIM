@@ -5,7 +5,7 @@
 #include "defs.h"
 
 FILE *origin = NULL, *newFile = NULL;    
-char *libName = NULL;
+char *libName = NULL, *libNoExt = NULL;
 
 int main(int argc, char *argv[]){
     // ADD TO CLEANUP
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
 
 	char *oriName;    
     oriName = argv[1];
-	libName = checkArgs(argc, argv, flag);
+	checkArgs(argc, argv, flag, &libName, &libNoExt);
 	
 	if(flag == 3) oriName = argv[2];
 	
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 	if(newFile != NULL && flag != 3) perr("Already exist a \"limfile\" with name");
 	if(newFile != NULL) fclose(newFile);
 
-	startProcess(&origin, &newFile, libName);
+    startProcess(&origin, &newFile, libName, libNoExt);
 
 	return 0;
 }
@@ -114,9 +114,10 @@ void copyOrigin(void){
 }
 
 void cleanupMain(void){
-	if(origin  != NULL) fclose(origin);
-	if(newFile != NULL) fclose(newFile);
-	if(libName != NULL) free(libName);
+	if(origin   != NULL) fclose(origin);
+	if(newFile  != NULL) fclose(newFile);
+	if(libName  != NULL) free(libName);
+	if(libNoExt != NULL) free(libNoExt);
     remove(".limfile");
     cleanupWrite();
 }

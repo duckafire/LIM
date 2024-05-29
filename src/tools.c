@@ -60,10 +60,10 @@ int isNum(char c){
     return (c >= 48 && c <= 57);
 }
 
-void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
+void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer){
     // get file lenght
     fseek(*newFile, 0, SEEK_END);
-    long size = ftell(*newFile);
+    const long size = ftell(*newFile);
     fseek(*newFile, 0, SEEK_SET);
 
     // clear and open to update
@@ -73,7 +73,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     // start "do" block and decalre references
     if(buffer != NULL){
         char func[15], refe[5];
-
+        
         // write references and its values
         void declare(char *name, short jump){
             while(1){
@@ -81,7 +81,9 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
 
                 if(jump == 1) fseek(buffer, 30, SEEK_CUR); // jump lua functions/table
                 if(fread(name, sizeof(name), 1, buffer) == 0) break;
-                printf("\n\n%s\n\n", name);
+                
+                printf("Ref.: %s\n-----\n\n", name);
+                
                 if(jump == 2) fseek(buffer,  5, SEEK_CUR); // jump lim reference
 
                 fprintf(*origin, "%s", name);
@@ -94,11 +96,12 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
             }
         }
         // package init
-        fprintf(*origin, "local %s={}\ndo local ", libName);
+        fprintf(*origin, "local %s={}\ndo local ", libNoExt);
 
         declare(refe, 1);
         fputc('=', *origin);
         declare(func, 2);
+        fputc(' ', *origin);
     }
 
     // set and clear buffer
@@ -111,15 +114,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, FILE *buffer){
     printf("%s\n\n\n", transfer);
 
     // close "do" block
-    if(buffer != NULL){        
-        // remove extension of the library name
-        int len = strlen(libName) - 8;
-        char lib[len];
-        memset(lib, '\0', len);
-        for(int i = 0; i < len; i++) lib[i] = libName[i];
-        
-        fprintf(*origin, " end\n--local reference=%s", lib);
-    }
+    if(buffer != NULL) fprintf(*origin, " end\n--local reference=%s", libNoExt);
 
     // close and (re)open 
     fclose(*origin);

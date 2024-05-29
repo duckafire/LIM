@@ -20,7 +20,7 @@ int getFlags(int argc, char *argv[]){
 	return -1;
 }
 
-char *checkArgs(int argc, char *argv[], short replace){
+void checkArgs(int argc, char *argv[], short replace, char **libName, char **libNoExt){
 	// origin; libName (+1); quantity of arguments expected - all with "-r"
 	short argID = 1;
 	if(replace == 3) argID = 2; // without "-r"
@@ -35,22 +35,27 @@ char *checkArgs(int argc, char *argv[], short replace){
 	}
 
 	// libName: specified; not specified
-	int add = 8;
+	short add = 8;
 	if(argc == argID + 1){
 		argID--;
 		add = 4;
 	}
 
-	int len = strlen(argv[argID + 1]) + add;
-    char *name = malloc(len);
-	memset(name, '\0', len);
+	const short len = strlen(argv[argID + 1]) + add;
+    char *name, *noExt;
+    name  = malloc(len);
+	noExt = malloc(len);
+    memset(name,  '\0', len);
+    memset(noExt, '\0', len);
 
 	strcpy(name, argv[argID + 1]);
 	if(add == 4) name[len - 8] = '\0';
-	strcat(name, ".limfile");
+	strcpy(noExt, name);
+    strcat(name, ".limfile");
 
-    // this pointer is returned to "libName", then it will be free in "main.c"
-	return name;
+    // it will be free in "main.c"
+    *libName  = name;
+    *libNoExt = noExt;
 }
 
 void argValid(char *argv){
