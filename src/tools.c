@@ -122,6 +122,41 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
     // copy file (binary to ASCII)
     fread(transfer, size, 1, *newFile);
+   
+    // remove trash in final of file
+    if(buffer != NULL){
+        short endFinded = 0;
+        char signature[10] = "[#E#N#D#]";
+
+        for(int i = sizeof(transfer); i > 0; i--){
+            if(transfer[i] == ']'){
+                
+                if(transfer[i - 8] == '['){
+                    endFinded = 1;
+                    
+                    // check all character of the word finded    
+                    for(int j = 0; j < 9; j - j++){ // do not check '\0'{
+                        if(signature[j] != transfer[i - 8 + j]){
+                            endFinded = 0;
+                            break; // only j1
+                        }
+                    }
+
+                    // clear trash
+                    if(endFinded == 1){
+                        for(int j = i - 8; j <= sizeof(transfer); j++) transfer[j] = '\0';
+                        endFinded = 2;
+                        break;    
+                    }
+                    
+                    // break i
+                    if(endFinded == 2) break;
+                }
+
+            }
+        }
+    }
+    
     fprintf(*origin, "%s", transfer);
     printf("%s\n\n\n", transfer);
 

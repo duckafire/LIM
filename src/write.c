@@ -40,7 +40,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 	memset(func, '\0', 50); // "function" and its name
 
 	// get local/_G
-	while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
+    while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
         if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
 			clearSpace(origin);
 			// get function reservad word
@@ -74,8 +74,8 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 		}else{
 			fseek(origin, -strlen(init), SEEK_CUR);
 		}
-
-		qtt = 0;
+		
+        qtt = 0;
 		while((cc = fgetc(origin)) != '\n' && cc != EOF){
             qtt++;
             fputc(cc, newFile);
@@ -85,6 +85,8 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 		memset(init, '\0',  6);
 		memset(func, '\0', 50);
 	}
+    // signature
+    fputs("\n[#E#N#D#]", newFile); // end of file
 }
 
 static void stage_02_spaces(FILE *origin, FILE *newFile){
