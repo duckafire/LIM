@@ -20,6 +20,19 @@ void pout(int qtt, ...){
 	exit(0);
 }
 
+void bprintf(FILE *newFile, short qtt, ...){
+    char *current;
+    va_list text;
+    va_start(text, qtt);
+    
+    for(int i = 0; i < qtt; i++){
+        current = va_arg(text, char*);
+        fwrite(current, strlen(current), 1, newFile);
+    }
+
+    va_end(text);
+}
+
 void ckChar(char *word, char *blocked){
 	for(int i = 0; i < strlen(word); i++){
 		for(int j = 0; j < strlen(blocked); j++){
@@ -76,40 +89,35 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
     // start "do" block and decalre references
     if(buffer != NULL){
-        char func[15], refe[5];
-        
-        // write references and its values
-        void declare(char *name, short jump){
-            while(1){
-                memset(name, '\0', sizeof(name));
+        char func[30], refe[5];
 
-                if(jump == 1) fseek(buffer, 30, SEEK_CUR); // jump lua functions/table
-                if(fread(name, sizeof(name), 1, buffer) == 0) break;
-                
-                printf("Ref.: %s\n-----\n\n", name);
-                
-                if(jump == 2) fseek(buffer,  5, SEEK_CUR); // jump lim reference
-
-                fprintf(*origin, "%s", name);
-                
-                if(!feof(buffer)){
-                    fputc(',', *origin);
-                }else{
-                    break;
-                }
-            }
-        }
         // package init
         fprintf(*origin, "local %s={}\ndo local ", libNoExt);
 
-        declare(refe, 1);
+        // variables
+        fseek(buffer, 0, SEEK_SET);
+        while(1){
+            fseek(buffer, sizeof(func), SEEK_CUR);
+            fread(refe, sizeof(refe), 1, buffer);
+            if(feof(buffer)) break;
+            fprintf(*origin, "%s,", refe);
+        }
+        fseek(*origin, -1, SEEK_CUR); // remove last ','
         fputc('=', *origin);
-        declare(func, 2);
+        
+        // values
+        fseek(buffer, 0, SEEK_SET);
+        while(1){
+            fread(func, sizeof(func), 1, buffer);
+            if(feof(buffer)) break;
+            fseek(buffer, sizeof(refe), SEEK_CUR);
+            fprintf(*origin, "%s,", func);
+        }
+        fseek(*origin, -1, SEEK_CUR); // remove last ','
         fputc(' ', *origin);
     }
-
     // set and clear buffer
-    char transfer[size];
+    char transfer[size + 5];
     memset(transfer, '\0', size);
 
     // copy file (binary to ASCII)
@@ -128,12 +136,14 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 }
 
 int addSpace(FILE *origin){
-    // ... 9 @ [0] @ 1 A B ...
-    char last = ' ', next;
+    // ... @ [0] ...
+    char last, next;
 
     if(ftell(origin) == 1){
         fseek(origin, 1, SEEK_CUR);
-        // ... 9 @ 0 [@] 1 A B ...
+        // @ 0 [A] B...
+
+        last = '#'; // any
     }else{
         fseek(origin, -2, SEEK_CUR);
         // ... [9] @ 0 @ 1 A B ...
@@ -153,7 +163,7 @@ int addSpace(FILE *origin){
             continue;
         }
         break;
-    } 
+    }
     // ... 9 @ 0 @ 1 A [B] ...
 
     fseek(origin, -2, SEEK_CUR);
@@ -166,7 +176,7 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
     char id;
 
     if(cc == '@'){
-        if(addSpace(origin)) fputc(' ', newFile);
+        if(!printID && addSpace(origin)) fputc(' ', newFile);
 
         id = fgetc(origin);
 
@@ -176,7 +186,6 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
             cc = fgetc(origin);
 
             if(cc == '@'){
-                if(addSpace(origin)) fputc(' ', newFile);
                 // check if it is the end
                 if((cc = fgetc(origin)) == id){
                     if(printID) fprintf(newFile, "@%c", cc);

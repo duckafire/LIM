@@ -78,7 +78,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 		qtt = 0;
 		while((cc = fgetc(origin)) != '\n' && cc != EOF){
             qtt++;
-			fputc(cc, newFile);
+            fputc(cc, newFile);
 		}
 		if(qtt > 0) fputc('\n', newFile);
 
@@ -155,7 +155,7 @@ static void stage_02_spaces(FILE *origin, FILE *newFile){
            continue;
         }
         // others
-        if(cc >= 32 && cc != ' '){
+        if(cc >= 32 && cc != 127 && cc != ' '){
             fputc(cc, newFile);
             lastLast = lastAdded;
             lastAdded = cc;
@@ -191,7 +191,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 	while((cc = fgetc(origin)) != EOF){
         // indexed with "@n"
         if(protectedWords(origin, newFile, cc, 1)) continue;
-        
+
         memset(word, '\0', 15);
 		memset(subw, '\0', 15);
         memset(refe, '\0',  5);
