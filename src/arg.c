@@ -59,10 +59,11 @@ void checkArgs(int argc, char *argv[], short replace, char **libName, char **lib
 }
 
 void argValid(char *argv){
-    // file name
-    if(isNum(argv[0])) perr("Invalid first caracter. Only letters");
-
+    char blocked[10] = "/\\:*?\"<>";
+    
     for(int i = 0; i < strlen(argv); i++){
-        if(!firstChar(argv[i]) || !isNum(argv[i])) perr("Invalid character finded. Use only letters, numbers or underline.");
+        for(int j = 0; j < strlen(blocked); j++){
+            if(argv[i] == blocked[j]) perr("Invalid character finded.");
+        }
     }
 }

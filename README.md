@@ -18,9 +18,12 @@ libraries in a format nicknamed of "local package".
 <br>
 
 ## Topic
-* [More about](#moreabout)
-  * [How it workd](#howitwork)
-  * [*"Local package"*](#localpackage)
+* [More-about](#moreabout)
+  * [How-it-work](#howitwork)
+  * [Local-package](#localpackage)
+* [INSTALL](#install)
+  * [Windows](#windows)
+  * [Linux](#linux)
 * [Flags](#flags)
 * [Structure](#structure)
 * [Rules](#rules)
@@ -31,9 +34,9 @@ libraries in a format nicknamed of "local package".
 
 <br>
 
-## More about
+## More-about
 
-#### How it work
+#### How-it-work
 
 LIM creates a copy of the LUA file passed as an argument and applies a series of rules to it. They are:
 
@@ -47,7 +50,7 @@ of the library.
 
 At the end of this process, both codes will be equivalent.
 
-#### *"Local package"*
+#### Local-package
 
 This term refers to the fact that the final product, created by LIM, it should be implemented on file in that
 it will be used, that is, libraries compacted by LIM should copied to the inside of the program files that
@@ -57,6 +60,29 @@ This feature of the libraries created by LIM is due to the fact that, it was cre
 facilitating the compacting of libraries for the Tic80 Tiny Computer, especially the libraries present in
 the project TinyLibrary. Already that the Tic80 have not have good support for external libraries, the direct
 implementation of the code turns out to be the best option.
+
+<br>
+
+## Install
+
+#### Windows
+
+``` makefile
+# compile
+make
+
+# manually add to environment path
+```
+
+#### Linux
+
+``` makeFile
+# compile ("make" also work)
+make install
+
+# remove
+make uninstall
+```
 
 <br>
 

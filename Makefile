@@ -1,5 +1,6 @@
 # USE:	gcc,	make
 CC = @gcc
+EC = @echo - LIM was
 
 
 # files
@@ -10,39 +11,37 @@ F_FINAL = $(addsuffix .c, $(F_EXTEN))
 
 # linux
 L_ERRO = @echo Invalid target to Windows. Use only ´make´
-L_PATH = ~/bin
+L_PATH = /bin/lim
 
 
 # windows x linux
-PRE_PROGRAM = ./bin/lim
 OS = $(shell uname)
 
 ifeq ($(OS), Winwods_NT)
-	PROGRAM = $(addsuffix .exe, $(PRE_PROGRAM))
+	PRE_PROGRAM = $(addsuffix .exe, $(L_PATH))
+	L_ADD = $(L_ERRO)
+	L_SUB = $(L_ERRO)
 else
-	PROGRAM = $(PRE_PROGRAM)
+	PRE_PROGRAM = $(L_PATH)
+	L_ADD = @cp $< $(PRE_PROGRAM)
+	L_SUB = @rm $^
 endif
 
 
-# main
-all:	$(PROGRAM)
+# executable
+PROGRAM = $(addprefix ., $(PRE_PROGRAM))
 
 
-# only linux
+# targets
+all:	$(F_FINAL)
+	$(CC) $^ -o $(PROGRAM) -I./src
+	$(EC) compiled to ./bin
+
 install:	$(PROGRAM)
-	ifeq ($(OS), Linux)
-		@cp $< $(L_PATH)
-	else
-		L_ERRO
-	endif
+	$(L_ADD)
+	$(EC) added to /bin
 
-uninstall:	$(L_PATH) $(PROGRAM)
-	ifeq ($(OS), Linux)
-		@rm $</$(PROGRAM)
-	else
-		L_ERRO
-	endif
+uninstall:	$(PRE_PROGRAM)
+	$(L_SUB)
+	$(EC) removed to /bin
 
-# compile to program
-$(PROGRAM):	$(F_FINAL)
-	$(CC) $^ -o $@ -I./src

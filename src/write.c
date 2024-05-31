@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-FILE *libTool, *libGlobal, *libLocal, *libFunc, *refeHead;
+FILE *libTool = NULL, *libGlobal, *libLocal, *libFunc, *refeHead;
 
 void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
     *newFile  = tmpfile();
@@ -362,9 +362,11 @@ static void stage_04_compct(FILE *origin, FILE *newFile){
 
 void cleanupWrite(void){
     // by security
-    fclose(libTool);
-    fclose(libGlobal);
-    fclose(libLocal);
-    fclose(libFunc);
-    fclose(refeHead);
+    if(libTool != NULL){
+        fclose(libTool);
+        fclose(libGlobal);
+        fclose(libLocal);
+        fclose(libFunc);
+        fclose(refeHead);
+    }
 }
