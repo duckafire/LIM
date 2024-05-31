@@ -5,21 +5,22 @@
 <br>
 
 <div align="center">
-    <a href=""> <img alt="Version status" src="https://img.shields.io/badge/Version%20status-beta-%23dd8800" /></a>
+    <a href=""> <img alt="Last release"   src="https://img.shields.io/badge/Last%20release-v0.1.0-%2325a319" /></a>
     <a href=""> <img alt="License"        src="https://img.shields.io/badge/License-MIT-%23a61f82"           /></a>
-    <a href=""> <img alt="Last release"   src="https://img.shields.io/badge/Last%20release-v0.0.0-%2325a319" /></a>
-    <a href=""> <img alt="Tic80 API"      src="https://img.shields.io/badge/Tic80%20API-1.0.2164-blue"       /></a>
     <a href=""> <img alt="LUA version"    src="https://img.shields.io/badge/LUA%20version-5.4-%236d1993"     /></a>
+    <a href=""> <img alt="Tic80 API"      src="https://img.shields.io/badge/Tic80%20API-1.0.2164-blue"       /></a>
 </div>
 
 ## Description
-**L**ua l**i**brary co**m**pactor is a small terminal program, created to compact [LUA](https://lua.org "LUA official site") libraries, in a *"local package"*. <br>
-It was created to easily the compact process of the [TinyLibrary](https://github.com/duckafire/TinyLibrary "Tic80 project") libraries,
-that's why it have support to the [Tic80 API](https://github.com/nesbox/TIC-80/wiki/api "Tic80 official wiki").
+**Lua** L**i**brary Co**m**pactor is a small terminal program, created for to easily the compaction of LUA
+libraries in a format nicknamed of "local package".
 
 <br>
 
 ## Topic
+* [More about](#moreabout)
+  * [How it workd](#howitwork)
+  * [*"Local package"*](#localpackage)
 * [Flags](#flags)
 * [Structure](#structure)
 * [Rules](#rules)
@@ -30,9 +31,38 @@ that's why it have support to the [Tic80 API](https://github.com/nesbox/TIC-80/w
 
 <br>
 
+## More about
+
+#### How it work
+
+LIM creates a copy of the LUA file passed as an argument and applies a series of rules to it. They are:
+
+* Creation of a "mother table" for library functions.
+* Protection to the strings, to the keywords, and to the names of variables, tables and functions "global"
+of the library.
+* Remotion of unnecessary spaces, comments, tabulations and line breaks.
+* Abbreviation of the name of variables and tables "local" in the library (`name` -> `n`).
+* Isolation of the library environment through the use of a ´do´ block.
+* Reduced to one of the quantity of lines busy by the library.
+
+At the end of this process, both codes will be equivalent.
+
+#### *"Local package"*
+
+This term refers to the fact that the final product, created by LIM, it should be implemented on file in that
+it will be used, that is, libraries compacted by LIM should copied to the inside of the program files that
+will used them, instead of being added to external files.
+
+This feature of the libraries created by LIM is due to the fact that, it was created with the intention of
+facilitating the compacting of libraries for the Tic80 Tiny Computer, especially the libraries present in
+the project TinyLibrary. Already that the Tic80 have not have good support for external libraries, the direct
+implementation of the code turns out to be the best option.
+
+<br>
+
 ## Flags
 * `-v`: Print the running version and the license.
-* `-h`: Print informations about LIM. 
+* `-h`: Print informations about LIM.
 * `-r`: Force the replacement of an already existing library, if its name is equal to the `[libName].limfile`.
 
 <br>
@@ -68,13 +98,13 @@ local function operation(value, Value, id, _debug)
         -- in tic80
         -- trace(value.."\n"..Value.."\n"..tostring(id).."\n"..tostring(debug), 4)
     end
-    
+  
     -- save last index
     if id then last = id end
-    
+  
     -- get value to id
     id = id or last or 1
-    
+  
     -- execute operation
     if id == 1 then return value + Value end
     if id == 2 then return value - Value end

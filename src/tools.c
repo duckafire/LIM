@@ -6,62 +6,49 @@
 #include "defs.h"
 
 void perr(char *msg){
-	fprintf(stderr, "[LIM] %s.\n", msg);
-	exit(1);
+    fprintf(stderr, "[LIM] %s.\n", msg);
+    exit(1);
 }
 
 void pout(int qtt, ...){
-	va_list msg;
-	va_start(msg, qtt);
+    va_list msg;
+    va_start(msg, qtt);
 
-	for(int i = 0; i < qtt; i++) fprintf(stdout, "%s\n", va_arg(msg, char*));
+    for(int i = 0; i < qtt; i++) fprintf(stdout, "%s\n", va_arg(msg, char*));
 
-	va_end(msg);
-	exit(0);
-}
-
-void bprintf(FILE *newFile, short qtt, ...){
-    char *current;
-    va_list text;
-    va_start(text, qtt);
-    
-    for(int i = 0; i < qtt; i++){
-        current = va_arg(text, char*);
-        fwrite(current, strlen(current), 1, newFile);
-    }
-
-    va_end(text);
+    va_end(msg);
+    exit(0);
 }
 
 void ckChar(char *word, char *blocked){
-	for(int i = 0; i < strlen(word); i++){
-		for(int j = 0; j < strlen(blocked); j++){
-			if(word[i] <= 32 || word[i] == 127) perr("Controls character finded.");
-			if(word[i] == blocked[j]) perr("Invalid character. Not use: / ? * | \" < > \\");
-		}
-	}
+    for(int i = 0; i < strlen(word); i++){
+        for(int j = 0; j < strlen(blocked); j++){
+            if(word[i] <= 32 || word[i] == 127) perr("Controls character finded.");
+            if(word[i] == blocked[j]) perr("Invalid character. Not use: / ? * | \" < > \\");
+        }
+    }
 }
 
 int ckFlag(char *word, char flags[][7]){
-	for(int i = 0; i < FLAGS_QTT; i++){
-		if(strcmp(word, flags[i]) == 0) return 1;
-	}
-	return 0;
+    for(int i = 0; i < FLAGS_QTT; i++){
+        if(strcmp(word, flags[i]) == 0) return 1;
+    }
+    return 0;
 }
 
 void fileChar(char *_cc, char *_cf, FILE *origin){
-	if(*_cf != EOF){
-		*_cc = *_cf;
-		*_cf = fgetc(origin);
-	}else{
-		*_cc = fgetc(origin);
-	}
+    if(*_cf != EOF){
+        *_cc = *_cf;
+        *_cf = fgetc(origin);
+    }else{
+        *_cc = fgetc(origin);
+    }
 }
 
 void clearSpace(FILE *file){
-	char cc;
-	while((cc = fgetc(file)) == ' ');
-	fseek(file, -1, SEEK_CUR);
+    char cc;
+    while((cc = fgetc(file)) == ' ');
+    fseek(file, -1, SEEK_CUR);
 }
 
 int firstChar(char c){
@@ -104,7 +91,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
         }
         fseek(*origin, -1, SEEK_CUR); // remove last ','
         fputc('=', *origin);
-        
+
         // values
         fseek(buffer, 0, SEEK_SET);
         while(1){
@@ -122,7 +109,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
     // copy file (binary to ASCII)
     fread(transfer, size, 1, *newFile);
-   
+
     // remove trash in final of file
     if(buffer != NULL){
         short endFinded = 0;
@@ -130,11 +117,11 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
         for(int i = sizeof(transfer); i > 0; i--){
             if(transfer[i] == ']'){
-                
+
                 if(transfer[i - 8] == '['){
                     endFinded = 1;
-                    
-                    // check all character of the word finded    
+
+                    // check all character of the word finded
                     for(int j = 0; j < 9; j - j++){ // do not check '\0'{
                         if(signature[j] != transfer[i - 8 + j]){
                             endFinded = 0;
@@ -146,9 +133,9 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
                     if(endFinded == 1){
                         for(int j = i - 8; j <= sizeof(transfer); j++) transfer[j] = '\0';
                         endFinded = 2;
-                        break;    
+                        break;
                     }
-                    
+
                     // break i
                     if(endFinded == 2) break;
                 }
@@ -156,14 +143,14 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
             }
         }
     }
-    
+
     fprintf(*origin, "%s", transfer);
     printf("%s\n\n\n", transfer);
 
     // close "do" block
     if(buffer != NULL) fprintf(*origin, " end\n--local reference=%s", libNoExt);
 
-    // close and (re)open 
+    // close and (re)open
     fclose(*origin);
     fclose(*newFile);
     *origin = fopen(libName, "r");
@@ -283,7 +270,7 @@ void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe){
     while(!feof(buffer)){
         memset(getted, '\0', size);
         if(fread(getted, sizeof(getted), 1, buffer) == 0) break;
-        
+
         if(strcmp(func, getted) == 0) return;
 
         // jump reference
