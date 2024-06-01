@@ -15,18 +15,17 @@
 	</p>
 </div>
 
-## General vision
-###### [Versão em Português-BR](https://github.com/duckafire/LIM/blob/main/info/pt-br/README-main.ptbr.md)
+## Visão geral
+###### [English version](https://github.com/duckafire/LIM/blob/main/README.md)
+&emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas LUA) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas LUA em um formato apelidado de *"Pacote Local"*. <br>
 
-&emsp; **L**ua L**i**brary Co**m**pactor is a small terminal program, created for to easily the compaction of LUA libraries in a format nicknamed of *Local Package*. <br>
+&emsp; Em resumo, LIM gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
 
-&emsp; In summary, LIM create a copy of the file used like argument and accomplish a serie of abbreviations and remotions of caracters, *trying* not break the code logic. Its objective is not become the code more fast, but yes minor in relation to the caracters size (and as a consequence in `bytes`)<br>
+&emsp; LIM pode ser usado em praticamente todo tipo de programa que use LUA, mas sua finalidade principal é auxiliar na construção de pequenas bibliotecas para [Tic80 Tiny Computer](https://tic80.com "Site oficial"), especificamente bibliotecas oriundas do projeto [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repositório"). <br>
 
-&emsp; LIM can be used in practically all type of program that use LUA, but its main finality is assist in the build of small libraries to the [Tic80 Tiny Computer](https://tic80.com "Official site"), like the libraries natives of the project [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repository"). <br>
+&emsp; Para obter mais informações a respeito do LIM, em relação à **regras**, boas práticas e outras informações, [*clique aqui*](https://github.com/duckafire/LIM/tree/main/info/pt-br/README-info.ptbr.md "Documentação oficial do LIM"). <br> <br>
 
-&emsp; For obtain more informations about LIM, in relation to the **rules**, good pratices and others informations, [*click here*](https://github.com/duckafire/LIM/tree/main/info/README.md "LIM Official Documentation"). <br> <br>
-
-<details><summary><b>Useful links</b></summary>
+<details><summary><b>Links úteis</b></summary>
 	<ul>
 		<details><summary>LUA</summary>
 			<ul>
@@ -46,7 +45,7 @@
 
 <br>
 
-## Example
+## Exemplo
 
 #### Original
 
@@ -84,7 +83,7 @@ end
 ]]
 ```
 
-#### Compacted
+#### Compactado
 
 ``` lua
 local LIB={}
@@ -93,3 +92,4 @@ do local P11=print _G.name="Simple example"local last LIB.operation=function(v,V
 ```
 
 <br>
+
