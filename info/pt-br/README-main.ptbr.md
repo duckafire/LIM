@@ -17,7 +17,7 @@
 
 ## Visão geral
 ###### [English version](https://github.com/duckafire/LIM/blob/main/README.md)
-&emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas LUA) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas LUA em um formato apelidado de *"Pacote Local"*. <br>
+&emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas LUA) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas LUA em um formato apelidado de [*Pacote Local*](#pacote-local). <br>
 
 &emsp; Em resumo, LIM gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
 
@@ -93,3 +93,27 @@ do local P11=print _G.name="Simple example"local last LIB.operation=function(v,V
 
 <br>
 
+## Pacote local
+###### Estrutura
+
+````
+~    +--> Tabela que armazenará as funções da biblioteca
+~    |
+~ +---------+
+1 local _L={}
+~
+2 do local P11=print _L.add=function(a,b) return a+b end end
+~ ++ +-------------+ +---------------------------------+ +-+
+~  |    |                                           |     |
+~  |    +--> Referência para funções LUA            |     |                      
+~  |                                                |     |
+~  |                        Função da biblioteca <--+     |
+~  +------------------------------------------------------+
+~                 |
+3 local lib=_L    +--> Contenção para o ambiente da biblioteca
+~ +----------+                   
+~      |
+~      +--> Refência à biblioteca
+```
+
+<br>

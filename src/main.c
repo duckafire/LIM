@@ -4,29 +4,29 @@
 
 #include "defs.h"
 
-FILE *origin = NULL, *newFile = NULL;    
+FILE *origin = NULL, *newFile = NULL;
 char *libName = NULL, *libNoExt = NULL;
 
 int main(int argc, char *argv[]){
     // ADD TO CLEANUP
     atexit(cleanupMain);
-    
+
     // CHECK ALL ARGUMENTS
     int flag = getFlags(argc, argv);
     if((flag == 1 || flag == 2) && argc > 2) perr("Argument overflow");
     messages(flag);
 
-    char *oriName;    
+    char *oriName;
     oriName = argv[1];
     checkArgs(argc, argv, flag, &libName, &libNoExt);
-    
+
     if(flag == 3) oriName = argv[2];
-    
+
     argValid(oriName);
     argValid(libName);
 
     if((flag != 3 && argc > 3) || (flag == 3 && argc > 4)) perr("Argument overflow");
-    
+
     // START PROCESS
     origin = fopen(oriName, "r");
     if(origin == NULL) perr("The <origin> specified not exist");
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
 static void messages(int flag){
     // none
     if(flag == 0){
-        pout(2, 
+        pout(2,
             "[ LIM - Lua lIbrary coMpactor - https://github.com/duckafire/LIM ]",
             "Try: \"lim -h\""
         );
@@ -54,16 +54,16 @@ static void messages(int flag){
     // version
     if(flag == 1){
         char msg[18 + VERSION_LEN] = "[ LIM - v";
-        
+
         strcat(msg, VERSION_CUR);
         strcat(msg, " - MIT ]");
-        
+
         pout(1, msg);
     }
 
     // help
     if(flag == 2){
-        pout(25, 
+        pout(28,
             "[ LIM - Infomations ]",
             " ",
             "[!] Flags [!]",
@@ -73,7 +73,7 @@ static void messages(int flag){
             "       if [libName] equals its name.",
             " ",
             "[!] Structure [!]",
-            "* \"lim [-v ; -h]\"",
+            "* \"lim [-v|-h]\"",
             "* \"lim [-r] <origin>.lua [libName]\"",
             " ",
             "[!] Rules [!]",
@@ -84,12 +84,16 @@ static void messages(int flag){
             "   that start in the beginning of the line, they will not be",
             "   compacted.",
             "3. Do not create strings with '[[  ]]' ",
-            "4. Do not ise '@' in code (reserved words). ",
+            "4. Do not use '@' in code (reserved words). ",
             "5. Variable and table names cannot finish with two numbers",
-            "   followed (e.g.: `car12` -> car12_).",
+            "   or more followed (e.g.: 'car12' -> 'car12_').",
+            " ",
+            "[!] Full documentation [!]",
+            "* https://github.com/duckafire/LIM/tree/main/info",
             " ",
             "[ LIM - Infomations ]"
         );
+
     }
 }
 
