@@ -176,10 +176,10 @@ _G.libErr = ""
 ```
 
 > [!IMPORTANT]\
-> Variáveis e tabelas declaradas com `local` só poderão ser acessadas por funções internas a bibliotecas, enquanto aquelas declaradas com `_G.` poderão ser acessadas em qualquer trecho do código, por qualquer *coisa*.
+> Variáveis e tabelas declaradas com `local` só poderão ser acessadas por funções internas a bibliotecas, enquanto aquelas *declaradas* com `_G.` poderão ser acessadas em qualquer trecho do código, por qualquer *coisa*.
 
 > [!NOTE]\
-> `_G` é uma tabela LUA responsável por armazenar o ambiente global. LUA não usa essa variável em si, logo alterar seu valor não afeta nenhum ambiente, e vice-versa. Ela é útil para tornar explícita a declaração de variáveis globais. O uso de `_G.` como prefixo para variáveis e tabelas declaradas com ela (`_G.example = true`) é opcional em chamadas futuras (`P11(example)`).
+> `_G` é uma tabela LUA responsável por armazenar o ambiente global. LUA não usa essa tabela em si, logo alterar seu valor não afeta nenhum ambiente, e vice-versa. Ela é útil para tornar explícita a declaração de variáveis globais. O uso de `_G.` como prefixo para variáveis e tabelas declaradas com ela (`_G.example = true`) é opcional em chamadas futuras (`P11(example)`).
 
 ###### Terceira
 [3] **Não crie cadeias de caracteres com `[[ ]]`.**
@@ -217,7 +217,7 @@ local text = "
 ###### Quinta
 [5] **Os nomes das variáveis e tabelas não devem terminar com dois ou mais números seguidos.**
 
-* Ao longo do seu progresso na leitura do código fornecido, LIM deixa uma série de identificadores espalhados pelo código, que os quais podem entrar em conflito com nomes de variáveis e tabelas que possuam tais características.
+* Ao longo do seu progresso na leitura do código fornecido, LIM deixa uma série de identificadores espalhados pelo código, que podem entrar em conflito com nomes de variáveis e tabelas que possuam tais características.
 
 ``` lua
 example01 -> example1 | example_1 | example01n | example01th
@@ -232,7 +232,7 @@ example01 -> example1 | example_1 | example01n | example01th
 <br>
 
 ## Como a compactação funciona
-&emsp; O processo de compactação do LIM ocorre em quatro estágios, com cada um deles tendo um papel fundamental para o funcionamento do estágio adjacente. Eles recebem as seguintes nomeclaturas:
+&emsp; O processo de compactação do LIM ocorre em quatro estágios, com cada um deles tendo um papel crucial no funcionamento do estágio adjacente. Eles recebem as seguintes nomeclaturas:
 
 1. **Definição**: Atribui as funções do código, que seguem a [primeira regra](#primeira), à tabela da biblioteca. Além de gerar os *códigos de proteção* para variáveis e tabelas.
 2. **Limpeza**: Remove espaços desnecessários, comentários, tabulações e quebras de linha. Além de *proteger* as cadeias de caracteres.
