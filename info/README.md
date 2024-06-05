@@ -147,7 +147,7 @@ user@computer:~$ lim [-r] <file>.lua [libName]
 ###### First
 [1] **Functions declared with `local function`, that start at the beginning of the line, will be added to the library.**
 
-* This is a small artifice used by LIM to permit that the functions of the comacted librarie can be called outside its envienment (`do ... end`), aiming to maintain certain values *private*.
+* This is a small artifice used by LIM to permit that the functions of the comacted libraries can be called outside its environment (`do ... end`), aiming to maintain certain values *private*.
 
 
 ``` lua

@@ -279,3 +279,14 @@ void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe){
     fwrite(func, size, 1, buffer);
     fwrite(refe, sizf, 1, buffer);
 }
+
+int isLibFunc(char *name){
+    short equal = 0;
+    char prefix[5] = "LIB_";
+
+    for(int i = 0; i < 4; i++){
+        if(name[i] == prefix[i]) equal++;
+    }
+
+    return (equal == 4);
+}

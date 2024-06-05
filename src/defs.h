@@ -11,6 +11,7 @@
 #define ID3 "@3" // reserved functions ("basic")
 #define ID4 "@4" // reserved table, with its function (only if it is valid)
 #define ID5 "@5" // strings
+#define ID6 "@6" // internal functions
 
 
 #include <stdio.h>
@@ -34,6 +35,7 @@ void checkArgs(int argc, char *argv[], short replace, char **libName, char **lib
 int isNum(char c);
 int fCharOrNum(char c);
 int firstChar(char cc);
+int isLibFunc(char *name);
 int addSpace(FILE *origin);
 int ckFlag(char *word, char flags[][7]);
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
@@ -57,7 +59,7 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt);
 static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt);
 static void stage_02_spaces(FILE *origin, FILE *newFile);
 static void stage_03_lualib(FILE *origin, FILE *newFile);
-static void stage_04_compct(FILE *origin, FILE *newFile);
+static void stage_04_compct(FILE *origin, FILE *newFile, char *LibNoExt);
 
 
 #endif

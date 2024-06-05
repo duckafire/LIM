@@ -28,16 +28,17 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
     saveState(origin, newFile, ".limfile", NULL, NULL);
 
     // compact words not reserved and not protected (and remote its index: '@')
-    stage_04_compct(*origin, *newFile);
+    stage_04_compct(*origin, *newFile, libNoExt);
     saveState(origin, newFile, libName, libNoExt, refeHead); // pack and references
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
-    char init[6], func[50], cc;
+    char init[6], func[50], nLib[46], cc;
     int qtt = 0;
 
     memset(init, '\0',  6); // local/_G
     memset(func, '\0', 50); // "function" and its name
+    memset(nLib, '\0', 46); // store the function name without "LIB_" (No LIB prefix)
 
     // get local/_G
     while(fscanf(origin, "%6[^\n. ]", init) != -1){ 
@@ -51,8 +52,15 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
                 // get name of the function
                 memset(func, '\0', 50);
                 fscanf(origin, "%50[^(]", func);
+                
+                if(isLibFunc(func)){
+                    // remove "LIB_" and reorder string
+                    for(int i = 4; i <= strlen(func); i++) nLib[i - 4] = func[i];
+                    fprintf(newFile, "%s%s.%s=function%s", ID6, libNoExt, nLib, ID6);
+                }else{
+                    fprintf(newFile, "%slocal function %s%s", ID0, func, ID0);
+                }
 
-                fprintf(newFile, "%s%s.%s=function%s", ID0, libNoExt, func, ID0);
                 wordsBuffer(libTool, func);
             }else{
                 // remove spaces
@@ -84,6 +92,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 
         memset(init, '\0',  6);
         memset(func, '\0', 50);
+        memset(nLib, '\0', 46);
     }
     // signature
     fputs("\n[#E#N#D#]", newFile); // end of file
@@ -298,11 +307,11 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
     }
 }
 
-static void stage_04_compct(FILE *origin, FILE *newFile){
+static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
         char reserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
     
     short finded; // ..reserved (or protected) word
-    char cc, word[9], protected[50];
+    char cc, word[50], protected[50];
     FILE *buffers[4] = {libTool, libGlobal, libLocal, libFunc};
 
     while((cc = fgetc(origin)) != EOF){
@@ -310,12 +319,12 @@ static void stage_04_compct(FILE *origin, FILE *newFile){
         if(protectedWords(origin, newFile, cc, 0)) continue;
         
         finded = 0;
-        memset(word, '\0', 9);
+        memset(word, '\0', 50);
 
         // valid string (init with a NaN)
         if(firstChar(cc)){
             fseek(origin, -1, SEEK_CUR);
-            fscanf(origin, "%9[a-zA-Z0-9_]", word);
+            fscanf(origin, "%50[a-zA-Z0-9_]", word);
 
             // check lua keywords
             for(int i = 0; i < 21; i++){
@@ -347,7 +356,14 @@ static void stage_04_compct(FILE *origin, FILE *newFile){
             }
             // write word finded in buffer
             if(finded){
-                fprintf(newFile, "%s", word);
+                // check if it is a library function
+                if(isLibFunc(word)){
+                    for(int i = 4; i <= strlen(word); i++) word[i - 4] = word[i]; // remove "LIB_"
+                    fprintf(newFile, "%s.%s", libNoExt, word); // add table prefix
+                }else{
+                    fprintf(newFile, "%s", word);
+                }
+
                 continue;
             }
         }
