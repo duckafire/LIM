@@ -31,23 +31,26 @@ void argValid(char *argv);
 void checkArgs(int argc, char *argv[], short replace, char **libName, char **libNoExt);
 
 
-// tools
+// tools-general
 int isNum(char c);
 int fCharOrNum(char c);
 int firstChar(char cc);
-int isLibFunc(char *name);
-int addSpace(FILE *origin);
 int ckFlag(char *word, char flags[][7]);
-int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 
 void perr(char *msg);
 void pout(int qtt, ...);
 void clearSpace(FILE *file);
-void declare(char *word, short jump);
 void ckChar(char *word, char *blocked);
-void wordsBuffer(FILE *buffer, char *word);
-void bprintf(FILE *newFile, short qtt, ...);
 void fileChar(char *_cc, char *_cf, FILE *origin);
+
+
+// tools-to-stages
+int isLibFunc(char *name);
+int addSpace(FILE *origin);
+int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
+
+void declare(char *word, short jump);
+void wordsBuffer(FILE *buffer, char *word);
 void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe);
 void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer);
 

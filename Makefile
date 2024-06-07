@@ -4,7 +4,7 @@ EC = @echo - LIM was
 
 
 # files
-F_NAMES = main arg tools write
+F_NAMES = main arg stages tools-general tools-to-stages
 F_EXTEN = $(addprefix ./src/, $(F_NAMES))
 F_FINAL = $(addsuffix .c, $(F_EXTEN))
 
