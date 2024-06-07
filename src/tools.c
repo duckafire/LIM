@@ -194,9 +194,9 @@ int addSpace(FILE *origin){
 }
 
 int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
-    char id;
-
     if(cc == '@'){
+        char id;
+        
         if(!printID && addSpace(origin)) fputc(' ', newFile);
 
         id = fgetc(origin);

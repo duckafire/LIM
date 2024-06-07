@@ -5,6 +5,7 @@
 
 #include "defs.h"
 
+// block size: 50 (x4), 30 + 5
 FILE *libTool = NULL, *libGlobal, *libLocal, *libFunc, *refeHead;
 
 void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
@@ -57,25 +58,22 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
                     // remove "LIB_" and reorder string
                     for(int i = 4; i <= strlen(func); i++) nLib[i - 4] = func[i];
                     fprintf(newFile, "%s%s.%s=function%s", ID6, libNoExt, nLib, ID6);
+                    wordsBuffer(libTool, func);
                 }else{
                     fprintf(newFile, "%slocal function %s%s", ID0, func, ID0);
+                    wordsBuffer(libFunc, func);
                 }
 
-                wordsBuffer(libTool, func);
             }else{
-                // remove spaces
-                for(int i = 0; i < strlen(func); i++){
-                    if(func[i] == ' '){
-                        func[i] = '\0';
-                        break;
-                    }
-                }
                 // func = variable/table name
                 if(strcmp(init, "local") == 0){
                     fprintf(newFile, "%s%s %s%s", ID1, init, func, ID1);
                     wordsBuffer(libLocal, func);
                 }else{
-                    fprintf(newFile, "%s%s%s%s", ID1, init, func, ID1);
+                    // remove '.'
+                    for(int i = 1; i <= strlen(func); i++) func[i - 1] = func[i];
+
+                    fprintf(newFile, "%s%s%s", ID1, func, ID1);
                     wordsBuffer(libGlobal, func);
                 }
             }
@@ -211,12 +209,22 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 
         // metamethods
         if(cc == '_'){
-            if((cc = fgetc(origin)) == '_'){
+            cc = fgetc(origin);
+            
+            // remove "_G."
+            if(cc == 'G'){
+                fgetc(origin);
+                continue;
+            }
+
+            // protect metamethod
+            if(cc == '_'){
                 fscanf(origin, "%15[a-z]", word);
                 fprintf(newFile, "%s__%s%s", ID2, word, ID2);
                 continue;
             }
-            fseek(origin, -1, SEEK_CUR);
+            fseek(origin, -2, SEEK_CUR);
+            cc = fgetc(origin);
         }
 
         // cc = (a-z)
@@ -310,7 +318,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
         char reserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
     
-    short finded; // ..reserved (or protected) word
+    short finded, tableContent; // ..reserved (or protected) word; structure to a table and its childrens
     char cc, word[50], protected[50];
     FILE *buffers[4] = {libTool, libGlobal, libLocal, libFunc};
 
@@ -318,10 +326,29 @@ static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
         // indexed with "@n"
         if(protectedWords(origin, newFile, cc, 0)) continue;
         
-        finded = 0;
+        finded = tableContent = 0;
         memset(word, '\0', 50);
 
-        // valid string (init with a NaN)
+        // jump table content
+        if(cc == '{'){
+            tableContent = 1;
+            // read table content
+            while(tableContent > 0 && cc != EOF){
+                // jump protection and destroy it
+                if(cc == '@'){
+                    fseek(origin, 1, SEEK_CUR);
+                }else{
+                    fputc(cc, newFile);
+                }
+
+                cc = fgetc(origin);
+                if(cc == '{') tableContent++; // children
+                if(cc == '}') tableContent--; // end of mom or children
+            }
+            continue;
+        }
+
+        // valid name (init with a NaN)
         if(firstChar(cc)){
             fseek(origin, -1, SEEK_CUR);
             fscanf(origin, "%50[a-zA-Z0-9_]", word);
@@ -356,14 +383,22 @@ static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
             }
             // write word finded in buffer
             if(finded){
-                // check if it is a library function
+                // functions
                 if(isLibFunc(word)){
                     for(int i = 4; i <= strlen(word); i++) word[i - 4] = word[i]; // remove "LIB_"
                     fprintf(newFile, "%s.%s", libNoExt, word); // add table prefix
-                }else{
-                    fprintf(newFile, "%s", word);
+                    continue;
                 }
 
+                // variable/table
+                fprintf(newFile, "%s", word);
+                
+                // if it is a table: protect it content
+                if((cc = fgetc(origin)) == '.'){
+                    fputc(cc, newFile);
+                    while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
+                }
+                fseek(origin, -1, SEEK_CUR);
                 continue;
             }
         }
