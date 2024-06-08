@@ -51,11 +51,11 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID);
 
 void declare(char *word, short jump);
 void wordsBuffer(FILE *buffer, char *word);
+void saveTableElement(FILE *origin, FILE *newFile, char cc);
 void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe);
 void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer);
 
-
-// write
+// stages
 void cleanupWrite(void);
 void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt);
 

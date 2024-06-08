@@ -84,6 +84,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
     }
 
     fprintf(*origin, "%s", transfer);
+    printf("%s\n\n\n", transfer);
 
     // close "do" block
     if(buffer != NULL) fprintf(*origin, " end\n--local reference=%s", libNoExt);
@@ -228,4 +229,13 @@ int isLibFunc(char *name){
     }
 
     return (equal == 4);
+}
+
+void saveTableElement(FILE *origin, FILE *newFile, char cc){
+    // do not compact table elements
+    if((cc = fgetc(origin)) == '.'){
+        fputc(cc, newFile);
+        while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
+    }
+    fseek(origin, -1, SEEK_CUR);
 }

@@ -345,6 +345,7 @@ static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
                 if(cc == '{') tableContent++; // children
                 if(cc == '}') tableContent--; // end of mom or children
             }
+            fputc(cc, newFile); // '}'
             continue;
         }
 
@@ -392,19 +393,14 @@ static void stage_04_compct(FILE *origin, FILE *newFile, char *libNoExt){
 
                 // variable/table
                 fprintf(newFile, "%s", word);
-                
-                // if it is a table: protect it content
-                if((cc = fgetc(origin)) == '.'){
-                    fputc(cc, newFile);
-                    while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
-                }
-                fseek(origin, -1, SEEK_CUR);
+                saveTableElement(origin, newFile, cc);
                 continue;
             }
         }
         // default: special characters and numbers
         if(word[0] != '\0'){
             fputc(word[0], newFile);
+            saveTableElement(origin, newFile, cc);
             continue;
         }
         fputc(cc, newFile);
