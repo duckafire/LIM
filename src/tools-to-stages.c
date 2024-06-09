@@ -133,13 +133,11 @@ int addSpace(FILE *origin){
 	return ((firstChar(last) || isNum(last)) && firstChar(next));
 }
 
-int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
+char protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
 	if(cc == '@'){
-		char id;
-
 		if(!printID && addSpace(origin)) fputc(' ', newFile);
 
-		id = fgetc(origin);
+		const char id = fgetc(origin);
 
 		if(printID) fprintf(newFile, "%c%c", cc, id);
 
@@ -159,10 +157,10 @@ int protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
 			fputc(cc, newFile);
 		}
 		// if the conditions is true, they are protected words
-		return 1;
+		return id;
 	}
 
-	return 0;
+	return -1;
 }
 
 void wordsBuffer(FILE *buffer, char *word){
@@ -239,49 +237,3 @@ void saveTableElement(FILE *origin, FILE *newFile, char cc){
 	}
 	fseek(origin, -1, SEEK_CUR);
 }
-/*
-int newFuncBlock(FILE *origin, char cc, short *isFunc){
-	char blockType[9];
-	short blockNoFunc = 0;
-
-	if(isFunc > 0){
-		// check character
-		switch(cc){
-			case 'd': // do (for, while)
-				strcpy(blockType, "do");
-				break;
-			case 'f': // function
-				strcpy(blockType, "function");
-				break;
-			case 'i': // if (elseif, else)
-				strcpy(blockType, "if");
-				break;
-			case 'e':
-				strcpy(blockType, "end");
-				break;
-			default:
-				blockType[0] = '\0';
-				break;
-		}
-		// check if it is a key word
-		if(blockType != NULL){
-			if(cc != 'e'){
-				for(int i = 1; i <= strlen(blockType); i++){// jump first [0]
-					if((cc = fgetc(origin)) == blockType[i]) blockNoFunc++;
-				}
-				if(blockNoFunc == strlen(blockType) - 1) *isFunc++;
-				fseek(origin, -blockNoFunc, SEEK_CUR);
-
-			}else{
-				for(int i = 1; i <= 2; i++){
-					if((cc = fgetc(origin)) == blockType[i]) blockNoFunc++;
-				}
-				if(blockNoFunc == 2) *isFunc--;
-				fseek(origin, -blockNoFunc, SEEK_CUR);
-
-				if(isFunc <= 0) return 1; // end finded
-			}
-		}
-	}
-	return 0;
-}*/
