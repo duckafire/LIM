@@ -7,7 +7,7 @@
 
 char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
 
-// block size: 50 (x4), 30 + 5
+// block size: 51/BI_BLOCK (x4), 30 + 5
 FILE *libTool = NULL, *libGlobal, *libLocal, *libFunc, *refeHead, *funcEnvBuf;
 
 void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
@@ -44,11 +44,11 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
 }
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
-	char init[6], func[50], nLib[46], cc;
+	char init[6], func[BI_BLOCK], nLib[46], cc;
 	int qtt = 0;
 
 	memset(init, '\0',  6); // local/_G
-	memset(func, '\0', 50); // "function" and its name
+	memset(func, '\0', BI_BLOCK); // "function" and its name
 	memset(nLib, '\0', 46); // store the function name without "LIB_" (No LIB prefix)
 
 	// get local/_G
@@ -56,13 +56,13 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 		if(strcmp(init, "local") == 0 || strcmp(init, "_G") == 0){
 			clearSpace(origin);
 			// get function reservad word
-			fscanf(origin, "%50[^\n= ]", func);
+			fscanf(origin, "%50[^\n= ]", func); // BI_BLOCK - 1
 
 			if(strcmp(func, "function") == 0){
 				clearSpace(origin);
 				// get name of the function
-				memset(func, '\0', 50);
-				fscanf(origin, "%50[^(]", func);
+				memset(func, '\0', BI_BLOCK);
+				fscanf(origin, "%50[^(]", func); // BI_BLOCK - 1
 
 				if(isLibFunc(func)){
 					// remove "LIB_" and reorder string
@@ -99,7 +99,7 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 		if(qtt > 0) fputc('\n', newFile);
 
 		memset(init, '\0',  6);
-		memset(func, '\0', 50);
+		memset(func, '\0', BI_BLOCK);
 		memset(nLib, '\0', 46);
 	}
 	// signature
@@ -329,12 +329,12 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 	//char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
 	
 	short block, protectionID = 0, insideEnv = 0, isReserved;
-	char cc, last = ' ', word[50], readWord[50];
+	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
 
 	while((cc = fgetc(origin)) != EOF){
-		memset(word, '\0', 50);
+		memset(word, '\0', BI_BLOCK);
 
 		// TRUE end of file
 		if(cc == '['){
@@ -367,7 +367,7 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 		}
 
 		fseek(origin, -1, SEEK_CUR);
-		fscanf(origin, "%50[a-zA-Z0-9_]", word);
+		fscanf(origin, "%50[a-zA-Z0-9_]", word); // BI_BLOCK - 1
 		last = word[0];
 
 		isReserved = 0;
@@ -419,13 +419,18 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 }
 
 static void stage_05_compct(FILE *origin, FILE *newFile){
-	char cc, word[50];
+	char cc, word[BI_BLOCK];
 
 	while((cc = fgetc(origin)) != EOF){
 		// indexed with "@n"; content between '{' '}'
 		if(protectedWords(origin, newFile, cc, 0) > -1 || jumpTableContent(origin, newFile, cc)) continue;
 		
-		memset(word, '\0', 50);
+		memset(word, '\0', BI_BLOCK);
+
+		if(cc == '.'){
+			fputc('.', newFile);
+			while(fCharOrNum((cc = fgetc(origin))) && cc != EOF) fputc(cc, newFile);
+		}
 
 		if(!firstChar(cc)){
 			fputc(cc, newFile);
@@ -433,7 +438,7 @@ static void stage_05_compct(FILE *origin, FILE *newFile){
 		}
 
 		fseek(origin, -1, SEEK_CUR);
-		fscanf(origin, "%50[a-zA-Z0-9_]", word);
+		fscanf(origin, "%50[a-zA-Z0-9_]", word); // BI_BLOCK - 1
 
 		// write prefix (ex: a0, j, g98)
 		fputc(word[0], newFile); // letter
@@ -441,23 +446,16 @@ static void stage_05_compct(FILE *origin, FILE *newFile){
 			if(!isNum(word[i])) break;
 			fputc(word[i], newFile); // number code
 		}
-		
-		// jump table elements
-		if(fgetc(origin) == '.'){
-			fputc('.', newFile);
-			while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
-		}
-		fseek(origin, -1, SEEK_CUR);
 	}
 }
 
 static void stage_06_indexr(FILE *origin, FILE *newFile, char *libNoExt){
-	char cc, funcName[50];
+	char cc, funcName[BI_BLOCK];
 	
 	while((cc = fgetc(origin)) != EOF){
 		if(cc == 'L'){
 			if(fgetc(origin) == 'I' && fgetc(origin) == 'B' && fgetc(origin) == '_'){
-				fscanf(origin, "%50[^(]", funcName);
+				fscanf(origin, "%50[^(]", funcName); // BI_BLOCK - 1
 				fprintf(newFile, "%s.%s", libNoExt, funcName);
 				continue;
 			}

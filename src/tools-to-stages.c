@@ -84,7 +84,7 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 	}
 
 	fprintf(*origin, "%s", transfer);
-	printf("%s\n\n\n", transfer);
+	// printf("%s\n\n\n", transfer); // debug
 
 	// close "do" block
 	if(buffer != NULL) fprintf(*origin, " end\n--local reference=%s", libNoExt);
@@ -165,12 +165,12 @@ char protectedWords(FILE *origin, FILE *newFile, char cc, short printID){
 
 void wordsBuffer(FILE *buffer, char *word){
 	// buffer to store searched words
-	char store[50];
+	char store[BI_BLOCK];
 
 	rewind(buffer);
 
 	// searsh word in buffer
-	while(fread(store, 50, 1, buffer) != 0){
+	while(fread(store, BI_BLOCK, 1, buffer) != 0){
 		// check if the word already was writed in buffer
 		if(strcmp(word, store) == 0) return;
 	}

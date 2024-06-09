@@ -2,8 +2,9 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.1.4"
+#define VERSION_CUR "0.1.6"
 #define VERSION_LEN 5
+#define BI_BLOCK 51
 
 #define ID0 "@0" // library function
 #define ID1 "@1" // "local" or global (_G) variable (or table)
