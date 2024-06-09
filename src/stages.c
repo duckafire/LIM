@@ -36,7 +36,10 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
 	saveState(origin, newFile, ".limfile", NULL, NULL);
 
 	// compact words not reserved and not protected (and remote its index: '@')
-	stage_05_compct(*origin, *newFile, libNoExt);
+	stage_05_compct(*origin, *newFile);
+	saveState(origin, newFile, ".limfile", NULL, NULL);
+	
+	stage_06_indexr(*origin, *newFile, libNoExt);
 	saveState(origin, newFile, libName, libNoExt, refeHead); // pack and references
 }
 
@@ -343,6 +346,9 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			fseek(origin, -(strlen(word) + 1), SEEK_CUR);
 		}
 
+		// content between '{' '}'
+		if(jumpTableContent(origin, newFile, cc)) continue;
+
 		// indexed with "@n"
 		if((protectionID =  protectedWords(origin, newFile, cc, 1) - 48) > -1){
 			if(protectionID == 0 || protectionID == 6){
@@ -354,7 +360,7 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			continue;
 		}
 
-		if(!firstChar(cc) || fCharOrNum(last)){
+		if(!firstChar(cc) || fCharOrNum(last) || last == '.'){
 			fputc(cc, newFile);
 			last = cc;
 			continue;
@@ -412,76 +418,50 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 	}
 }
 
-static void stage_05_compct(FILE *origin, FILE *newFile, char *libNoExt){
-	// ..reserved (or protected) word; structure to a table and its childrens
-	short finded, tableContent;
-	char cc, word[50], protected[50];
+static void stage_05_compct(FILE *origin, FILE *newFile){
+	char cc, word[50];
 
 	while((cc = fgetc(origin)) != EOF){
-		// indexed with "@n"
-		if(protectedWords(origin, newFile, cc, 0) > -1) continue;
+		// indexed with "@n"; content between '{' '}'
+		if(protectedWords(origin, newFile, cc, 0) > -1 || jumpTableContent(origin, newFile, cc)) continue;
 		
-		finded = tableContent = 0;
 		memset(word, '\0', 50);
 
-		// jump table content
-		if(cc == '{'){
-			tableContent = 1;
-			// read table content
-			while(tableContent > 0 && cc != EOF){
-				// jump protection and destroy it
-				if(cc == '@'){
-					fseek(origin, 1, SEEK_CUR);
-				}else{
-					fputc(cc, newFile);
-				}
-
-				cc = fgetc(origin);
-				if(cc == '{') tableContent++; // children
-				if(cc == '}') tableContent--; // end of mom or children
-			}
-			fputc(cc, newFile); // '}'
+		if(!firstChar(cc)){
+			fputc(cc, newFile);
 			continue;
 		}
 
-		// valid name (init with a NaN)
-		if(firstChar(cc)){
-			fseek(origin, -1, SEEK_CUR);
-			fscanf(origin, "%50[a-zA-Z0-9_]", word);
+		fseek(origin, -1, SEEK_CUR);
+		fscanf(origin, "%50[a-zA-Z0-9_]", word);
 
-			// check lua keywords
-			for(int i = 0; i < 21; i++){
-				if(strcmp(word, luaReserved[i]) == 0){
-					finded = 1;
-					break;
-				}
-			}
+		// write prefix (ex: a0, j, g98)
+		fputc(word[0], newFile); // letter
+		for(int i = 1; i < strlen(word); i++){
+			if(!isNum(word[i])) break;
+			fputc(word[i], newFile); // number code
+		}
+		
+		// jump table elements
+		if(fgetc(origin) == '.'){
+			fputc('.', newFile);
+			while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
+		}
+		fseek(origin, -1, SEEK_CUR);
+	}
+}
 
-			// write word finded in buffer
-			if(finded){
-				// functions
-				if(isLibFunc(word)){
-					for(int i = 4; i <= strlen(word); i++) word[i - 4] = word[i]; // remove "LIB_"
-					fprintf(newFile, "%s.%s", libNoExt, word); // add table prefix
-					continue;
-				}
-
-				// variable/table
-				fprintf(newFile, "%s", word);
-				saveTableElement(origin, newFile, cc);
+static void stage_06_indexr(FILE *origin, FILE *newFile, char *libNoExt){
+	char cc, funcName[50];
+	
+	while((cc = fgetc(origin)) != EOF){
+		if(cc == 'L'){
+			if(fgetc(origin) == 'I' && fgetc(origin) == 'B' && fgetc(origin) == '_'){
+				fscanf(origin, "%50[^(]", funcName);
+				fprintf(newFile, "%s.%s", libNoExt, funcName);
 				continue;
 			}
-		}
-		// default: special characters and numbers
-		if(word[0] != '\0'){
-			fputc(word[0], newFile); // letter
-			for(int i = 1; i < strlen(word); i++){
-				if(!isNum(word[i])) break;
-				fputc(word[i], newFile); // number code
-			}
-			
-			saveTableElement(origin, newFile, cc);
-			continue;
+			fseek(origin, -3, SEEK_CUR);
 		}
 		fputc(cc, newFile);
 	}
@@ -498,3 +478,6 @@ void cleanupWrite(void){
 		fclose(funcEnvBuf);
 	}
 }
+
+// nomes de variáveis e tabelas globais não respeitado
+// remover prefix para funções

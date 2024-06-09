@@ -229,11 +229,24 @@ int isLibFunc(char *name){
 	return (equal == 4);
 }
 
-void saveTableElement(FILE *origin, FILE *newFile, char cc){
-	// do not compact table elements
-	if((cc = fgetc(origin)) == '.'){
-		fputc(cc, newFile);
-		while((fCharOrNum((cc = fgetc(origin))) || cc == '.') && cc != EOF) fputc(cc, newFile);
+int jumpTableContent(FILE *origin, FILE *newFile, char cc){
+	if(cc == '{'){
+		short tableContent = 1;
+		// read table content
+		while(tableContent > 0 && cc != EOF){
+			// jump protection and destroy it
+			if(cc == '@'){
+				fseek(origin, 1, SEEK_CUR);
+			}else{
+				fputc(cc, newFile);
+			}
+
+			cc = fgetc(origin);
+			if(cc == '{') tableContent++; // children
+			if(cc == '}') tableContent--; // end of mom or children
+		}
+		fputc(cc, newFile); // '}'
+		return 1;
 	}
-	fseek(origin, -1, SEEK_CUR);
+	return 0;
 }

@@ -48,10 +48,10 @@ void fileChar(char *_cc, char *_cf, FILE *origin);
 // tools-to-stages
 int isLibFunc(char *name);
 int addSpace(FILE *origin);
+int jumpTableContent(FILE *origin, FILE *newFile, char cc);
 
 void declare(char *word, short jump);
 void wordsBuffer(FILE *buffer, char *word);
-void saveTableElement(FILE *origin, FILE *newFile, char cc);
 void refeBuffer(FILE *buffer, char *orgFunct, char *orgTable, char *refe);
 void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FILE *buffer);
 
@@ -65,7 +65,8 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt);
 static void stage_02_spaces(FILE *origin, FILE *newFile);
 static void stage_03_lualib(FILE *origin, FILE *newFile);
 static void stage_04_prefix(FILE *origin, FILE *newFile);
-static void stage_05_compct(FILE *origin, FILE *newFile, char *LibNoExt);
+static void stage_05_compct(FILE *origin, FILE *newFile);
+static void stage_06_indexr(FILE *origin, FILE *newFile, char *libNoExt);
 
 
 #endif
