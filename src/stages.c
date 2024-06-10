@@ -328,7 +328,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 static void stage_04_prefix(FILE *origin, FILE *newFile){
 	//char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
 	
-	short block, protectionID = 0, insideEnv = 0, isReserved;
+	short block, protectionID = 0, insideEnv = 0, isReserved = 0, isTable = 0;
 	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
@@ -346,9 +346,6 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			fseek(origin, -(strlen(word) + 1), SEEK_CUR);
 		}
 
-		// content between '{' '}'
-		if(jumpTableContent(origin, newFile, cc)) continue;
-
 		// indexed with "@n"
 		if((protectionID =  protectedWords(origin, newFile, cc, 1) - 48) > -1){
 			if(protectionID == 0 || protectionID == 6){
@@ -359,6 +356,10 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			last = cc;
 			continue;
 		}
+
+		// get if it is inside a table
+		if(cc == '{') isTable++;
+		if(cc == '}') isTable--;
 
 		if(!firstChar(cc) || fCharOrNum(last) || last == '.'){
 			fputc(cc, newFile);
@@ -376,6 +377,12 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 				isReserved = 1;
 				break;
 			}
+		}
+
+		// it is a table element
+		if(isTable > 0){
+			if(fgetc(origin) == '=') isReserved = 1; // *it is a table element
+			fseek(origin, -1, SEEK_CUR);
 		}
 
 		if(!isReserved){
@@ -423,7 +430,7 @@ static void stage_05_compct(FILE *origin, FILE *newFile){
 
 	while((cc = fgetc(origin)) != EOF){
 		// indexed with "@n"; content between '{' '}'
-		if(protectedWords(origin, newFile, cc, 0) > -1 || jumpTableContent(origin, newFile, cc)) continue;
+		if(protectedWords(origin, newFile, cc, 0) > -1) continue;
 		
 		memset(word, '\0', BI_BLOCK);
 

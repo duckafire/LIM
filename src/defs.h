@@ -2,7 +2,7 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.1.6"
+#define VERSION_CUR "0.1.7"
 #define VERSION_LEN 5
 #define BI_BLOCK 51
 
@@ -13,7 +13,7 @@
 #define ID4 "@4" // reserved table, with its function (only if it is valid)
 #define ID5 "@5" // strings
 #define ID6 "@6" // internal functions
-#define ID7 "@7" // all protected names called in code and all lua keywords
+#define ID7 "@7" // all protected names called in code, lua keywords and table elements
 
 
 #include <stdio.h>
@@ -49,7 +49,6 @@ void fileChar(char *_cc, char *_cf, FILE *origin);
 // tools-to-stages
 int isLibFunc(char *name);
 int addSpace(FILE *origin);
-int jumpTableContent(FILE *origin, FILE *newFile, char cc);
 
 void declare(char *word, short jump);
 void wordsBuffer(FILE *buffer, char *word);
