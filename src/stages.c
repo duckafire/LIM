@@ -332,7 +332,7 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
-
+	
 	while((cc = fgetc(origin)) != EOF){
 		memset(word, '\0', BI_BLOCK);
 
@@ -343,7 +343,7 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 				fprintf(newFile, "[%s]", word);
 				break;
 				}
-			fseek(origin, -(strlen(word) + 1), SEEK_CUR);
+			fseek(origin, -strlen(word), SEEK_CUR);
 		}
 
 		// indexed with "@n"
