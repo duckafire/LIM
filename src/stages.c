@@ -328,7 +328,7 @@ static void stage_03_lualib(FILE *origin, FILE *newFile){
 static void stage_04_prefix(FILE *origin, FILE *newFile){
 	//char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
 	
-	short block, protectionID = 0, insideEnv = 0, isReserved = 0, isTable = 0;
+	short block, protectionID = 0, insideEnv = 0, isReserved = 0, isTable = 0, isConcat = 0;
 	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
@@ -361,12 +361,20 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 		if(cc == '{') isTable++;
 		if(cc == '}') isTable--;
 
-		if(!firstChar(cc) || fCharOrNum(last) || last == '.'){
+		// concatenation
+		if(last == '.' && cc == '.'){
+			fputc(cc, newFile);
+			while((cc = fgetc(origin)) == '.' && cc != EOF) fputc('.', newFile);
+			isConcat = 1;
+		}
+
+		if(!isConcat && (!firstChar(cc) || fCharOrNum(last) || last == '.')){
 			fputc(cc, newFile);
 			last = cc;
 			continue;
 		}
 
+		isConcat = 0;
 		fseek(origin, -1, SEEK_CUR);
 		fscanf(origin, "%50[a-zA-Z0-9_]", word); // BI_BLOCK - 1
 		last = word[0];
@@ -436,7 +444,15 @@ static void stage_05_compct(FILE *origin, FILE *newFile){
 
 		if(cc == '.'){
 			fputc('.', newFile);
-			while(fCharOrNum((cc = fgetc(origin))) && cc != EOF) fputc(cc, newFile);
+
+			if((cc = fgetc(origin)) == '.'){
+				fputc('.', newFile);
+				while((cc = fgetc(origin)) == '.' && cc != EOF) fputc('.', newFile);
+			}else{
+				fseek(origin, -1, SEEK_CUR);
+				while(fCharOrNum((cc = fgetc(origin))) && cc != EOF) fputc(cc, newFile);
+				if(cc == EOF) return;
+			}
 		}
 
 		if(!firstChar(cc)){
@@ -483,6 +499,3 @@ void cleanupWrite(void){
 		fclose(funcEnvBuf);
 	}
 }
-
-// nomes de variáveis e tabelas globais não respeitado
-// remover prefix para funções
