@@ -365,10 +365,11 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 		if(last == '.' && cc == '.'){
 			fputc(cc, newFile);
 			while((cc = fgetc(origin)) == '.' && cc != EOF) fputc('.', newFile);
-			isConcat = 1;
+			if((protectionID =  protectedWords(origin, newFile, cc, 1) - 48) > -1) continue;
+			if(firstChar(cc)) isConcat = 1;
 		}
 
-		if(!isConcat && (!firstChar(cc) || fCharOrNum(last) || last == '.')){
+		if(!firstChar(cc) || (!isConcat && (fCharOrNum(last) || last == '.'))){
 			fputc(cc, newFile);
 			last = cc;
 			continue;
@@ -448,6 +449,7 @@ static void stage_05_compct(FILE *origin, FILE *newFile){
 			if((cc = fgetc(origin)) == '.'){
 				fputc('.', newFile);
 				while((cc = fgetc(origin)) == '.' && cc != EOF) fputc('.', newFile);
+				if(protectedWords(origin, newFile, cc, 0) > -1) continue;
 			}else{
 				fseek(origin, -1, SEEK_CUR);
 				while(fCharOrNum((cc = fgetc(origin))) && cc != EOF) fputc(cc, newFile);
