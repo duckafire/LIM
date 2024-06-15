@@ -332,6 +332,7 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
+	//FILE *buffers[5] = {funcEnvBuf, libTool, libGlobal, libLocal, libFunc};
 	
 	while((cc = fgetc(origin)) != EOF){
 		memset(word, '\0', BI_BLOCK);
@@ -402,7 +403,6 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 				fseek(buffers[i], 0, SEEK_SET);
 				for(block = 0; fread(readWord, sizeof(readWord), 1, buffers[i]); block++){
 					if(strcmp(word, readWord) == 0){
-						if(i < 4) fprintf(newFile, "%s%s%s", ID7, word, ID7); // protection
 						isReserved = i;
 						break;
 					}
@@ -411,24 +411,25 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			}
 			
 			// it was defined and it is a protected name
-			if(isReserved != -1 && isReserved != 4) continue;
+			if(isReserved == -1 || isReserved == 4){
+			//if(isReserved == 0){
+				fseek(funcEnvBuf, 0, SEEK_END);
 
-			fseek(funcEnvBuf, 0, SEEK_END);
+				// add name to buffer
+				if(isReserved == -1){
+					memset(readWord, '\0', sizeof(readWord));
+					strcpy(readWord, word);
+					fwrite(readWord, sizeof(readWord), 1, funcEnvBuf);
+				}
 
-			// add name to buffer
-			if(isReserved == -1){
-				memset(readWord, '\0', sizeof(readWord));
-				strcpy(readWord, word);
-				fwrite(readWord, sizeof(readWord), 1, funcEnvBuf);
+				// write it in the file
+				if(block < 26){ // a-z -> a0-z0 -> an...-zn...
+					fprintf(newFile, "%c%s", 97 + block, word);
+				}else{
+					fprintf(newFile, "%c%d%s", 97 + block, block / 26, word);
+				}
+				continue;
 			}
-
-			// write it in the file
-			if(block < 26){ // a-z -> a0-z0 -> an...-zn...
-				fprintf(newFile, "%c%s", 97 + block, word);
-			}else{
-				fprintf(newFile, "%c%d%s", 97 + block, block / 26, word);
-			}
-			continue;
 		}
 		fprintf(newFile, "%s%s%s", ID7, word, ID7);
 	}
