@@ -84,7 +84,12 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 	}
 
 	fprintf(*origin, "%s", transfer);
-	// printf("%s\n\n\n", transfer); // debug
+	
+	if(1){
+		static short num = 0;
+		printf("%d\n", ++num);
+		printf("%s\n\n\n", transfer); // debug
+	}
 
 	// close "do" block
 	if(buffer != NULL) fprintf(*origin, " end\n--local reference=%s", libNoExt);

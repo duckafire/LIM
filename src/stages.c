@@ -332,7 +332,6 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 	char cc, last = ' ', word[BI_BLOCK], readWord[BI_BLOCK];
 	char startBlock[4][9] = {"do", "function", "if", "end"};
 	FILE *buffers[5] = {libTool, libGlobal, libLocal, libFunc, funcEnvBuf};
-	//FILE *buffers[5] = {funcEnvBuf, libTool, libGlobal, libLocal, libFunc};
 	
 	while((cc = fgetc(origin)) != EOF){
 		memset(word, '\0', BI_BLOCK);
@@ -362,10 +361,27 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 		if(cc == '{') isTable++;
 		if(cc == '}') isTable--;
 
-		if(!firstChar(cc) || fCharOrNum(last) || last == '.'){
+		if(last == '.'){
+			// table element
+			if(cc != '.'){
+				fputc(cc, newFile);
+				last = cc;
+				continue;
+			}
+
+			fputc('.', newFile);
+
+			if((cc = fgetc(origin)) == '@'){
+				last = ' ';
+				if(protectedWords(origin, newFile, cc, 1) > -1) continue;
+			}
+		}
+
+		if(!firstChar(cc) || fCharOrNum(last)){
 			fputc(cc, newFile);
 			last = cc;
 			continue;
+
 		}
 
 		fseek(origin, -1, SEEK_CUR);
@@ -403,7 +419,6 @@ static void stage_04_prefix(FILE *origin, FILE *newFile){
 			
 			// it was defined and it is a protected name
 			if(isReserved == -1 || isReserved == 4){
-			//if(isReserved == 0){
 				fseek(funcEnvBuf, 0, SEEK_END);
 
 				// add name to buffer
