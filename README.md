@@ -51,44 +51,33 @@
 #### Original
 
 ``` lua
-_G.name = "Simple example"
-local last
-
-local function operation(value, Value, id, _debug)
-    -- "debug" is a lua library
-    if _debug then
-        -- in lua interpreter
-        print(value, Value, id, _debug)
-
-        -- in tic80
-        -- trace(value.."\n"..Value.."\n"..tostring(id).."\n"..tostring(debug), 4)
-    end
-  
-    -- save last index
-    if id then last = id end
-  
-    -- get value to id
-    id = id or last or 1
-  
-    -- execute operation
-    if id == 1 then return value + Value end
-    if id == 2 then return value - Value end
-    if id == 3 then return value * Value end
-    if id == 4 then return value / Value end
-end
-
 --[[
-
-    ...
-
+		Simple example
 ]]
+
+local seed = math.random(math.random(0, 65536))
+_G.__CUR_MAP = 0 -- CURrent MAP
+
+local function LIB_collision(ent1, ent2) -- ENTity
+	-- reference
+	local errorMsg = "Table not specified. Argument #"
+
+	-- check arguments type
+	assert(type(ent1) == "table", "1"..errorMsg)
+	assert(type(ent2) == "table", "2"..errorMsg)
+
+	-- collision between squares/rectangles
+	return math.max(ent1.x, ent2.x) < math.min(ent1.x + ent1.width,  ent2.x + ent2.width ) &&
+		   math.max(ent1.y, ent2.y) < math.min(ent1.y + ent1.height, ent2.y + ent2.height)
+end
 ```
 
 #### Compacted
 
 ``` lua
 local LIB={}
-do local P11=print _G.name="Simple example"local last LIB.operation=function(v,V,i,_)if _ then P11(v,V,i,_)end if i then last=i end i=i or last or 1 if i==1 then return v+V end if i==2 then return v-V end if i==3 then return v*V end if i==4 then return v/V end end end
+do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local seed=MR19(MR19(0,65536))__CUR_MAP=0 LIB.collision=function(a,b)local c="Table not specified. Argument #" A0(T21(a)=="table","1"..c)A0(T21(b)=="table","2"..c)return MM12(a.x,b.x)<MM14(a.x+a.width,b.x+b.width)&&MM12(a.y,b.y)<MM14(a.y+a.height,b.y+b.height)end end
+--local reference=LIB
 --local reference=LIB
 ```
 
