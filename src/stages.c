@@ -39,6 +39,7 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
 	stage_05_compct(*origin, *newFile);
 	saveState(origin, newFile, ".limfile", NULL, NULL);
 	
+	// add index to library functions called on others functions
 	stage_06_indexr(*origin, *newFile, libNoExt);
 	saveState(origin, newFile, libName, libNoExt, refeHead); // pack and references
 }
@@ -477,12 +478,16 @@ static void stage_06_indexr(FILE *origin, FILE *newFile, char *libNoExt){
 	
 	while((cc = fgetc(origin)) != EOF){
 		if(cc == 'L'){
-			if(fgetc(origin) == 'I' && fgetc(origin) == 'B' && fgetc(origin) == '_'){
+			fseek(origin, -1, SEEK_CUR);
+			fscanf(origin, "%4[LIB_]", funcName);
+			
+			if(strcmp(funcName, "LIB_") == 0){
 				fscanf(origin, "%50[^(]", funcName); // BI_BLOCK - 1
 				fprintf(newFile, "%s.%s", libNoExt, funcName);
 				continue;
 			}
-			fseek(origin, -3, SEEK_CUR);
+
+			fseek(origin, -(strlen(funcName) - 1), SEEK_CUR);
 		}
 		fputc(cc, newFile);
 	}

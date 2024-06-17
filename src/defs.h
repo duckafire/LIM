@@ -2,7 +2,7 @@
 #define __STARTED_TIN
 
 #define FLAGS_QTT 4
-#define VERSION_CUR "0.1.8"
+#define VERSION_CUR "0.1.9"
 #define VERSION_LEN 5
 #define BI_BLOCK 51
 
