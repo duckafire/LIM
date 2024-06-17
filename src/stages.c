@@ -46,7 +46,7 @@ void startProcess(FILE **origin, FILE **newFile, char *libName, char *libNoExt){
 
 static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 	char init[6], func[BI_BLOCK], nLib[46], cc;
-	int qtt = 0;
+	int qtt = 0; // QuanTiTy of character for to write
 
 	memset(init, '\0',  6); // local/_G
 	memset(func, '\0', BI_BLOCK); // "function" and its name
@@ -108,17 +108,27 @@ static void stage_01_define(FILE *origin, FILE *newFile, char *libNoExt){
 }
 
 static void stage_02_spaces(FILE *origin, FILE *newFile){
-	// current/future character; comment block
-	char cc, cf, cmt[3], lastAdded, lastLast; // #5: before last added
+	// current/future/future future character
+	char cc, cf, cff;
+	
+	// comment block; last addition; before last addition
+	char cmt[3], lastAdded, lastLast;
 
-	// it is a commentary; it is a inverted bar
-	int isCmt, isInvBar;
+	// it is a commentary (block); it is a inverted bar; control of "fseek" for "cf" and "cff"
+	int isCmt, isInvBar, qttBack;
 
 	// remove unnecessary spaces, respecting string; remove comments
 	while((cc = fgetc(origin)) != EOF){
 		if(cf != EOF){
-			cf = fgetc(origin);
-			fseek(origin, -1, SEEK_CUR);
+			qttBack = 1;
+			cf  = fgetc(origin);
+
+			if(cff != EOF){
+				qttBack = 2;
+				cff = fgetc(origin);
+			}
+			
+			fseek(origin, -qttBack, SEEK_CUR);
 		}
 		// comments
 		if(cc == '-'){
@@ -167,8 +177,8 @@ static void stage_02_spaces(FILE *origin, FILE *newFile){
 			lastAdded = cc;
 			continue;
 		}
-		// spaces
-		if((cc == ' ' || cc == '\t' || cc == '\n') && fCharOrNum(cf) && fCharOrNum(lastAdded)){
+		// spaces (before comments; others)
+		if((lastAdded != ' ' && cc == ' ' && cf == '-' && cff == '-') || ((cc == ' ' || cc == '\t' || cc == '\n') && fCharOrNum(cf) && fCharOrNum(lastAdded))){
 		   fputc(' ', newFile);
 		   lastLast = lastAdded;
 		   lastAdded = ' ';
