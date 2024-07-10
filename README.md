@@ -18,13 +18,13 @@
 ## General vision
 ###### [Versão em Português-BR](https://github.com/duckafire/LIM/blob/main/info/pt-br/README-main.ptbr.md)
 
-&emsp; **L**ua L**i**brary Co**m**pactor is a small terminal program, created for to easily the compaction of LUA libraries in a format nicknamed of [*Local Package*](#local-package). <br>
+&emsp; **L**ua L**i**brary Co**m**pactor is a small terminal program, created for to easily the compaction of Lua libraries in a format nicknamed of [*Local Package*](#local-package). <br>
 
-&emsp; In summary, LIM create a copy of the file used like argument and accomplish a serie of abbreviations and remotions of characters, *trying* not break the code logic. Its objective is not become the code more fast, but yes minor in relation to the characters size (and as a consequence in `bytes`)<br>
+&emsp; In summary, Lim create a copy of the file used like argument and accomplish a serie of abbreviations and remotions of characters, *trying* not break the code logic. Its objective is not become the code more fast, but yes minor in relation to the characters size (and as a consequence in `bytes`)<br>
 
-&emsp; LIM can be used in practically all type of program that use LUA, but its main finality is assist in the build of small libraries to the [Tic80 Tiny Computer](https://tic80.com "Official site"), like the libraries natives of the project [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repository"). <br>
+&emsp; Lim can be used in practically all type of program that use Lua, but its main finality is assist in the build of small libraries to the [Tic80 Tiny Computer](https://tic80.com "Official site"), like the libraries natives of the project [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repository"). <br>
 
-&emsp; For obtain more informations about LIM, in relation to the **rules**, good pratices and others informations, [*click here*](https://github.com/duckafire/LIM/tree/main/info/README.md "Official Documentation of the LIM"). <br> <br>
+&emsp; For obtain more informations about Lim, in relation to the **rules**, good pratices and others informations, [*click here*](https://github.com/duckafire/LIM/tree/main/info/README.md "Official Documentation of the LIM"). <br> <br>
 
 <details><summary><b>Useful links</b></summary>
 	<ul>
@@ -85,22 +85,22 @@ do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local s
 ## Local package
 ###### Structure
 
-````
+```
 ~    +--> Table that will be store the library functions
 ~    |
 ~ +---------+
-1 local _L={}
+1 local TL={}
 ~
-2 do local P11=print _L.add=function(a,b) return a+b end end
-~ ++ +-------------+ +---------------------------------+ +-+
-~  |    |                                           |     |
-~  |    +--> References to LUA functions            |     |                      
-~  |                                                |     |
-~  |                     Function of the library <--+     |
-~  +------------------------------------------------------+
+2 do local MA0=math.abs TL.abs=function(a) return MA0(a) end end
+~ ++ +----------------+ +----------------------------------+ +-+
+~  |    |                                           |         |
+~  |    +--> References to LUA functions            |         |
+~  |                                                |         |
+~  |                     Function of the library <--+         |
+~  +----------------------------------------------------------+
 ~                 |
-3 local lib=_L    +--> Contention to the library environment
-~ +----------+                   
+3 local lib=TL    +--> Contention to the library environment
+~ +----------+
 ~      |
 ~      +--> Reference to the library
 ```

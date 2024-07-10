@@ -17,11 +17,11 @@
 
 ## Visão geral
 ###### [English version](https://github.com/duckafire/LIM/blob/main/README.md)
-&emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas LUA) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas LUA em um formato apelidado de [*Pacote Local*](#pacote-local). <br>
+&emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas Lua) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas Lua em um formato apelidado de [*Pacote Local*](#pacote-local). <br>
 
-&emsp; Em resumo, LIM gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
+&emsp; Em resumo, Lim gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
 
-&emsp; LIM pode ser usado em praticamente todo tipo de programa que use LUA, mas sua finalidade principal é auxiliar na construção de pequenas bibliotecas para [Tic80 Tiny Computer](https://tic80.com "Site oficial"), especificamente bibliotecas oriundas do projeto [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repositório"). <br>
+&emsp; Lim pode ser usado em praticamente todo tipo de programa que use Lua, mas sua finalidade principal é auxiliar na construção de pequenas bibliotecas para [Tic80 Tiny Computer](https://tic80.com "Site oficial"), especificamente bibliotecas oriundas do projeto [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repositório"). <br>
 
 &emsp; Para obter mais informações a respeito do LIM, em relação à **regras**, boas práticas e outras informações, [*clique aqui*](https://github.com/duckafire/LIM/tree/main/info/pt-br/README-info.ptbr.md "Documentação oficial do LIM"). <br> <br>
 
@@ -90,16 +90,16 @@ do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local s
 ~ +---------+
 1 local _L={}
 ~
-2 do local P11=print _L.add=function(a,b) return a+b end end
-~ ++ +-------------+ +---------------------------------+ +-+
-~  |    |                                           |     |
-~  |    +--> Referência para funções LUA            |     |                      
-~  |                                                |     |
-~  |                        Função da biblioteca <--+     |
-~  +------------------------------------------------------+
+2 do local MA0=math.abs TL.abs=function(a) return MA0(a) end end
+~ ++ +----------------+ +----------------------------------+ +-+
+~  |    |                                           |         |
+~  |    +--> Referência para funções LUA            |         |
+~  |                                                |         |
+~  |                        Função da biblioteca <--+         |
+~  +----------------------------------------------------------+
 ~                 |
 3 local lib=_L    +--> Contenção para o ambiente da biblioteca
-~ +----------+                   
+~ +----------+
 ~      |
 ~      +--> Refência à biblioteca
 ```
