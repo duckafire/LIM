@@ -85,12 +85,12 @@ local function add(a,b) return a+b end
 
 <br>
 
-> [!NOTA]\
+> [!NOTE]\
 > `-r` não substitui o arquivo de origem. 
 
 <br>
 
-> [!NOTA]\
+> [!NOTE]\
 > Caso `libName` não seja especificado, `origin` será usado em seu lugar.
 
 <br>
@@ -136,7 +136,7 @@ do local MA0=math.abs TL.abs=function(a) return MA0(a) end end
 local lib=TL
 ```
 
-````
+```
 ~    +--> Tabela que armazenará as funções da biblioteca
 ~    |
 ~ +---------+
