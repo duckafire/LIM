@@ -85,7 +85,8 @@ void saveState(FILE **origin, FILE **newFile, char *libName, char *libNoExt, FIL
 
 	fprintf(*origin, "%s", transfer);
 	
-	if(1){
+	// show compaction process
+	if(0){
 		static short num = 0;
 		printf("%d\n", ++num);
 		printf("%s\n\n\n", transfer); // debug

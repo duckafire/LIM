@@ -78,7 +78,6 @@ end
 local LIB={}
 do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local seed=MR19(MR19(0,65536))__CUR_MAP=0 LIB.collision=function(a,b)local c="Table not specified. Argument #" A0(T21(a)=="table","1"..c)A0(T21(b)=="table","2"..c)return MM12(a.x,b.x)<MM14(a.x+a.width,b.x+b.width)&&MM12(a.y,b.y)<MM14(a.y+a.height,b.y+b.height)end end
 --local reference=LIB
---local reference=LIB
 ```
 
 <br>

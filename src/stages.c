@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "util", "while"};
+char luaReserved[21][9] = {"and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat","return","then", "true", "until", "while"};
 
 // block size: 51/BI_BLOCK (x4), 30 + 5
 FILE *libTool = NULL, *libGlobal, *libLocal, *libFunc, *refeHead, *funcEnvBuf;
