@@ -21,9 +21,9 @@
 
 &emsp; Em resumo, Lim gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
 
-&emsp; Lim pode ser usado em praticamente todo tipo de programa que use Lua, mas sua finalidade principal é auxiliar na construção de pequenas bibliotecas para [Tic80 Tiny Computer](https://tic80.com "Site oficial"), especificamente bibliotecas oriundas do projeto [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repositório"). <br>
+&emsp; Lim pode ser usado em praticamente todo tipo de programa que use Lua, mas sua finalidade principal é auxiliar na construção de pequenas bibliotecas para o [Tic80 Tiny Computer](https://tic80.com "Site oficial"), especificamente bibliotecas oriundas do projeto [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repositório"). <br>
 
-&emsp; Para obter mais informações a respeito do LIM, em relação à **regras**, boas práticas e outras informações, [*clique aqui*](https://github.com/duckafire/LIM/tree/main/info/pt-br/README-info.ptbr.md "Documentação oficial do LIM"). <br> <br>
+&emsp; Para obter mais informações a respeito do Lim, em relação à **regras**, boas práticas e outras informações, [*clique aqui*](https://github.com/duckafire/LIM/tree/main/info/pt-br/README-info.ptbr.md "Documentação oficial do LIM"). <br> <br>
 
 <details><summary><b>Links úteis</b></summary>
 	<ul>
@@ -93,7 +93,7 @@ do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local s
 2 do local MA0=math.abs TL.abs=function(a) return MA0(a) end end
 ~ ++ +----------------+ +----------------------------------+ +-+
 ~  |    |                                           |         |
-~  |    +--> Referência para funções LUA            |         |
+~  |    +--> Referência para funções Lua            |         |
 ~  |                                                |         |
 ~  |                        Função da biblioteca <--+         |
 ~  +----------------------------------------------------------+
