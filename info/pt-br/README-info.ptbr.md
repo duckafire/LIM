@@ -215,7 +215,7 @@ local lib=TL
 
 <h4 id="3-4">4 - Não use <code>@</code> no código.</h4>
 
-&emsp; Durante o processo de compactação, esse caractere é usado para deixar diversas marcações no código, para que o mesmo possa se orientar em futuras ações. Dito isso, é possível considerar essa como sendo uma ["palavra" reservada](https:///github.com/duckafire/LIM/blob/main/info/RESERVED_WORDS.txt "Lista de palavras reservadas do Lim").
+&emsp; Durante o processo de compactação, esse caractere é usado para deixar diversas marcações no código, para que o Lim possa se orientar em futuras ações. Dito isso, é possível considerar essa como sendo uma ["palavra" reservada](https:///github.com/duckafire/LIM/blob/main/info/RESERVED_WORDS.txt "Lista de palavras reservadas do Lim").
 
 <br>
 
