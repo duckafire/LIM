@@ -1,4 +1,5 @@
 <h2 id="0">Topics</h2>
+###### [Versão em Português-BR](https://github.com/duckafire/LIM/blob/main/info/pt-br/README-info.ptbr.md)
 
 * [Description](#1)
 	* [Operation](#1-1)

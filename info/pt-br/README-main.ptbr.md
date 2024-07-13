@@ -16,7 +16,7 @@
 </div>
 
 ## Visão geral
-###### [English version](https://github.com/duckafire/LIM/blob/main/README.md)
+###### [English-US version](https://github.com/duckafire/LIM/blob/main/README.md)
 &emsp; **L**ua L**i**brary Co**m**pactor (Compactador de Bibliotecas Lua) é um pequeno programa de terminal, criado para facilitar a compactação de bibliotecas Lua em um formato apelidado de [*Pacote Local*](#pacote-local). <br>
 
 &emsp; Em resumo, Lim gera uma cópia do arquivo passado como argumento e realiza uma série de abreviações e remoções de caracteres, *tentando* não quebrar a lógica do código. Seu objetivo não é tornar o código mais rápido, mas sim menor em relação a contagem de caracteres (e em conseguentemente em `bytes`). <br>
