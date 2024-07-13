@@ -208,6 +208,8 @@ local lib=TL
 > [!IMPORTANT]\
 > Lim não *respeita* cadeias de caracteres delimitadas por eles (`[[ ]]`).
 
+<br>
+
 > [!TIP]\
 > Use o [Caractere de Escape](https://en.m.wikipedia.org/wiki/Escape_sequences_in_C "Página da Wikipédia sobre Caracteres de Escape") `\n` para quebrar linhas  em suas cadeias de caracteres.
 
