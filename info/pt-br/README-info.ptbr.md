@@ -241,7 +241,7 @@ local lib=TL
 
 <h4 id="4-1">1 - As vezes lixo é gerado próximo ao fim do código.</h4>
 
-&emsp; Um meio de barra esse lixo foi criado, mas ele não é 100% eficiente, então, eventualmente, algum lixo pode acabar indo parar no [produto final](#2-3). Esse lixo consiste em alguns poucos (0-15) caracteres aleatórios.
+&emsp; Há um meio de barrar esse lixo foi criado, mas ele não é 100% eficiente, então, eventualmente, algum lixo pode acabar indo parar no [produto final](#2-3). Esse lixo consiste em alguns poucos (0-15) caracteres aleatórios.
 
 <h4 id="4-2">2 - Caminhos de arquivo não são suportados, apenas o nome do arquivo.</h4>
 

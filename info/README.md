@@ -251,26 +251,26 @@ local lib=TL
 
 <h4 id="4-1">1 - Sometimes trash is generated  nea rthe end of the code.</h4>
 
-&emsp; Um meio de barra esse lixo foi criado, mas ele não é 100% eficiente, então, eventualmente, algum lixo pode acabar indo parar no [produto final](#2-3). Esse lixo consiste em alguns poucos (0-15) caracteres aleatórios.
+&emsp; There is a way to stop this trash created, but he is not 100% efficiency, then, eventually, some trash can might end up in the [final product](#2-3). This trash consist in a few (0-15) random characters.
 
-<h4 id="4-2">2 - Caminhos de arquivo não são suportados, apenas o nome do arquivo.</h4>
+<h4 id="4-2">2 - File path are not supported, only the file name.</h4>
 
-&emsp; Ou seja, caso `origin` seja especificado como `src/origin.lua` ele será denotado como inválido, nesse caso, se faz necessário estar *dentro* do directório do arquivo em questão.
+&emsp; That is, case `origin` is specified like `src/origin.lua` it will be denoted like invalid, in this case, so it is necessary be *inside* of the file directory in question.
 
-<h4 id="4-3">3 - Valores hexadecimais são quebrados pelo processo de compactação.</h4>
+<h4 id="4-3">3 - Hexadecimais values are breaking y compaction process.</h4>
 
-&emsp; Em outras palavras, tais códigos numéricos não são compactados, mas perdem parte de seus caracteres após a compactação, o que gera uma quebra considerável na lógica do código.
+&emsp; In other words, such numeric codes are not compacted, but they lose part of its characters, what generate a considerable break in code logic.
 
 <br>
 
 > [!TIP]\
-> `local var = tonumber(0x00)` ou `local var = string.format("%x", "0x00")` podem ser usado para contornar o 3º problema.
+> `local var = tonumber(0x00)` or `local var = string.format("%x", "0x00")` can be used to around the 3st problema.
 
 <br>
 
 > [!IMPORTANT]\
-> Versões futuras do Lim trarão correções para ambos os problemas acima.
+> Future version of the Lim will bring corrections to both problems above.
 
 <br>
 
-### [Voltar ao topo](#0)
+### [Come back to top](#0)
