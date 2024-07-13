@@ -1,13 +1,3 @@
-<br>
----
-<br>
-
-__*Work in progress*__
-
-<br>
----
-<br>
-
 <h2 id="0">Topics</h2>
 
 * [Description](#1)
@@ -24,15 +14,15 @@ __*Work in progress*__
 	* [Reserved character](#3-4)
 	* [Last characters](#3-5)
 * [Known issues](#4)
-	* [Eventual *trash*](#4-1)
-	* [Path not supported](#4-2)
-	* [Hexadecimal break](#4-3)
+	* [Occasional *garbage*](#4-1)
+	* [Unsupported path](#4-2)
+	* [Break in hexadecimal values](#4-3)
 		
 <br>
 
 <h2 id="1">Description</h2>
 
-&emsp; **L**ua L**i**brary Co**m**pactor, or only **Lim**, is a terminal program created with the intention of to facilitate the compaction of code written in [`Lua`](https://lua.com "Site oficial da linguagem") para use no project [*TinyLibrary*](#1-2) (but it can be used in any other program that use`Lua`), in order to maintain operation of the code and exporting it in a format named like *Local Package*.
+&emsp; **L**ua L**i**brary Co**m**pactor, or only **Lim**, is a terminal program created with the intention of to facilitate the compaction of code written in [`Lua`](https://lua.com "Site oficial da linguagem") para use no project [*TinyLibrary*](#1-2) (but it can be used in any other program that use `Lua`), in order to maintain the operation of the code and exporting it in a format named like *Local Package*.
 
 <h3 id="1-1">Operation</h3>
 
@@ -49,7 +39,7 @@ end
 local function add(a,b) return a+b end
 ```
 
-&emsp; Besides this renomination, in such a process, names of Lua native functions (like: `type`) are replaced by a *code*, which is nothing more than a variable that references the function in question, but with a minor quantity of characters in its name, what, in the long term, it makes a considerable difference in code size.
+&emsp; Besides this renomination, in such a process, names of Lua native functions (like: `type`) are replaced by a *code*, which is nothing more than a variable that references the function in question, but with a minor quantity of characters in its name, which, in the long term, makes a considerable difference in code size.
 
 | Original | Reference |
 | :--      | :--       |
@@ -58,7 +48,7 @@ local function add(a,b) return a+b end
 &emsp; After this process, not everything will be compacted, because such an act would generate the break of the syntactic and semantic logic of the code. The exception to the compaction applies to:
 
 * *Environment* global: that only can be accessed and manipulated inside the library environment and by functions in it.
-* *Pure* global: that can be accessed and manipulated by any code present in program (that has been written after the library *implementation*).
+* *Pure* global: that can be accessed and manipulated by any code present in the program (that has been written after the library *implementation*).
 * *Internal* functions: only can be called inside the library *environment*.
 * Library functions: are indexed to the library table, can be called outside its *environment*.
 
