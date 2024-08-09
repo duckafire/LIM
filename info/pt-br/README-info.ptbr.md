@@ -19,6 +19,8 @@
 	* [*Lixo* eventual](#4-1)
 	* [Caminhos não suportados](#4-2)
 	* [Quebra de hexadecimais](#4-3)
+	* [Compactação incorreta de *globais*](#4-4)
+	* ["Limitação" para valores locais](#4-5)
 		
 <br>
 
@@ -254,6 +256,14 @@ local lib=TL
 <h4 id="4-3">3 - Valores hexadecimais são quebrados pelo processo de compactação.</h4>
 
 &emsp; Em outras palavras, tais códigos numéricos não são compactados, mas perdem parte de seus caracteres após a compactação, o que gera uma quebra considerável na lógica do código.
+
+<h4 id="4-4">Compactação incorreta de *globais*.</h4>
+
+&emsp; Ao criar duas variáveis ou tabelas *globais* usando apenas um `local` (`local var1, ..., varn`), apenas o primeiro identificador será poupado da compactação (`local var1, var2` -> `local var1, a`).
+
+<h4 id="4-5">"Limitação" para valores locais.</h4>
+
+&emsp; Caso uma *função mãe* contenha mais de 26 identificadores, o 27º será formado por 'caracteres especiais (`{`, `|`, ...) + um número + o identificador original', ou seja, será um nome inválido para tais.
 
 <br>
 

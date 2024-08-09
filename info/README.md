@@ -18,6 +18,8 @@
 	* [Occasional *garbage*](#4-1)
 	* [Unsupported path](#4-2)
 	* [Break in hexadecimal values](#4-3)
+	* [Incorrect compaction of *global*](#4-4)
+	* ["Limitation" for local values](#4-5)
 		
 <br>
 
@@ -253,6 +255,14 @@ local lib=TL
 <h4 id="4-3">3 - Hexadecimals values are breaking in compaction process.</h4>
 
 &emsp; In other words, such numeric codes are not compacted, but they lose part of its characters, what generate a considerable break in code logic.
+
+<h4 id="4-4">Incorrect compaction of *global*.</h4>
+
+&emsp; When creating two or more *global* variables or tables using only one `local` (`local var1, ..., varn`), only the first identifier will be spared of the compaction (`local var1, var2` -> `local var1, a`).
+
+<h4 id="4-5">"Limitation" for local values.</h4>
+
+&emsp; Case one `mother function` contain more of 26 identifier, the 27th will be fomated by 'special characteres (`{`, `|`, ...) + one number + the original identifier', in other words, it will be a invalid name to them.
 
 <br>
 
