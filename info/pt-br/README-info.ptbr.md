@@ -1,6 +1,6 @@
 <h2 id="0">Tópicos</h2>
-###### [English-US version](https://github.com/duckafire/LIM/blob/main/info/README.md)
 
+###### [English-US version](https://github.com/duckafire/LIM/blob/main/info/README.md)
 
 * [Descrição](#1)
 	* [Funcionamento](#1-1)
