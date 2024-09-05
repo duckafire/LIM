@@ -1,47 +1,32 @@
-# USE:	gcc,	make
-CC = @gcc
-EC = @echo - LIM was
+CC?  =
+B32? = false
 
+FILES_NAMES = main arg stages tools-general tools-to-stages
+FILES_PATH  = $(addprefix ./src/, $(FILES_NAMES))
+FILES_FULL  = $(addsuffix .c,     $(FILES_PATH) )
 
-# files
-F_NAMES = main arg stages tools-general tools-to-stages
-F_EXTEN = $(addprefix ./src/, $(F_NAMES))
-F_FINAL = $(addsuffix .c, $(F_EXTEN))
+FLAG_B32 =
+NAME_B32 = ""
 
-
-# linux
-L_ERRO = @echo Invalid target to Windows. Use only ´make´
-L_PATH = /bin/lim
-
-
-# windows x linux
-OS = $(shell uname)
-
-ifeq ($(OS), Winwods_NT)
-	PRE_PROGRAM = $(addsuffix .exe, $(L_PATH))
-	L_ADD = $(L_ERRO)
-	L_SUB = $(L_ERRO)
-else
-	PRE_PROGRAM = $(L_PATH)
-	L_ADD = @cp $< $(PRE_PROGRAM)
-	L_SUB = @rm $^
+ifeq ($(B32), true)
+	FLAG_B32 = -m32
+	NAME_B32 = "-32"
 endif
 
+# e.g.:   gcc   [-m32]      <files.c>     -o ./bin/lim[-32][.exe]
+COMPILE = $(CC) $(FLAG_B32) $(FILES_FULL) -o ./bin/lim$(NAME_B32)
 
-# executable
-PROGRAM = $(addprefix ., $(PRE_PROGRAM))
+all:
+	@echo "+-------------------------------+"
+	@echo "| Specifie a:                  |"
+	@echo "| [target] linux | windows     |"
+	@echo "| [compiler, e.g.] CC=gcc      |"
+	@echo "| [if it will be x32] B32=true |"
+	@echo "| Example: make linux CC=gcc   |"
+	@echo "+------------------------------+"
 
+windows:	$(FILES_FULL)
+	@$(COMPILE).exe
 
-# targets
-all:	$(F_FINAL)
-	$(CC) $^ -o $(PROGRAM) -I./src
-	$(EC) compiled to ./bin
-
-install:	$(PROGRAM)
-	$(L_ADD)
-	$(EC) added to /bin
-
-uninstall:	$(PRE_PROGRAM)
-	$(L_SUB)
-	$(EC) removed to /bin
-
+linux:	$(FILES_FULL)
+	@$(COMPILE)
