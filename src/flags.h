@@ -4,14 +4,12 @@
 // 7 + 2 + 1
 #define BIG_FLAG 10
 
-#define VERSION "-v","--version"
-#define MANUAL  "-m","--manual"
-#define HELP    "-h","--help"
-#define VERBOSE "-V","--verbose"
-#define NAME    "-n","--name"
-#define REPLACE "-r","--replace"
-
-void pParag(char **parag);
+#define F_VERSION "-v","--version"
+#define F_MANUAL  "-m","--manual"
+#define F_HELP    "-h","--help"
+#define F_VERBOSE "-V","--verbose"
+#define F_NAME    "-n","--name"
+#define F_REPLACE "-r","--replace"
 
 void welcome(void); // called without arguments
 void version(void);
@@ -20,19 +18,3 @@ void help(char *flag);
 void verbose(void);
 
 #endif
-
-/*
-void verbose(void){
-	if(!g_verbose) return;
-
-	static short id = -1;
-	id++;
-
-	if(id == 0){
-		printf("lorem ipsum");
-		return;
-	}
-	....
-}
-*/
-

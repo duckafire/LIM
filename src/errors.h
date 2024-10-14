@@ -3,11 +3,11 @@
 
 // error code
 enum {
-	REPEAT_FLAG = 1,
-	UNEXPECTED_FLAG,
-	ARG_EXPECTED,
-	INVALID_FLAG,
-	FILES_NAMES_OVERFLOW
+	E_REPEAT_FLAG = 1,
+	E_UNEXPECTED_FLAG,
+	E_ARG_EXPECTED,
+	E_INVALID_FLAG,
+	E_FILES_NAMES_OVERFLOW
 };
 
 void repeatFlag(short pos, char *arg);

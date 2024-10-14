@@ -1,19 +1,44 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "main.h"
+#include "global.h"
 #include "flags.h"
 
-void pParag(char **parag){
-	for(short i = 0; i < ARRAY_LEN(parag); i++)
-		fprintf(stdout, "%s\n", parag[i]);
+void welcome(void){
+	pParag(0, "Welcome message", "dsadad", "sadasd", NULL);
+}
+
+void version(void){
+	pParag(0, LIM_VERSION, NULL);
+}
+
+void manual(void){
+	pParag(0, "Manual", NULL);
+	exit(0);
+}
+
+#include <stdio.h>
+void help(char *flag){
+	if(strcmp2(flag, F_VERSION)){
+	
+	//} else if()...
+	}else{ // NULL
+		pParag(0, "Default message", NULL);
+	}
 
 	exit(0);
 }
 
-void welcome(void){}
-void version(void){}
-void manual(void){}
-void help(char *flag){}
-void verbose(void){}
+void verbose(void){
+	if(!g_verbose) return;
+
+	static short id = -1;
+	id++;
+
+	if(id == 0){
+		pParag(0, "lorem ipsum", NULL);
+		return;
+	}
+	//...
+}
+

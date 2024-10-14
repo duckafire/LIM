@@ -1,19 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "main.h"
+#include "global.h"
 #include "flags.h"
 #include "errors.h"
 
 bool g_verbose = false;
 bool g_replace = false;
 
-char *gp_nameOrg = NULL;
-char *gp_nameDst = NULL;
-
-static short strcmp2(char *str, char *v0, char *v1){
-	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
-}
+char *gp_nameOrg;
+char *gp_nameDst;
 
 int main(int argc, char *argv[]){
 	argc--; // except argument "lim"
@@ -24,45 +20,45 @@ int main(int argc, char *argv[]){
 	if(argc == 0)
 		welcome();
 
-	if(strcmp2(argv[0], VERSION))
+	if(strcmp2(argv[1], F_VERSION))
 		version();
 
-	if(strcmp2(argv[0], MANUAL))
+	if(strcmp2(argv[1], F_MANUAL))
 		manual();
 
-	if(strcmp2(argv[0], HELP)){
+	if(strcmp2(argv[1], F_HELP)){
 		if(argc == 1) help(NULL);
-		help(argv[1]);
+		help(argv[2]);
 	}
 
 	// check the incorrect use of "information" flags
 	char invalid[3][2][BIG_FLAG] = {
-		{VERSION},
-		{MANUAL},
-		{HELP}
+		{F_VERSION},
+		{F_MANUAL},
+		{F_HELP}
 	};
 
-	for(short i = 1; i < ARRAY_LEN(invalid); i++)
+	for(short i = 2; i < ARRAY_LEN(invalid); i++)
 		for(short j = 0; j < ARRAY_LEN(invalid[i]); j++)
 			if(strcmp2(argv[i], invalid[j][0], invalid[j][1]))
 				unexpectedFlag(i, argv[i]);
 
 	// options to compaction
 	for(short i = 0; i < argvlen; i++){
-		if(strcmp2(argv[i], VERBOSE)){
+		if(strcmp2(argv[i], F_VERBOSE)){
 			if(g_verbose) repeatFlag(i, argv[i]);
 			g_verbose = true;
 			argv[i] = NULL;
 			continue;
 		}
-		if(strcmp2(argv[i], NAME)){
+		if(strcmp2(argv[i], F_NAME)){
 			if(gp_nameDst != NULL) repeatFlag(i, argv[i]);
-			if(i + 1 == argvlen) argExpected(NAME);
+			if(i + 1 == argvlen) argExpected(F_NAME);
 			gp_nameDst = argv[i + 1];
 			argv[i] = NULL;
 			continue;
 		}
-		if(strcmp2(argv[i], REPLACE)){
+		if(strcmp2(argv[i], F_REPLACE)){
 			if(g_replace) repeatFlag(i, argv[i]);
 			g_replace = true;
 			argv[i] = NULL;
@@ -92,5 +88,6 @@ int main(int argc, char *argv[]){
 	}
 
 	//startedProcess();
+	printf("end\n");
 	return 0;
 }

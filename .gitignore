@@ -2,5 +2,6 @@ bin/*.txt
 bin/*.lua
 bin/*.lim
 bin/*.limfile
+src/lim
 install-lim
 compile
