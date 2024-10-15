@@ -5,26 +5,37 @@
 #include "flags.h"
 
 void welcome(void){
-	pParag(0, "Welcome message", "dsadad", "sadasd", NULL);
-}
-
-void version(void){
-	pParag(0, LIM_VERSION, NULL);
-}
-
-void manual(void){
-	pParag(0, "Manual", NULL);
+	pMessage(0, "Welcome message", NULL);
 	exit(0);
 }
 
-#include <stdio.h>
+void version(void){
+	pMessage(0, "Version message", NULL);
+	exit(0);
+}
+
+void helpList(void){
+	pMessage(0, "Help-list message", NULL);
+	exit(0);
+}
+
 void help(char *flag){
-	if(strcmp2(flag, F_VERSION)){
-	
-	//} else if()...
-	}else{ // NULL
-		pParag(0, "Default message", NULL);
-	}
+	if(strcmp2(flag, F_VERSION))
+		pMessage(0, "Help message(version)", NULL);
+	else if(strcmp2(flag, F_H_LIST ))
+		pMessage(0, "Help message(help-list)", NULL);
+	else if(strcmp2(flag, F_HELP   ))
+		pMessage(0, "Help message(help)", NULL);
+	else if(strcmp2(flag, F_VERBOSE))
+		pMessage(0, "Help message(verbose)", NULL);
+	else if(strcmp2(flag, F_NAME   ))
+		pMessage(0, "Help message(name)", NULL);
+	else if(strcmp2(flag, F_REPLACE))
+		pMessage(0, "Help message(replace)", NULL);
+	else if(strcmp2(flag, F_LICENSE))
+		pMessage(0, "Help message(license)", NULL);
+	else
+		pMessage(0, "Help message (all)", NULL);
 
 	exit(0);
 }
@@ -36,9 +47,13 @@ void verbose(void){
 	id++;
 
 	if(id == 0){
-		pParag(0, "lorem ipsum", NULL);
+		pMessage(0, "Started", NULL);
 		return;
 	}
 	//...
 }
 
+void license(void){
+	pMessage(0, "License message", NULL);
+	exit(0);
+}

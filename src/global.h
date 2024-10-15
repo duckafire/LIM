@@ -14,6 +14,6 @@ extern char *gp_nameOrg;
 extern char *gp_nameDst;
 
 bool strcmp2(char *str, char *v0, char *v1);
-void pParag(char n, ...);
+void pMessage(char n, ...);
 
 #endif

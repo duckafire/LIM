@@ -1,30 +1,35 @@
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "global.h"
 #include "flags.h"
 #include "errors.h"
 
-void repeatFlag(short pos, char *arg){
-	pParag(0, "error", NULL);
-	exit(E_REPEAT_FLAG);
+void repeatFlag(char *arg, short pos){
+	fprintf(stdout, E_MSG_FORMAT_0, E_MSG_1, arg, pos);
+	exit(1);
 }
 
-void unexpectedFlag(short pos, char *arg){
-	pParag(0, "error", NULL);
-	exit(E_UNEXPECTED_FLAG);
+void unexpectedFlag(char *arg, short pos){
+	fprintf(stdout, E_MSG_FORMAT_0, E_MSG_2, arg, pos);
+	exit(2);
 }
 
 void argExpected(char *_r, char *requester){
-	pParag(0, "error", NULL);
-	exit(E_ARG_EXPECTED);
+	fprintf(stdout, E_MSG_FORMAT_1, E_MSG_3, requester);
+	exit(3);
 }
 
-void invalidFlag(char *arg){
-	pParag(0, "error", NULL);
-	exit(E_INVALID_FLAG);
+void invalidFlag(char *arg, short pos){
+	fprintf(stdout, E_MSG_FORMAT_0, E_MSG_4, arg, pos);
+	exit(4);
 }
 
 void filesNamesOverflow(void){
-	pParag(0, "error", NULL);
-	exit(E_FILES_NAMES_OVERFLOW);
+	fprintf(stdout, E_MSG_FORMAT_2, E_MSG_5);
+	exit(5);
+}
+
+void nameNotSpecified(void){
+	fprintf(stdout, E_MSG_FORMAT_2, E_MSG_6);
+	exit(6);
 }
