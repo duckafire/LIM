@@ -1,15 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-#include "global.h"
-#include "flags.h"
-#include "errors.h"
+#include "main.h"
+#include "messages/flags.h"
+#include "messages/errors.h"
 
 bool g_verbose = false;
 bool g_replace = false;
 
 char *gp_nameOrg;
 char *gp_nameDst;
+
+bool strcmp2(char *str, char *v0, char *v1){
+	if(str == NULL) return 0;
+	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
+}
 
 int main(int argc, char *argv[]){
 	// information (exit)
@@ -86,12 +93,12 @@ int main(int argc, char *argv[]){
 		nameNotSpecified();
 
 	// get compacted file name (without "--name")
+	bool usingMalloc = false;
 	if(gp_nameDst == NULL){
 		short maxToFor = strlen(gp_nameOrg) + 1;
 
-		char temp[maxToFor], temp2[maxToFor];
+		char temp[maxToFor];
 		memset(temp,  '\0', sizeof(temp ));
-		memset(temp2, '\0', sizeof(temp2));
 
 		// remove extension (".lua")
 		if(gp_nameOrg[maxToFor - 5] == '.'
@@ -103,12 +110,15 @@ int main(int argc, char *argv[]){
 		else
 			strcpy(temp, gp_nameOrg);
 
-		strcpy(temp2, temp);
-		gp_nameDst = temp2;
-
+		gp_nameDst = malloc(sizeof(temp));
+		strcpy(gp_nameDst, temp);
+		usingMalloc = true;
 	}
 
 	//startedProcess();
 	printf("Output: %s, %s, %d, %d\n\n", gp_nameOrg, gp_nameDst, g_replace, g_verbose);
+
+	if(usingMalloc)
+		free(gp_nameDst);
 	return 0;
 }

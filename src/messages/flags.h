@@ -12,6 +12,8 @@
 #define F_REPLACE "-r","--replace"
 #define F_LICENSE "-l","--license"
 
+static void message(char n, ...);
+
 void welcome(void); // called without arguments
 void version(void);
 void helpList(void);
