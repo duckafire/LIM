@@ -4,21 +4,28 @@
 #include <stdbool.h>
 
 #include "main.h"
+#include "queuePointer.h"
 #include "messages/flags.h"
 #include "messages/errors.h"
 
 bool g_verbose = false;
 bool g_replace = false;
 
-char *gp_nameOrg;
-char *gp_nameDst;
+char *gp_nameOrg = NULL;
+Queue *gp_nameDst = NULL_QUEUE_ITEM;
 
 bool strcmp2(char *str, char *v0, char *v1){
 	if(str == NULL) return 0;
 	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
 }
 
+static void cleanup(void){
+	clearQueue();
+}
+
 int main(int argc, char *argv[]){
+	atexit(cleanup);
+
 	// information (exit)
 	if(argc == 1)
 		welcome();
@@ -58,9 +65,11 @@ int main(int argc, char *argv[]){
 			continue;
 		}
 		if(strcmp2(argv[i], F_NAME)){
-			if(gp_nameDst != NULL) repeatFlag(argv[i], i);
 			if(i + 1 == argc) argExpected(F_NAME);
-			gp_nameDst = argv[i + 1];
+
+			if(gp_nameDst->value != NULL) repeatFlag(argv[i], i);
+			gp_nameDst = newItemToQueue(argv[i + 1], false);
+
 			argv[i] = NULL;
 			argv[i + 1] = NULL;
 			continue;
@@ -94,11 +103,12 @@ int main(int argc, char *argv[]){
 
 	// get compacted file name (without "--name")
 	bool usingMalloc = false;
-	if(gp_nameDst == NULL){
+	if(gp_nameDst->value == NULL){
 		short maxToFor = strlen(gp_nameOrg) + 1;
 
-		char temp[maxToFor];
-		memset(temp,  '\0', sizeof(temp ));
+		char *temp;
+		temp = malloc(maxToFor);
+		memset(temp, '\0', sizeof(temp));
 
 		// remove extension (".lua")
 		if(gp_nameOrg[maxToFor - 5] == '.'
@@ -110,15 +120,10 @@ int main(int argc, char *argv[]){
 		else
 			strcpy(temp, gp_nameOrg);
 
-		gp_nameDst = malloc(sizeof(temp));
-		strcpy(gp_nameDst, temp);
-		usingMalloc = true;
+		gp_nameDst = newItemToQueue(temp, true);
 	}
 
 	//startedProcess();
-	printf("Output: %s, %s, %d, %d\n\n", gp_nameOrg, gp_nameDst, g_replace, g_verbose);
-
-	if(usingMalloc)
-		free(gp_nameDst);
+	fprintf(stdout, "Output: %s, %s, %d, %d\n\n", gp_nameOrg, gp_nameDst->value, g_replace, g_verbose);
 	return 0;
 }
