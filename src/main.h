@@ -7,12 +7,12 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-#include "queuePointer.h"
-
 extern bool g_verbose;
 extern bool g_replace;
 extern char *gp_nameOrg;
-extern Queue *gp_nameDst;
+extern char *gp_nameDst;
+
+static bool dstUsingMalloc;
 
 bool strcmp2(char *str, char *v0, char *v1);
 static void cleanup(void);
