@@ -4,28 +4,20 @@
 
 #include "head.h"
 
-bool getName(char c, bool firstOfWord){
-	if(IS_CHR(c) || (IS_NUM(c) && firstOfWord)){
+static char _c;
+
+bool getName(char c, bool firstChar){
+	if(IS_CHR(c) || (IS_NUM(c) && firstChar)){
 		dstr_addc(c);
 		return true;
 	}
 	return false;
 }
 
-bool getNum(char c, bool isFloat){
-	static bool isDot = false;
-
-	if(IS_NUM(c) || (c == '.' && isFloat)){
-		if(c == '.'){
-			if(isDot){
-				isDot = false;
-				return false;
-			}
-			isDot = !isDot;
-		}
-
+bool getNum(char c){
+	if(IS_NUM(c)){
 		dstr_addc(c);
-		
+
 		return true;
 	}
 	return false;
@@ -34,8 +26,6 @@ bool getNum(char c, bool isFloat){
 bool getSpace(char c){
 	return (IS_BIN(c));
 }
-
-static char _c;
 
 void getSpecial(char c){
 	// COMMENTARIES

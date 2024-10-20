@@ -31,54 +31,82 @@ static void getContent(void){
 	}
 
 	// it is the first character
-	bool firstOfWord = false;
+	bool firstChar = false;
 
 	// line feed
 	bool lineFeed = false;
 
-	// the fisrt character (of the file) was writted
+	// the fisrt character was writed
 	bool firstOfFile = false;
-
-	// if "it == false" the current string is a identificator
-	bool isNumber = false;
-
+	
 	// a special character was finded and it prints '\n'
 	bool isSpecial = false;
+
+	// to line feed after float numbers
+	bool isFloat = false;
+
+	// to float numbers
+	bool dotExpected = true;
 
 	while((c = fgetc(gf_origin)) != EOF){
 		if(getSpace(c)){
 			if(isSpecial){
-				isSpecial = false;
+				lineFeed = true;
+				isSpecial = isFloat = false;
 				continue;
 			}
 
-			if(firstOfFile && !lineFeed){
-				lineFeed = true;
+			if((firstOfFile || firstChar) && !lineFeed){
 				dstr_addc('\n');
 
-				firstOfWord = isNumber = false;
+				lineFeed = true;
+				firstChar = isSpecial = isFloat = false;
 			}
 			continue;
 		}
 
-		if(getName(c, firstOfWord)){
+		if(getName(c, firstChar)){
 			turnOn(&firstOfFile);
-			turnOn(&firstOfWord);
+			turnOn(&firstChar);
 
-			lineFeed = false;
-			isNumber = false;
+			lineFeed = isSpecial = false;
 			continue;
 		}
 
-		firstOfWord = lineFeed = false;
+		firstChar = lineFeed = false;
 
-		if(getNum(c, isNumber)){
-			turnOn(&isNumber);
+		if(getNum(c)){
+			firstChar = true;
+			lineFeed = isSpecial = false;
+
+			if(dotExpected){
+				if(fgetc(gf_origin) == '.'){
+					dotExpected = false;
+					dstr_addc('.');
+
+					c = fgetc(gf_origin);
+					if(getNum(c)){
+						isFloat = true;
+						continue;
+					}
+
+					fseek(gf_origin, -1, SEEK_CUR);
+					dstr_addc('\n');
+					continue;
+				}
+
+				fseek(gf_origin, -1, SEEK_CUR);
+			}
+
 			continue;
 		}
+
+		if(c == '.' && isFloat)
+			dstr_addc('\n');
 
 		getSpecial(c);
-		isSpecial = true;
+		isSpecial = dotExpected = true;
+		isFloat = false;
 	}
 
 	dstr_fputs();

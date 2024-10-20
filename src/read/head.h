@@ -19,8 +19,8 @@ void dstr_end(void);
 
 static char c;
 
-bool getName(char c, bool firstOfWord);
-bool getNum(char c, bool isFloat);
+bool getName(char c, bool firstChar);
+bool getNum(char c);
 bool getSpace(char c);
 void getSpecial(char c);
 
