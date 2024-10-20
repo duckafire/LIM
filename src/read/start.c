@@ -25,18 +25,51 @@ void startProcess(void){
 }
 
 static void getContent(void){
-	bool fc = false; // it is the first character
-	bool lf = false; // line feed
-	bool fr = false; // the fisrt character (of the file) was writted
+	void turnOn(bool *b){
+		if(!*b)
+			*b = true;
+	}
+
+	// it is the first character
+	bool firstOfWord = false;
+
+	// line feed
+	bool lineFeed = false;
+
+	// the fisrt character (of the file) was writted
+	bool firstOfFile = false;
+
+	// if "it == false" the current string is a identificator
+	bool isNumber = false;
 
 	while((c = fgetc(gf_origin)) != EOF){
-		if((!fc && getSpace(c, fr, &lf)) || IS_BIN(c)) continue;
+		if(getSpace(c)){
+			if(firstOfFile && !lineFeed){
+				lineFeed = true;
+				dstr_addc('\n');
 
-		if(getName(c, &fr, &fc)) continue;
+				firstOfWord = isNumber = false;
+			}
+			continue;
+		}
 
-		fc = lf = false;
+		if(getName(c, firstOfWord)){
+			turnOn(&firstOfFile);
+			turnOn(&firstOfWord);
 
-		//if(getNum(c)) continue;
+			lineFeed = false;
+			isNumber = false;
+			continue;
+		}
+
+		firstOfWord = lineFeed = false;
+
+		if(getNum(c, isNumber)){
+			turnOn(&isNumber);
+			continue;
+		}
+
+		dstr_addc(c);
 		//getSpecial(c);
 	}
 

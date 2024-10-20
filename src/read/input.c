@@ -4,41 +4,36 @@
 
 #include "head.h"
 
-static char c;
+bool getName(char c, bool firstOfWord){
+	if(IS_CHR(c) || (IS_NUM(c) && firstOfWord)){
+		dstr_addc(c);
+		return true;
+	}
+	return false;
+}
 
-bool getName(char c, bool *fr, bool *fc){
-	if(IS_CHR(c) || (IS_NUM(c) && !*fc)){
-		if(!*fr) *fr = true; // first character (of the file) was writted
-		if(!*fc) *fc = true; // it is the first character
+bool getNum(char c, bool isFloat){
+	static bool isDot = false;
+
+	// 1.1..1...
+	if(IS_NUM(c) || (c == '.' && isFloat)){
+		if(c == '.'){
+			if(isDot){
+				isDot = false;
+				return false;
+			}
+			isDot = !isDot;
+		}
 
 		dstr_addc(c);
 		
 		return true;
 	}
-
 	return false;
 }
 
-bool getNum(char c){
-	if(IS_NUM(c)){
-		dstr_addc(c);
-	
-		return true;
-	}
-
-	return false;
-}
-
-bool getSpace(char c, bool fr, bool *lf){
-	if(IS_SPC(c)){
-		if(fr && !*lf){
-			*lf = true;
-			dstr_addc('\n');
-		}
-		return true;
-	}
-
-	return false;
+bool getSpace(char c){
+	return (IS_BIN(c));
 }
 
 void getSpecial(char c){
@@ -61,6 +56,8 @@ void getSpecial(char c){
 	if(saveDoubleSignal('/')) return;
 	dstr_addc(c);
 }
+
+static char c;
 
 static void clearComment(bool isBlock){
 	if(!isBlock){

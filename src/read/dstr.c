@@ -27,7 +27,6 @@ void dstr_addc(char c){
 
 void dstr_fputs(void){
 	fputs(curWord, stdout);
-	fputc('\n', stdout);
 
 	dstr_end();
 	dstr_init();
