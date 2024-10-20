@@ -12,8 +12,6 @@ extern bool g_replace;
 extern char *gp_nameOrg;
 extern char *gp_nameDst;
 
-static bool dstUsingMalloc;
-
 bool strcmp2(char *str, char *v0, char *v1);
 static void cleanup(void);
 

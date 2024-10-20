@@ -33,3 +33,13 @@ void nameNotSpecified(void){
 	fprintf(stdout, E_MSG_FORMAT_2, E_MSG_6);
 	exit(6);
 }
+
+void nonExistentFile(char *name){
+	fprintf(stdout, E_MSG_FORMAT_1, E_MSG_7, name);
+	exit(7);
+}
+
+void fileAlreadyExistent(char *name){
+	fprintf(stdout, E_MSG_FORMAT_1, E_MSG_8, name);
+	exit(8);
+}

@@ -3,5 +3,8 @@ bin/*.lua
 bin/*.lim
 bin/*.limfile
 src/lim
+src/*.lim
+src/*.lua
+src/Makefile
 install-lim
 compile

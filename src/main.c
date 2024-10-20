@@ -6,6 +6,7 @@
 #include "main.h"
 #include "messages/flags.h"
 #include "messages/errors.h"
+#include "read/start.h"
 
 bool g_verbose = false;
 bool g_replace = false;
@@ -23,6 +24,12 @@ bool strcmp2(char *str, char *v0, char *v1){
 static void cleanup(void){
 	if(dstUsingMalloc)
 		free(gp_nameDst);
+
+	if(gp_curWord != NULL){
+		free(gp_curWord);
+		fclose(gf_origin);
+		fclose(gf_buffer);
+	}
 }
 
 int main(int argc, char *argv[]){
@@ -126,7 +133,6 @@ int main(int argc, char *argv[]){
 		dstUsingMalloc = true;
 	}
 
-	//startedProcess();
-	fprintf(stdout, "Output: %s, %s, %d, %d\n\n", gp_nameOrg, gp_nameDst, g_replace, g_verbose);
+	startProcess();
 	return 0;
 }
