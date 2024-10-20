@@ -4,38 +4,36 @@
 
 #include "head.h"
 
-dstring dstr_init(void){
-	dstring temp;
+static char* curWord;
 
-	temp = malloc(1);
-	temp[0] = '\0';
-
-	return temp;
+void dstr_init(void){
+	curWord = malloc(1);
+	curWord[0] = '\0';
 }
 
-void dstr_addc(dstring *dstr, char c){
-	UNINT len = strlen(TOCHAR *dstr) + 3;
+void dstr_addc(char c){
+	UNINT len = strlen(curWord) + 3;
 
-	dstring temp;
+	char* temp;
 	temp = malloc(len);
 
 	memset(temp, '\0', len);
-	strcpy(TOCHAR temp, TOCHAR *dstr);
+	strcpy(temp, curWord);
 	temp[len - 3] = c;
 
-	free(*dstr);
-	*dstr = temp;
+	free(curWord);
+	curWord = temp;
 }
 
-void dstr_fputs(dstring *dstr){
-	fputs(TOCHAR *dstr, stdout);
+void dstr_fputs(void){
+	fputs(curWord, stdout);
 	fputc('\n', stdout);
 
-	dstr_end(*(&dstr));
-	*dstr = dstr_init();
+	dstr_end();
+	dstr_init();
 }
 
-void dstr_end(dstring *dstr){
-	free(*dstr);
-	*dstr = NULL;
+void dstr_end(void){
+	free(curWord);
+	curWord = NULL;
 }

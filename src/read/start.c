@@ -5,7 +5,6 @@
 #include "../messages/head.h"
 #include "head.h"
 
-dstring gp_curWord;
 FILE *gf_origin  = NULL;
 FILE *gf_buffer  = NULL;
 
@@ -16,12 +15,12 @@ void startProcess(void){
 	if(gf_origin == NULL)
 		nonExistentFile(gp_nameOrg);
 
-	gf_buffer = NULL; // tmpfile();
+	gf_buffer = tmpfile();
 
 	if(!g_replace && fopen(gp_nameDst, "r") != NULL)
 		fileAlreadyExistent(gp_nameDst);
 
-	gp_curWord = dstr_init();
+	dstr_init();
 	getContent();
 }
 
@@ -41,6 +40,6 @@ static void getContent(void){
 		//getSpecial(c);
 	}
 
-	dstr_fputs(&gp_curWord);
-	dstr_end(&gp_curWord);
+	dstr_fputs();
+	dstr_end();
 }

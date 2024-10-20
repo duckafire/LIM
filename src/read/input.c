@@ -11,7 +11,7 @@ bool getName(char c, bool *fr, bool *fc){
 		if(!*fr) *fr = true; // first character (of the file) was writted
 		if(!*fc) *fc = true; // it is the first character
 
-		dstr_addc(&gp_curWord, c);
+		dstr_addc(c);
 		
 		return true;
 	}
@@ -21,7 +21,7 @@ bool getName(char c, bool *fr, bool *fc){
 
 bool getNum(char c){
 	if(IS_NUM(c)){
-		dstr_addc(&gp_curWord, c);
+		dstr_addc(c);
 	
 		return true;
 	}
@@ -33,7 +33,7 @@ bool getSpace(char c, bool fr, bool *lf){
 	if(IS_SPC(c)){
 		if(fr && !*lf){
 			*lf = true;
-			dstr_addc(&gp_curWord, '\n');
+			dstr_addc('\n');
 		}
 		return true;
 	}
@@ -59,7 +59,7 @@ void getSpecial(char c){
 
 	if(saveDoubleSignal('.')) return;
 	if(saveDoubleSignal('/')) return;
-	dstr_addc(&gp_curWord, c);
+	dstr_addc(c);
 }
 
 static void clearComment(bool isBlock){
@@ -82,7 +82,7 @@ static void saveString(char signal){
 	bool invBar = false; // '\'
 
 	while((c = fgetc(gf_origin)) != EOF){
-		dstr_addc(&gp_curWord, c);
+		dstr_addc(c);
 
 		if(invBar){
 			invBar = false;
@@ -100,9 +100,9 @@ static void saveString(char signal){
 
 static bool saveDoubleSignal(char signal){
 	if(c == signal && fgetc(gf_origin) == signal){
-		dstr_addc(&gp_curWord, c);
-		dstr_addc(&gp_curWord, c);
-		dstr_fputs(&gp_curWord);
+		dstr_addc(c);
+		dstr_addc(c);
+		dstr_fputs();
 
 		return true;
 	}

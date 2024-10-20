@@ -24,8 +24,9 @@ static void cleanup(void){
 	if(dstUsingMalloc)
 		free(gp_nameDst);
 
-	if(gp_curWord != NULL){
-		free(gp_curWord);
+	dstr_end();
+
+	if(gf_origin != NULL){
 		fclose(gf_origin);
 		fclose(gf_buffer);
 	}
