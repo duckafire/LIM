@@ -2,9 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "start.h"
-#include "input.h"
-#include "dstr.h"
+#include "head.h"
 
 static char c;
 

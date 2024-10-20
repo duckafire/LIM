@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../main.h"
-#include "../messages/errors.h"
-#include "start.h"
-#include "input.h"
-#include "dstr.h"
+#include "../head.h"
+#include "../messages/head.h"
+#include "head.h"
 
 dstring gp_curWord;
 FILE *gf_origin  = NULL;

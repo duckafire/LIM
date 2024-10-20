@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dstr.h"
+#include "head.h"
 
 dstring dstr_init(void){
 	dstring temp;

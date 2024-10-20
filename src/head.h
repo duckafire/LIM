@@ -1,5 +1,5 @@
-#ifndef lim_main
-#define lim_main
+#ifndef lim_read
+#define lim_read
 
 #define LIM_VERSION "v1.0.0-alpha"
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))

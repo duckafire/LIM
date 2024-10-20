@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "../main.h"
-#include "flags.h"
+#include "../head.h"
+#include "head.h"
 
 static void message(char n, ...){
 	va_list parag;

@@ -3,10 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "main.h"
-#include "messages/flags.h"
-#include "messages/errors.h"
-#include "read/start.h"
+#include "head.h"
+#include "messages/head.h"
+#include "read/head.h"
 
 bool g_verbose = false;
 bool g_replace = false;
