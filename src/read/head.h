@@ -26,6 +26,7 @@ void getSpecial(char c);
 
 static void clearComment(bool isLine);
 static void saveString(char signal);
+static void saveBraces(void);
 static bool saveDoubleSignal(char signal);
 
 // START

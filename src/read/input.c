@@ -35,6 +35,8 @@ bool getSpace(char c){
 	return (IS_BIN(c));
 }
 
+static char _c;
+
 void getSpecial(char c){
 	// COMMENTARIES
 	// line
@@ -57,26 +59,37 @@ void getSpecial(char c){
 		fseek(gf_origin, -1, SEEK_CUR);
 	}
 
+	_c = c;
 	if(c == '\'' || c == '"'){
 		saveString(c);
 		return;
 	}
-}
 
-static char c;
+	if(c == '{'){
+		saveBraces();
+		return;
+	}
+
+	if(saveDoubleSignal('=')) return;
+	if(saveDoubleSignal('/')) return;
+	if(saveDoubleSignal('.')) return;
+
+	dstr_addc(c);
+	dstr_addc('\n');
+}
 
 static void clearComment(bool isLine){
 	if(isLine){
 		fseek(gf_origin, -2, SEEK_CUR); // remove '--'
 		
-		while((c = fgetc(gf_origin)) != EOF && c != '\n');
+		while((_c = fgetc(gf_origin)) != EOF && _c != '\n');
 		return;
 	}
 
 	fseek(gf_origin, -4, SEEK_CUR); // remove '--[['
 
-	while((c = fgetc(gf_origin)) != EOF)
-		if(c == ']')
+	while((_c = fgetc(gf_origin)) != EOF)
+		if(_c == ']')
 			if(fgetc(gf_origin) == ']')
 				break;
 }
@@ -85,28 +98,48 @@ static void saveString(char signal){
 	bool invBar = false; // '\'
 
 	do{
-		dstr_addc(c);
+		dstr_addc(_c);
 
 		if(invBar){
 			invBar = false;
 			continue;
 		}
 
-		if(c == '\\'){
+		if(_c == '\\'){
 			invBar = true;
 			continue;
 		}
-	}while((c = fgetc(gf_origin)) != EOF && c != signal);
+	}while((_c = fgetc(gf_origin)) != EOF && _c != signal);
 
-	dstr_addc(c);
+	dstr_addc(_c);
+	dstr_addc('\n');
+}
+
+static void saveBraces(void){
+	UNINT qtt = 1;
+
+	while(qtt > 0){
+		if(!IS_BIN(_c))
+			dstr_addc(_c);
+
+		_c = fgetc(gf_origin);
+
+		if(_c == '{')
+			qtt++;
+		else if(_c == '}')
+			qtt--;
+	}
+
+	dstr_addc('}');
 	dstr_addc('\n');
 }
 
 static bool saveDoubleSignal(char signal){
-	if(c == signal){
+	if(_c == signal){
 		if(fgetc(gf_origin) == signal){
-			dstr_addc(c);
-			dstr_addc(c);
+			dstr_addc(_c);
+			dstr_addc(_c);
+			dstr_addc('\n');
 
 			return true;
 		}
