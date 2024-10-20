@@ -24,7 +24,7 @@ bool getNum(char c, bool isFloat);
 bool getSpace(char c);
 void getSpecial(char c);
 
-static void clearComment(bool isBLock);
+static void clearComment(bool isLine);
 static void saveString(char signal);
 static bool saveDoubleSignal(char signal);
 

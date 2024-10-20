@@ -42,8 +42,16 @@ static void getContent(void){
 	// if "it == false" the current string is a identificator
 	bool isNumber = false;
 
+	// a special character was finded and it prints '\n'
+	bool isSpecial = false;
+
 	while((c = fgetc(gf_origin)) != EOF){
 		if(getSpace(c)){
+			if(isSpecial){
+				isSpecial = false;
+				continue;
+			}
+
 			if(firstOfFile && !lineFeed){
 				lineFeed = true;
 				dstr_addc('\n');
@@ -69,8 +77,8 @@ static void getContent(void){
 			continue;
 		}
 
-		dstr_addc(c);
-		//getSpecial(c);
+		getSpecial(c);
+		isSpecial = true;
 	}
 
 	dstr_fputs();
