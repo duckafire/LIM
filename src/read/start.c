@@ -11,6 +11,8 @@ FILE *gf_buffer  = NULL;
 static char c;
 
 void startProcess(void){
+	verbose();
+
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
 		nonExistentFile(gp_nameOrg);
@@ -22,9 +24,17 @@ void startProcess(void){
 
 	dstr_init();
 	getContent();
+
+	// temp
+	verbose();
+	dstr_fputs();
+	dstr_end();
+	verbose();
 }
 
 static void getContent(void){
+	verbose();
+
 	void turnOn(bool *b){
 		if(!*b)
 			*b = true;
@@ -45,6 +55,9 @@ static void getContent(void){
 	// to line feed after float numbers
 	bool isFloat = false;
 
+	// a number get a dot to itself
+	bool dotGetted = false;
+
 	// to float numbers
 	bool dotExpected = true;
 
@@ -52,7 +65,7 @@ static void getContent(void){
 		if(getSpace(c)){
 			if(isSpecial){
 				lineFeed = true;
-				isSpecial = isFloat = false;
+				isSpecial = isFloat = dotGetted = false;
 				continue;
 			}
 
@@ -60,7 +73,7 @@ static void getContent(void){
 				dstr_addc('\n');
 
 				lineFeed = true;
-				firstChar = isSpecial = isFloat = false;
+				firstChar = isSpecial = isFloat = dotGetted = false;
 			}
 			continue;
 		}
@@ -69,11 +82,9 @@ static void getContent(void){
 			turnOn(&firstOfFile);
 			turnOn(&firstChar);
 
-			lineFeed = isSpecial = false;
+			lineFeed = isSpecial = dotGetted = false;
 			continue;
 		}
-
-		firstChar = lineFeed = false;
 
 		if(getNum(c)){
 			firstChar = true;
@@ -82,6 +93,7 @@ static void getContent(void){
 			if(dotExpected){
 				if(fgetc(gf_origin) == '.'){
 					dotExpected = false;
+					dotGetted = true;
 					dstr_addc('.');
 
 					c = fgetc(gf_origin);
@@ -101,6 +113,11 @@ static void getContent(void){
 			continue;
 		}
 
+		if(firstChar && !dotGetted){
+			firstChar = dotGetted = false;
+			dstr_addc('\n');
+		}
+
 		if(c == '.' && isFloat)
 			dstr_addc('\n');
 
@@ -108,7 +125,4 @@ static void getContent(void){
 		isSpecial = dotExpected = true;
 		isFloat = false;
 	}
-
-	dstr_fputs();
-	dstr_end();
 }

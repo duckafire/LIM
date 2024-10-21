@@ -1,6 +1,8 @@
 #ifndef lim_messages
 #define lim_messages
 
+#include <stdbool.h>
+
 // ERRORS
 #define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"
 #define E_MSG_FORMAT_1 "[LIM] %s: \"%s\"\n\n"
@@ -36,6 +38,7 @@ void fileAlreadyExistent(char *name);
 #define F_LICENSE "-l","--license"
 
 static void message(char n, ...);
+static bool verboseMsg(short value, char *msg);
 
 void welcome(void); // called without arguments
 void version(void);

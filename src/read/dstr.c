@@ -26,7 +26,9 @@ void dstr_addc(char c){
 }
 
 void dstr_fputs(void){
-	fputs(curWord, stdout);
+	FILE *output = fopen("output.lim", "w");
+	fputs(curWord, output);
+	fclose(output);
 
 	dstr_end();
 	dstr_init();
