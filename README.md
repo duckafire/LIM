@@ -30,15 +30,15 @@
 	<ul>
 		<details><summary>LUA</summary>
 			<ul>
-				<p><a href="https://lua.org"><li> Site</li></a></p>
-				<p><a href="https://github.com/lua/lua"><li>GitHub</li></a></p>
+				<li><a href="https://lua.org">Site</a></li>
+				<li><a href="https://github.com/lua/lua">GitHub</a></li>
 			</ul>
 		</details>
 		<details><summary>Tic80</summary>
 			<ul>
-				<p><a href="https://github.com/nesbox/tic-80/wiki/api)"><li>API</li></a></p>
-				<p><a href="https://tic80.com"><li>Site</li></a></p>
-				<p><a href="https://github.com/nesbox/TIC-80"><li>GitHub</li></a></p>
+				<li><a href="https://github.com/nesbox/tic-80/wiki/api)">API</a></li>
+				<li><a href="https://tic80.com">Site</a></li>
+				<li><a href="https://github.com/nesbox/TIC-80">GitHub</a></li>
 			</ul>
 		</details>
 	</ul>
