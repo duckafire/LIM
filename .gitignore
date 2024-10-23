@@ -1,10 +1,8 @@
-bin/*.txt
-bin/*.lua
-bin/*.lim
-bin/*.limfile
-src/lim
-src/*.lim
-src/*.lua
-src/Makefile
-install-lim
 compile
+install-lim
+
+src/lim
+src/Makefile
+src/*.lua
+src/*.lim
+src/*.txt
