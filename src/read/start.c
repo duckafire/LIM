@@ -5,8 +5,7 @@
 #include "../messages/head.h"
 #include "head.h"
 
-FILE *gf_origin  = NULL;
-FILE *gf_buffer  = NULL;
+FILE *gf_origin = NULL;
 
 static char c;
 
@@ -17,18 +16,22 @@ void startProcess(void){
 	if(gf_origin == NULL)
 		nonExistentFile(gp_nameOrg);
 
-	gf_buffer = tmpfile();
+	if(!g_verbose){
+		FILE *dst;
+		dst = fopen(gp_nameDst, "r");
 
-	if(!g_replace && fopen(gp_nameDst, "r") != NULL)
-		fileAlreadyExistent(gp_nameDst);
+		if(dst != NULL){
+			fclose(dst);
+			fileAlreadyExistent(gp_nameDst);
+		}
+	}
 
-	dstr_init();
+	collect_init();
 	getContent();
 
 	// temp
 	verbose();
-	dstr_fputs();
-	dstr_end();
+	collect_end();
 	verbose();
 }
 
@@ -70,7 +73,7 @@ static void getContent(void){
 			}
 
 			if((firstOfFile || firstChar) && !lineFeed){
-				dstr_addc('\n');
+				collect_add('\n');
 
 				lineFeed = true;
 				firstChar = isSpecial = isFloat = dotGetted = false;
@@ -94,7 +97,7 @@ static void getContent(void){
 				if(fgetc(gf_origin) == '.'){
 					dotExpected = false;
 					dotGetted = true;
-					dstr_addc('.');
+					collect_add('.');
 
 					c = fgetc(gf_origin);
 					if(getNum(c)){
@@ -103,7 +106,7 @@ static void getContent(void){
 					}
 
 					fseek(gf_origin, -1, SEEK_CUR);
-					dstr_addc('\n');
+					collect_add('\n');
 					continue;
 				}
 
@@ -115,11 +118,11 @@ static void getContent(void){
 
 		if(firstChar && !dotGetted){
 			firstChar = dotGetted = false;
-			dstr_addc('\n');
+			collect_add('\n');
 		}
 
 		if(c == '.' && isFloat)
-			dstr_addc('\n');
+			collect_add('\n');
 
 		getSpecial(c);
 		isSpecial = dotExpected = true;

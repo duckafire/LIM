@@ -4,13 +4,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// DSTR
+// COLLECT
 #define UNINT unsigned int
 
-void dstr_init(void);
-void dstr_addc(char c);
-void dstr_fputs(void);
-void dstr_end(void);
+void collect_init(void);
+void collect_add(char c);
+void collect_end(void);
 
 // INPUT
 #define IS_CHR(a) ((a >= 'a' && a <= 'z') || (a >= 'A' && a <= 'Z') || a == '_')
@@ -31,7 +30,6 @@ static bool saveDoubleSignal(char signal);
 
 // START
 extern FILE *gf_origin;
-extern FILE *gf_buffer;
 
 void startProcess(void);
 static void getContent(void);

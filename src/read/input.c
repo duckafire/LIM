@@ -8,7 +8,7 @@ static char _c;
 
 bool getName(char c, bool firstChar){
 	if(IS_CHR(c) || (IS_NUM(c) && firstChar)){
-		dstr_addc(c);
+		collect_add(c);
 		return true;
 	}
 	return false;
@@ -16,7 +16,7 @@ bool getName(char c, bool firstChar){
 
 bool getNum(char c){
 	if(IS_NUM(c)){
-		dstr_addc(c);
+		collect_add(c);
 
 		return true;
 	}
@@ -64,8 +64,8 @@ void getSpecial(char c){
 	if(saveDoubleSignal('/')) return;
 	if(saveDoubleSignal('.')) return;
 
-	dstr_addc(c);
-	dstr_addc('\n');
+	collect_add(c);
+	collect_add('\n');
 }
 
 static void clearComment(bool isLine){
@@ -88,7 +88,7 @@ static void saveString(char signal){
 	bool invBar = false; // '\'
 
 	do{
-		dstr_addc(_c);
+		collect_add(_c);
 
 		if(invBar){
 			invBar = false;
@@ -101,8 +101,8 @@ static void saveString(char signal){
 		}
 	}while((_c = fgetc(gf_origin)) != EOF && _c != signal);
 
-	dstr_addc(_c);
-	dstr_addc('\n');
+	collect_add(_c);
+	collect_add('\n');
 }
 
 static void saveBraces(void){
@@ -110,7 +110,7 @@ static void saveBraces(void){
 
 	while(qtt > 0){
 		if(!IS_BIN(_c))
-			dstr_addc(_c);
+			collect_add(_c);
 
 		_c = fgetc(gf_origin);
 
@@ -120,16 +120,16 @@ static void saveBraces(void){
 			qtt--;
 	}
 
-	dstr_addc('}');
-	dstr_addc('\n');
+	collect_add('}');
+	collect_add('\n');
 }
 
 static bool saveDoubleSignal(char signal){
 	if(_c == signal){
 		if(fgetc(gf_origin) == signal){
-			dstr_addc(_c);
-			dstr_addc(_c);
-			dstr_addc('\n');
+			collect_add(_c);
+			collect_add(_c);
+			collect_add('\n');
 
 			return true;
 		}
