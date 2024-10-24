@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "head.h"
+#include "sub-heads.h"
 
 void repeatFlag(char *arg, short pos){
 	fprintf(stdout, E_MSG_FORMAT_0, E_MSG_1, arg, pos);

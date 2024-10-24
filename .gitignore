@@ -1,6 +1,7 @@
 compile
 install-lim
 
+src/debug/
 src/lim
 src/Makefile
 src/*.lua

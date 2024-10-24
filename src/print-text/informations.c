@@ -3,9 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
-
-#include "../head.h"
-#include "head.h"
+#include "sub-heads.h"
 
 static short verboseID = -1;
 

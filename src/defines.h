@@ -1,9 +1,34 @@
-#ifndef lim_messages
-#define lim_messages
+#ifndef LIM_DEFINES
+#define LIM_DEFINES
 
-#include <stdbool.h>
+// MAIN
+#define HEADS \
+	#include "defines.h" \
+	#include "variables.h" \
+	#include "functions.h"
 
-// ERRORS
+#define HEADS_BELOW \
+	#include "../defines.h" \
+	#include "../variables.h" \
+	#include "../functions.h"
+
+// TOOLS
+#define LIM_VERSION "v1.0.0-alpha"
+#define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
+
+// BUFFERS
+#define UNINT unsigned int
+
+// INPUT
+#define IS_NUM(a) (a >= '0' && a <= '9')
+#define IS_BIN(a) (a <= ' ' || a == 127)
+#define IS_CHR(a) ( \
+	(a >= 'a' && a <= 'z') || \
+	(a >= 'A' && a <= 'Z') || \
+	a == '_' \
+)
+
+// PRINT-TEXT/ERRORS
 #define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"
 #define E_MSG_FORMAT_1 "[LIM] %s: \"%s\"\n\n"
 #define E_MSG_FORMAT_2 "[LIM] %s.\n\n"
@@ -17,16 +42,7 @@
 #define E_MSG_7 "Non-existent file"
 #define E_MSG_8 "File already existent (try: -r, --replace)"
 
-void repeatFlag(char *arg, short pos);
-void unexpectedFlag(char *arg, short pos);
-void argExpected(char *_r, char *requester);
-void invalidFlag(char *arg, short pos);
-void filesNamesOverflow(void);
-void nameNotSpecified(void);
-void nonExistentFile(char *name);
-void fileAlreadyExistent(char *name);
-
-// FLAGS
+// PRINT-TEXT/INFORMATIONS
 #define LARGEST_FLAG 12
 
 #define F_VERSION "-v","--version"
@@ -36,15 +52,5 @@ void fileAlreadyExistent(char *name);
 #define F_NAME    "-n","--name"
 #define F_REPLACE "-r","--replace"
 #define F_LICENSE "-l","--license"
-
-static void message(char n, ...);
-static bool verboseMsg(short value, char *msg);
-
-void welcome(void); // called without arguments
-void version(void);
-void helpList(void);
-void help(char *flag);
-void verbose(void);
-void license(void);
 
 #endif

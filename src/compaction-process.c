@@ -1,15 +1,10 @@
-#include <stdio.h>
+#include <stddef.h>
 #include <stdbool.h>
-
-#include "../head.h"
-#include "../messages/head.h"
-#include "head.h"
-
-FILE *gf_origin = NULL;
+#include "heads.h"
 
 static char c;
 
-void startProcess(void){
+void cp_0_checkAndOpenFiles(void){
 	verbose();
 
 	gf_origin = fopen(gp_nameOrg, "r");
@@ -27,15 +22,9 @@ void startProcess(void){
 	}
 
 	collect_init();
-	getContent();
-
-	// temp
-	verbose();
-	collect_end();
-	verbose();
 }
 
-static void getContent(void){
+void cp_1_extractionFromOrigin(void){
 	verbose();
 
 	void turnOn(bool *b){
@@ -128,4 +117,10 @@ static void getContent(void){
 		isSpecial = dotExpected = true;
 		isFloat = false;
 	}
+}
+
+void cp_x_tempFinish(void){
+	verbose();
+	collect_end();
+	verbose();
 }

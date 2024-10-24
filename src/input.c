@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
-#include "head.h"
+#include "heads.h"
 
 static char _c;
 
