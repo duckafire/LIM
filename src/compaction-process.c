@@ -5,7 +5,7 @@
 static char c;
 
 void cp_0_checkAndOpenFiles(void){
-	verbose();
+	info_verbose();
 
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
@@ -25,7 +25,7 @@ void cp_0_checkAndOpenFiles(void){
 }
 
 void cp_1_extractionFromOrigin(void){
-	verbose();
+	info_verbose();
 
 	void turnOn(bool *b){
 		if(!*b)
@@ -120,7 +120,7 @@ void cp_1_extractionFromOrigin(void){
 }
 
 void cp_x_tempFinish(void){
-	verbose();
+	info_verbose();
 	collect_end();
-	verbose();
+	info_verbose();
 }

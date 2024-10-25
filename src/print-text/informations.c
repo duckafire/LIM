@@ -23,13 +23,13 @@ static void message(char n, ...){
 
 static bool verboseMsg(short value, char *msg){
 	if(verboseID == value){
-		fprintf(stdout, "[LIM] %s\n", msg);
+		fprintf(stdout, "[LIM] %s.\n", msg);
 		return true;
 	}
 	return false;
 }
 
-void welcome(void){
+void info_welcome(void){
 	message(0,
 		"[LIM] - Lua Library Compactor",
 		" ",
@@ -38,12 +38,12 @@ void welcome(void){
 	exit(0);
 }
 
-void version(void){
+void info_version(void){
 	message(0, LIM_VERSION, NULL);
 	exit(0);
 }
 
-void helpList(void){
+void info_helpList(void){
 	message(0,
 		"[LIM] Commands list:",
 		" ",
@@ -54,75 +54,99 @@ void helpList(void){
 		"-n  --name",
 		"-r  --replace",
 		"-l  --license",
+		"-R  --rules",
 	NULL);
 	exit(0);
 }
 
-void help(char *flag){
+void info_help(char *flag){
 	if(strcmp2(flag, F_VERSION))
 		message(0,
-			"-v --version",
+			"lim {-v | --version}",
 			" ",
-			"Comming soon...",
+			"Print the program version",
 		NULL);
 	else if(strcmp2(flag, F_H_LIST ))
 		message(0,
-			"-hl --help-list",
+			"lim {-hl | --help-list}",
 			" ",
-			"Comming soon...",
+			"Print all flags, in list format, without description",
 		NULL);
 	else if(strcmp2(flag, F_HELP   ))
 		message(0,
-			"-h --help",
+			"lim {-h | --help} [flag]",
 			" ",
-			"Comming soon...",
+			"Print informations about main flags or about a specific flag.",
 		NULL);
 	else if(strcmp2(flag, F_VERBOSE))
 		message(0,
-			"-V --verbose",
+			"lim {-V | --verbose} <origin>",
 			" ",
-			"Comming soon...",
+			"Print informations about the compaction, during this process.",
 		NULL);
 	else if(strcmp2(flag, F_NAME   ))
 		message(0,
-			"-n --name",
+			"lim <origin> {-n | --name} <destine-name>",
 			" ",
-			"Comming soon...",
+			"Specify that the next argument is the output file name.",
 		NULL);
 	else if(strcmp2(flag, F_REPLACE))
 		message(0,
-			"-r --replace",
+			"lim {-r | --replace} <origin>",
 			" ",
-			"Comming soon...",
+			"Specify that, if already exist a file with the same name of the",
+			"output file, it must be replaced.",
 		NULL);
 	else if(strcmp2(flag, F_LICENSE))
 		message(0,
-			"-l --license",
+			"lim {-l | --license}",
 			" ",
-			"Comming soon...",
+			"Print the program license.",
+		NULL);
+	else if(strcmp2(flag, F_RULES))
+		message(0,
+			"lim {-R | --rules}",
+			" ",
+			"Print compaction rules.",
 		NULL);
 	else
 		message(0,
-			"[LIM] Default (no parameters) help message",
-			" ",
-			"Comming soon...",
+			"[LIM] main flags:",
+			"lim {-h | --help} [flag]             => Print informations about main flags or",
+			"                                        about a specific flag.",
+			"lim <org> {-n | --name} <dst-name>   => Specify that the next argument is the",
+			"                                        the output file name.",
+			"lim {-r | --replace} <org>           => Specify that, if already exist a file",
+			"                                        with the same name of the output file,",
+			"                                        it must be replaced.",
+			"lim {-l | --license}                 => Print the program license.",
+			"lim {-R | --rules}                   => Print compaction rules.",
 		NULL);
 
 	exit(0);
 }
 
-void verbose(void){
+void info_verbose(void){
 	if(!g_verbose) return;
 
 	verboseID++;
 
-	if(verboseMsg(0, "Compaction started")) return;
-	if(verboseMsg(1, "Getting content from origin")) return;
-	if(verboseMsg(2, "Process finished (alpha)")) return;
-	if(verboseMsg(3, "See the output in file: \"output.lim\"")) return;
+	if(verboseMsg(0, "[LIM] Compaction started")) return;
+	if(verboseMsg(1, "[LIM] Extracting content from origin")) return;
+	//if(verboseMsg(2, "[LIM] Separating content in buffers, base in them type")) return;
+	//if(verboseMsg(3, "[LIM] Creating references functions from Lua, Tic80 and 'head'")) return;
+	//if(verboseMsg(4, "[LIM] Compacting 'private' indentifiers")) return;
+	//if(verboseMsg(5, "[LIM] Compacting environments from blocks of code")) return;
+	//if(verboseMsg(6, "[LIM] Merging content buffers")) return;
+	//if(verboseMsg(7, "[LIM] Packing code")) return;
+	//if(verboseMsg(8, "[LIM] Process finished!")) return;
+	
+	// temp
+	if(verboseMsg(2, "[LIM-alpha-debug] Process finished (alpha)")) return;
+	if(verboseMsg(3, "[LIM-alpha-debug] See the output in file: \"output.lim\"")) return;
 }
 
-void license(void){
+void info_license(void){
 	message(0,
 		"MIT License",
 		" ",
@@ -146,5 +170,19 @@ void license(void){
 		"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE",
 		"SOFTWARE.",
 	NULL);
+	exit(0);
+}
+
+void info_rules(void){
+	message(0,
+		"Compaction rules:",
+		" ",
+		"1 - Only global functions will be annexed to the library.",
+		"2 - Global variables, tables and functions will not have them identifiers compacted.",
+		"3 - The identifiers annexed to the tables will not be compacted.",
+		"4 - Global variables and tables need to be declared with the prefix '_G'.",
+		"5 - The use of '[[ ]]', to declare strings, is not supported (use '\\n').",
+	NULL);
+
 	exit(0);
 }

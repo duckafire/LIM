@@ -55,11 +55,12 @@ void fileAlreadyExistent(char *name);
 static void message(char n, ...);
 static bool verboseMsg(short value, char *msg);
 
-void welcome(void);
-void version(void);
-void helpList(void);
-void help(char *flag);
-void verbose(void);
-void license(void);
+void info_welcome(void);
+void info_version(void);
+void info_helpList(void);
+void info_help(char *flag);
+void info_verbose(void);
+void info_license(void);
+void info_rules(void);
 
 #endif

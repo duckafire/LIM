@@ -5,7 +5,7 @@
 #include "heads.h"
 
 static int argc;
-static char *argv[];
+static char **argv;
 
 void cf_setArgValues(int c, char *v[]){
 	argc = c;
@@ -15,28 +15,32 @@ void cf_setArgValues(int c, char *v[]){
 void cf_single(void){
 	// information (exit)
 	if(argc == 1)
-		welcome();
+		info_welcome();
 
 	if(strcmp2(argv[1], F_VERSION))
-		version();
+		info_version();
 
 	if(strcmp2(argv[1], F_H_LIST))
-		helpList();
+		info_helpList();
 
 	if(strcmp2(argv[1], F_HELP)){
-		if(argc == 2) help(NULL);
-		help(argv[2]);
+		if(argc == 2) info_help(NULL);
+		info_help(argv[2]);
 	}
 
 	if(strcmp2(argv[1], F_LICENSE))
-		license();
+		info_license();
+
+	if(strcmp2(argv[1], F_RULES))
+		info_rules();
 }
 
 void cf_unexpected(void){
-	char invalid[3][2][LARGEST_FLAG] = {
+	char invalid[4][2][LARGEST_FLAG] = {
 		{F_VERSION},
 		{F_H_LIST},
-		{F_HELP}
+		{F_HELP},
+		{F_RULES},
 	};
 
 	for(short i = 2; i < argc; i++)

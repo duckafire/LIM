@@ -52,5 +52,6 @@
 #define F_NAME    "-n","--name"
 #define F_REPLACE "-r","--replace"
 #define F_LICENSE "-l","--license"
+#define F_RULES   "-R","--rules"
 
 #endif
