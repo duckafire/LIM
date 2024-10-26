@@ -24,7 +24,9 @@ void cf_single(void){
 		info_helpList();
 
 	if(strcmp2(argv[1], F_HELP)){
-		if(argc == 2) info_help(NULL);
+		if(argc == 2)
+			info_help(NULL);
+
 		info_help(argv[2]);
 	}
 
@@ -36,10 +38,11 @@ void cf_single(void){
 }
 
 void cf_unexpected(void){
-	char invalid[4][2][LARGEST_FLAG] = {
+	char invalid[INFO_FLAGS][2][LARGEST_FLAG] = {
 		{F_VERSION},
 		{F_H_LIST},
 		{F_HELP},
+		{F_LICENSE},
 		{F_RULES},
 	};
 
@@ -52,15 +55,20 @@ void cf_unexpected(void){
 void cf_toCompaction(void){ // "destineName_1"
 	for(short i = 1; i < argc; i++){
 		if(strcmp2(argv[i], F_VERBOSE)){
-			if(g_verbose) repeatFlag(argv[i], i);
+			if(g_verbose)
+				repeatFlag(argv[i], i);
+
 			g_verbose = true;
 			argv[i] = NULL;
 			continue;
 		}
 		if(strcmp2(argv[i], F_NAME)){
-			if(i + 1 == argc) argExpected(F_NAME);
+			if(i + 1 == argc)
+				argExpected(F_NAME);
 
-			if(gp_nameDst != NULL) repeatFlag(argv[i], i);
+			if(gp_nameDst != NULL)
+				repeatFlag(argv[i], i);
+
 			gp_nameDst = argv[i + 1];
 
 			argv[i] = NULL;
@@ -68,7 +76,9 @@ void cf_toCompaction(void){ // "destineName_1"
 			continue;
 		}
 		if(strcmp2(argv[i], F_REPLACE)){
-			if(g_replace) repeatFlag(argv[i], i);
+			if(g_replace)
+				repeatFlag(argv[i], i);
+
 			g_replace = true;
 			argv[i] = NULL;
 			continue;
@@ -76,7 +86,7 @@ void cf_toCompaction(void){ // "destineName_1"
 	}
 }
 
-void cf_invalid(void){
+void cf_invalid(void){ // and get name of the origin file
 	for(short i = 1; i < argc; i++){
 		if(argv[i] == NULL)
 			continue;
@@ -84,7 +94,7 @@ void cf_invalid(void){
 		if(argv[i][0] == '-' || (argv[i][0] == '-' && argv[i][1] == '-'))
 			invalidFlag(argv[i], i);
 
-		if(gp_nameOrg == NULL){ // get origin name
+		if(gp_nameOrg == NULL){
 			gp_nameOrg = argv[i];
 			continue;
 		}

@@ -19,6 +19,10 @@
 // BUFFERS
 #define UNINT unsigned int
 
+// CHECK-FLAGS
+#define LARGEST_FLAG 12
+#define INFO_FLAGS 5
+
 // INPUT
 #define IS_NUM(a) (a >= '0' && a <= '9')
 #define IS_BIN(a) (a <= ' ' || a == 127)
@@ -43,8 +47,6 @@
 #define E_MSG_8 "File already existent (try: -r, --replace)"
 
 // PRINT-TEXT/INFORMATIONS
-#define LARGEST_FLAG 12
-
 #define F_VERSION "-v","--version"
 #define F_H_LIST  "-hl","--help-list"
 #define F_HELP    "-h","--help"
