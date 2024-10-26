@@ -1,9 +1,18 @@
 compile
 install-lim
+clear-cmake
 
-src/debug/
+*.lua
+*.lim
+*.txt
+
 src/lim
-src/Makefile
-src/*.lua
-src/*.lim
-src/*.txt
+src/version.h
+
+*debug
+*Makefile
+Makefile
+
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
