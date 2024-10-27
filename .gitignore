@@ -1,10 +1,11 @@
 compile
 install-lim
 clear-cmake
+bin-alpha/
 
 *.lua
 *.lim
-*.txt
+src/*.txt
 
 src/lim
 src/version.h

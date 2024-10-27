@@ -1,6 +1,7 @@
 #ifndef LIM_HEADS
 #define LIM_HEADS
 
+#include "version.h"
 #include "defines.h"
 #include "variables.h"
 #include "functions.h"
