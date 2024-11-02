@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	// Compaction Process
 	cp_0_checkAndOpenFiles();
 	cp_1_extractionFromOrigin();
+	cp_2_separateExtractedContent();
 	cp_x_tempFinish();
 
 	return 0;

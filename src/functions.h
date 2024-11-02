@@ -14,7 +14,13 @@ FILE* copyFile(FILE *org, char *dstName);
 // BUFFERS
 void collect_init(void);
 void collect_add(char c);
+FILE* collect_get(void);
 void collect_end(void);
+
+void ident_init(void);
+void ident_add(char c);
+char* ident_get(void);
+void ident_end(void);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
@@ -28,9 +34,10 @@ void cf_destineName_2(bool *dstUsingMalloc);
 // COMPACTION-PROCESS
 void cp_0_checkAndOpenFiles(void);
 void cp_1_extractionFromOrigin(void);
+void cp_2_separateExtractedContent(void);
 void cp_x_tempFinish(void);
 
-// INPUT
+// CONTENT-TREATMENT
 bool getIdentifier(char *c, bool isFirst);
 char clearSpaces(void);
 void getSpecial(char c);

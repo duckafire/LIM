@@ -8,24 +8,28 @@ bool strcmp2(char *str, char *v0, char *v1){
 	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
 }
 
-FILE* copyFile(FILE *org, char *dstName){
+FILE* copyFile(FILE *src, char *destName){
 	char c = 0;
-	FILE *dst;
-	const bool cloneBuf = (dstName == NULL);
+	FILE *dest;
+	const bool cloneBuf = (destName == NULL);
 
+	// use `destName == NULL` for
+	// temporary buffers
 	if(cloneBuf)
-		dst = tmpfile();
+		dest = tmpfile();
 	else
-		dst = fopen(dstName, "w");
+		dest = fopen(destName, "w");
 	
-	fseek(org, 0, SEEK_SET);
+	fseek(src, 0, SEEK_SET);
 
-	while(fread(&c, sizeof(char), 1, org) > 0 && c != EOF){
+	while(fread(&c, sizeof(char), 1, src) > 0 && c != EOF){
 		if(cloneBuf)
-			fwrite(&c, sizeof(c), 1, dst);
+			fwrite(&c, sizeof(c), 1, dest);
 		else
-			fprintf(dst, "%c", c);
+			fprintf(dest, "%c", c);
 	}
 
-	return dst;
+	fseek(src,  0, SEEK_SET);
+	fseek(dest, 0, SEEK_SET);
+	return dest;
 }

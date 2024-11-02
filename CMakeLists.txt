@@ -23,5 +23,5 @@ add_executable(lim
 	${SRC_DIR}/tools.c
 	${SRC_DIR}/print-text/errors.c
 	${SRC_DIR}/print-text/informations.c
-	${SRC_DIR}/buffers/file-cursor.c
+	${SRC_DIR}/buffers.c
 )

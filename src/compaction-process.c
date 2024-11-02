@@ -1,4 +1,4 @@
-#include <stddef.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include "heads.h"
@@ -31,6 +31,10 @@ void cp_1_extractionFromOrigin(void){
 	// for not add line feed after dot
 	// from float number
 	bool isFloat = false;
+
+	// to accept all hexadecimal
+	// characteres in number check
+	bool isHex = false;
 
 	while(FGETC != EOF){
 		// clear "null caracteres", without
@@ -85,26 +89,51 @@ void cp_1_extractionFromOrigin(void){
 				// come back to here it will become `false`,
 				// and it cannot become `true` again in this
 				// loop
-				if(c == '.' || isFloat)
+				if(!isHex && (c == '.' || isFloat))
 					isFloat = !isFloat;
 
-			}while(isdigit(c) || isFloat);
+				// same energ
+				else if(c == 'x' && !isFloat)
+					isHex = !isHex;
 
-			isFloat = false;
+			}while(isdigit(c) || isFloat || (isHex && (isxdigit(c) || c == 'x')));
+
+			isFloat = isHex = false;
 			collect_add('\n');
-			
-			// if a second dot was finded
-			if(c == '.'){
-				collect_add('.');
-				collect_add('\n');
-			}
-
+			fseek(gf_origin, -1, SEEK_CUR);
 			continue;
 		}
 
 		// special characteres (:,.{-+)
 		getSpecial(c);
 	}
+}
+
+void cp_2_separateExtractedContent(void){
+	return; // TODO: work in progress
+
+	free(gf_origin);
+	gf_origin = NULL;
+
+	FILE *temp;
+	char *word;
+	ident_init();
+
+	temp = copyFile(collect_get(), NULL);
+
+	char c = 0;
+	while(FGETC != EOF){
+		if(c != '\n'){
+			ident_add(c);
+			continue;
+		}
+
+		word = ident_get();
+
+		if(isdigit(word[0]));
+	}
+
+	fclose(temp);
 }
 
 void cp_x_tempFinish(void){
