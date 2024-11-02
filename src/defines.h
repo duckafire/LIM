@@ -23,13 +23,7 @@
 #define INFO_FLAGS 5
 
 // INPUT
-#define IS_NUM(a) (a >= '0' && a <= '9')
-#define IS_BIN(a) (a <= ' ' || a == 127)
-#define IS_CHR(a) ( \
-	(a >= 'a' && a <= 'z') || \
-	(a >= 'A' && a <= 'Z') || \
-	a == '_' \
-)
+#define FGETC (c = fgetc(gf_origin))
 
 // PRINT-TEXT/ERRORS
 #define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"

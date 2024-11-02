@@ -31,15 +31,14 @@ void cp_1_extractionFromOrigin(void);
 void cp_x_tempFinish(void);
 
 // INPUT
-bool getName(char c, bool firstChar);
-bool getNum(char c);
-bool getSpace(char c);
+bool getIdentifier(char *c, bool isFirst);
+char clearSpaces(void);
 void getSpecial(char c);
 
 static void clearComment(bool isLine);
 static void saveString(char signal);
 static void saveBraces(void);
-static bool saveDoubleSignal(char signal);
+static bool saveDoubleSignal(char sig_0, char sig_1);
 
 // PRINT-TEXT/ERRORS
 void repeatFlag(char *arg, short pos);

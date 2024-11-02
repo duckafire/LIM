@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "heads.h"
 
 static char c;
@@ -27,95 +28,82 @@ void cp_0_checkAndOpenFiles(void){
 void cp_1_extractionFromOrigin(void){
 	info_verbose();
 
-	void turnOn(bool *b){
-		if(!*b)
-			*b = true;
-	}
-
-	// it is the first character
-	bool firstChar = false;
-
-	// line feed
-	bool lineFeed = false;
-
-	// the fisrt character was writed
-	bool firstOfFile = false;
-	
-	// a special character was finded and it prints '\n'
-	bool isSpecial = false;
-
-	// to line feed after float numbers
+	// for not add line feed after dot
+	// from float number
 	bool isFloat = false;
 
-	// a number get a dot to itself
-	bool dotGetted = false;
+	while(FGETC != EOF){
+		// clear "null caracteres", without
+		// `continue` cycle: They are:
+		// // spaces
+		// // tabulations
+		// // line feed
+		// // binaries
+		if(!isgraph(c))
+			while(!isgraph(FGETC) && c != EOF);
 
-	// to float numbers
-	bool dotExpected = true;
-
-	while((c = fgetc(gf_origin)) != EOF){
-		if(getSpace(c)){
-			if(isSpecial){
-				lineFeed = true;
-				isSpecial = isFloat = dotGetted = false;
-				continue;
-			}
-
-			if((firstOfFile || firstChar) && !lineFeed){
-				collect_add('\n');
-
-				lineFeed = true;
-				firstChar = isSpecial = isFloat = dotGetted = false;
-			}
-			continue;
-		}
-
-		if(getName(c, firstChar)){
-			turnOn(&firstOfFile);
-			turnOn(&firstChar);
-
-			lineFeed = isSpecial = dotGetted = false;
-			continue;
-		}
-
-		if(getNum(c)){
-			firstChar = true;
-			lineFeed = isSpecial = false;
-
-			if(dotExpected){
-				if(fgetc(gf_origin) == '.'){
-					dotExpected = false;
-					dotGetted = true;
-					collect_add('.');
-
-					c = fgetc(gf_origin);
-					if(getNum(c)){
-						isFloat = true;
-						continue;
-					}
-
-					fseek(gf_origin, -1, SEEK_CUR);
+		// get identifiers to:
+		// // variables
+		// // tables
+		// // tables keys
+		// // functions
+		if(getIdentifier(&c, true)){
+			do{
+				// the dot in first will protect
+				// this key against the compaction
+				// process
+				if(c == '.')
 					collect_add('\n');
-					continue;
-				}
 
-				fseek(gf_origin, -1, SEEK_CUR);
+				collect_add(c);
+
+				// this parenthesis specify that
+				// this identify belongs to function
+				if(c == '(')
+					break;
+
+				FGETC;
+			}while(getIdentifier(&c, false));
+			
+			collect_add('\n');
+			continue;
+		}
+
+		// constant numbers:
+		// integer
+		// float
+		if(isdigit(c)){
+			do{
+				collect_add(c);
+				FGETC;
+
+				if(c == ' ')
+					c = clearSpaces();
+
+				// when the first dot is finded, `isFloat`
+				// becomes `true`, after the loop cycle
+				// come back to here it will become `false`,
+				// and it cannot become `true` again in this
+				// loop
+				if(c == '.' || isFloat)
+					isFloat = !isFloat;
+
+			}while(isdigit(c) || isFloat);
+
+			isFloat = false;
+			collect_add('\n');
+			
+			// if a second dot was finded
+			if(c == '.'){
+				collect_add('.');
+				collect_add('\n');
 			}
 
 			continue;
 		}
 
-		if(firstChar && !dotGetted){
-			firstChar = dotGetted = false;
-			collect_add('\n');
-		}
-
-		if(c == '.' && isFloat)
-			collect_add('\n');
-
+		// special characteres (:,.{-+)
 		getSpecial(c);
-		isSpecial = dotExpected = true;
-		isFloat = false;
 	}
 }
 

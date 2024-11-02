@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../sub-heads.h"
+#include "../heads.h"
 
 static FILE *collect;
 

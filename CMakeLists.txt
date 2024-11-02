@@ -18,11 +18,10 @@ configure_file(version.h.in ./src/version.h)
 add_executable(lim
 	${SRC_DIR}/check-flags.c
 	${SRC_DIR}/compaction-process.c
-	${SRC_DIR}/input.c
+	${SRC_DIR}/content-treatment.c
 	${SRC_DIR}/main.c
 	${SRC_DIR}/tools.c
 	${SRC_DIR}/print-text/errors.c
 	${SRC_DIR}/print-text/informations.c
-	${SRC_DIR}/buffers/content.c
 	${SRC_DIR}/buffers/file-cursor.c
 )

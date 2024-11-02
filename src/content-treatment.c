@@ -1,29 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "heads.h"
 
+// to `getSpecial`
+// and its process
 static char _c;
 
-bool getName(char c, bool firstChar){
-	if(IS_CHR(c) || (IS_NUM(c) && firstChar)){
-		collect_add(c);
-		return true;
-	}
-	return false;
+bool getIdentifier(char *c, bool isFirst){
+	if(*c == ' ')
+		*c = clearSpaces();
+
+	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(')));
 }
 
-bool getNum(char c){
-	if(IS_NUM(c)){
-		collect_add(c);
-
-		return true;
-	}
-	return false;
-}
-
-bool getSpace(char c){
-	return (IS_BIN(c));
+char clearSpaces(void){
+	char c;
+	while(FGETC == ' ' && c != EOF);
+	return c;
 }
 
 void getSpecial(char c){
@@ -48,21 +43,27 @@ void getSpecial(char c){
 		fseek(gf_origin, -1, SEEK_CUR);
 	}
 
+	// STRINGS
 	_c = c;
 	if(c == '\'' || c == '"'){
 		saveString(c);
 		return;
 	}
 
+	// table BRACES
 	if(c == '{'){
 		saveBraces();
 		return;
 	}
 
-	if(saveDoubleSignal('=')) return;
-	if(saveDoubleSignal('/')) return;
-	if(saveDoubleSignal('.')) return;
+	// DOUBLE SIGNAL
+	if(saveDoubleSignal('=', '=')) return;
+	if(saveDoubleSignal('/', '/')) return;
+	if(saveDoubleSignal('.', '.')) return;
+	if(saveDoubleSignal('>', '=')) return;
+	if(saveDoubleSignal('<', '=')) return;
 
+	// OTHER
 	collect_add(c);
 	collect_add('\n');
 }
@@ -108,7 +109,7 @@ static void saveBraces(void){
 	UNINT qtt = 1;
 
 	while(qtt > 0){
-		if(!IS_BIN(_c))
+		if(!isgraph(_c))
 			collect_add(_c);
 
 		_c = fgetc(gf_origin);
@@ -123,11 +124,11 @@ static void saveBraces(void){
 	collect_add('\n');
 }
 
-static bool saveDoubleSignal(char signal){
-	if(_c == signal){
-		if(fgetc(gf_origin) == signal){
-			collect_add(_c);
-			collect_add(_c);
+static bool saveDoubleSignal(char sig_0, char sig_1){
+	if(_c == sig_0){
+		if(fgetc(gf_origin) == sig_1){
+			collect_add(sig_0);
+			collect_add(sig_1);
 			collect_add('\n');
 
 			return true;
