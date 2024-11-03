@@ -1,28 +1,23 @@
 #ifndef LIM_DEFINES
 #define LIM_DEFINES
 
-// MAIN
-#define HEADS \
-	#include "defines.h" \
-	#include "variables.h" \
-	#include "functions.h"
-
-#define HEADS_BELOW \
-	#include "../defines.h" \
-	#include "../variables.h" \
-	#include "../functions.h"
-
 // TOOLS
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
 // BUFFERS
-#define UNINT unsigned int
+#define ENV_LIB_VAR 0
+#define ENV_LIB_FUNC 1
+#define ENV_GLOBAL_VAR 2
+#define ENV_GLOBAL_FUNC 3
+#define ENV_LOCAL_FUNC 4
+#define ENV_LOCAL_VAR 5
+#define ENV_CONSTANTS 6
 
 // CHECK-FLAGS
 #define LARGEST_FLAG 12
 #define INFO_FLAGS 5
 
-// INPUT
+// CONTENT-TREATMENT
 #define FGETC (c = fgetc(gf_origin))
 
 // PRINT-TEXT/ERRORS

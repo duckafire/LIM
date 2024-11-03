@@ -22,6 +22,13 @@ void ident_add(char c);
 char* ident_get(void);
 void ident_end(short restart);
 
+void global_init(void);
+void global_newEnv(void);
+short global_print(char *ident, short bufId);
+void global_rmvEnv(void);
+void global_end(void);
+static FILE* global_getBuf(short bufId);
+
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
 void cf_single(void);

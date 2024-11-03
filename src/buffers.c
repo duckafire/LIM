@@ -5,6 +5,7 @@
 
 static FILE *collect;
 static char *ident; // identifier
+static GlobalEnv global;
 
 // COLLECT
 void collect_init(void){
@@ -20,7 +21,6 @@ FILE* collect_get(void){
 }
 
 void collect_end(void){
-	fclose(copyFile(collect, "output.lim"));
 	fclose(collect);
 }
 
@@ -54,4 +54,90 @@ void ident_end(short restart){
 
 	if(restart)
 		ident_init();
+}
+
+// GLOBAL ENVORINMENTS
+void global_init(void){
+	global.order = tmpfile();
+	global.libVar = tmpfile();
+	global.libFunc = tmpfile();
+	global.var = tmpfile();
+	global.func = tmpfile();
+	global.constants = tmpfile();
+	
+	global.head = NULL;
+	global.tail = NULL;
+}
+
+void global_newEnv(void){
+	struct LocalEnv *new;
+	new = malloc(sizeof(struct LocalEnv));
+
+	new->var = tmpfile();
+	new->func = tmpfile();
+
+	if(global.head == NULL)
+		global.head = new;
+
+	global.tail->next = new;
+	global.tail = new;
+}
+
+short global_print(char *ident, short bufId){
+	FILE *buf;
+	buf = global_getBuf(bufId);
+
+	unsigned short i = 0;
+	char *c = NULL;
+	for(c = &ident[0]; *c != '\0'; c = &ident[++i])
+		fwrite(c, sizeof(char), 1, buf);
+
+	char n = '\n';
+	fwrite(&n, sizeof(char), 1, buf);
+}
+
+void global_rmvEnv(void){
+	struct LocalEnv *env;
+
+	if(global.head == global.tail){
+		free(global.head);
+		global.head = NULL;
+		global.tail = NULL;
+		return;
+	}
+
+	for(env = global.head; env->next != global.tail; env = env->next);
+
+	fclose(env->next->var);
+	fclose(env->next->func);
+
+	free(env->next);
+	env->next = NULL;
+	global.tail = env;
+}
+
+void global_end(void){
+	// this function consider that all
+	// local environments were freed
+	fclose(global.order);
+	fclose(global.libVar);
+	fclose(global.libFunc);
+	fclose(global.var);
+	fclose(global.func);
+	fclose(global.constants);
+	
+	free(global.head);
+	free(global.tail);
+}
+
+static FILE* global_getBuf(short bufId){
+	switch(bufId){
+		case ENV_LIB_VAR:     return global.libVar; break;
+		case ENV_LIB_FUNC:    return global.libFunc; break;
+		case ENV_GLOBAL_VAR:  return global.var; break;
+		case ENV_GLOBAL_FUNC: return global.func; break;
+		case ENV_LOCAL_VAR:   return global.tail->var; break;
+		case ENV_LOCAL_FUNC:  return global.tail->func; break;
+		case ENV_CONSTANTS:   return global.constants; break;
+	}
 }

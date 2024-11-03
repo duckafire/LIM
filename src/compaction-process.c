@@ -120,18 +120,15 @@ void cp_1_extractionFromOrigin(void){
 void cp_2_separateExtractedContent(void){
 	//return; // TODO: work in progress
 	
-	// DEBUG
-	short id = 0;
-	
 	// variables and tables declared in library
 	// environment, with the keyword `local`;
 	// and functions prefixed by `local`.
-	//bool isLibPublic = false;
+	bool isLibIdent = false;
 
 	// variables and tables prefixeds by `_G`,
 	// declared in some place; and functions
 	// not prefixed by `local`
-	//bool isLibGlobal = false;
+	bool isGlobalIdent = false;
 
 	// always that a code block was finded,
 	// the environment "deep" will be increased
@@ -139,19 +136,19 @@ void cp_2_separateExtractedContent(void){
 	// after that the end of the code block is
 	// finded, it will be decreased and the last
 	// object will be freed
-	//unsigned int envLayer = 0;
+	unsigned int envLayer = 0;
 
-	FILE *temp;
+	FILE *buf;
 	char *word;
 	ident_init();
 
 	fclose(gf_origin);
 	gf_origin = NULL;
 
-	temp = copyFile(collect_get(), NULL);
+	buf = copyFile(collect_get(), NULL);
 
 	char c = 0;
-	while((c = fgetc(temp)) != EOF){
+	while((c = fgetc(buf)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
 			continue;
@@ -159,29 +156,52 @@ void cp_2_separateExtractedContent(void){
 
 		word = ident_get();
 
-		// number
-		if(isdigit(word[0]))
-			id = 0;
-		else if(word[0] == '.' && strlen(word) > 1)
-			id = 5;
-		else if(isalpha(word[0]) != 0 || word[0] == '_')
-			if(word[strlen(word) - 1] == '(')
-				id = 1;
-			else if(word[1] == '_')
-				id = 2;
-			else if(word[1] == 'G')
-				id = 3;
-			else
-				id = 4;
-		else
-			id = 6;
+		if(strcmp(word, "end"))
+			//envLayer--;
 
-		printf("%d - %s\n", id, word); // DEBUG
+		if(isalpha(word[0]) != 0 || word[0] == '_'){
+			// indetifiers
+			//envLayer++;
+			//global_newEnv();
+
+			// functions
+			if(word[strlen(word) - 1] == '('){
+				if(isLibIdent)
+					global_print(word, ENV_LIB_FUNC);
+				else if(isGlobalIdent)
+					global_print(word, ENV_GLOBAL_FUNC);
+				else
+					global_print(word, ENV_LOCAL_FUNC);
+
+			// metamethods
+			}else if(word[1] == '_'){
+				global_print(word, ENV_CONSTANTS);
+
+			// library global
+			}else if(word[1] == 'G'){
+				global_print(word, ENV_LIB_VAR);
+
+			// variables and tables
+			}else{
+				if(isLibIdent)
+					global_print(word, ENV_LIB_VAR);
+				else if(isGlobalIdent)
+					global_print(word, ENV_GLOBAL_VAR);
+				else
+					global_print(word, ENV_LOCAL_VAR);
+			}
+
+		// special characteres, numbers
+		// and table keys
+		}else{
+			global_print(word, ENV_CONSTANTS);
+		}
+
 		ident_end(true);
 	}
 
 
-	fclose(temp);
+	fclose(buf);
 }
 
 void cp_x_tempFinish(void){

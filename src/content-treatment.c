@@ -106,7 +106,7 @@ static void saveString(char signal){
 }
 
 static void saveBraces(void){
-	UNINT qtt = 1;
+	unsigned int qtt = 1;
 
 	while(qtt > 0){
 		if(!isgraph(_c))
