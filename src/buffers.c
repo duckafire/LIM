@@ -48,7 +48,10 @@ char* ident_get(void){
 	return ident;
 }
 
-void ident_end(void){
+void ident_end(short restart){
 	free(ident);
 	ident = NULL;
+
+	if(restart)
+		ident_init();
 }

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <ctype.h>
 #include "heads.h"
 
@@ -68,8 +69,15 @@ void cp_1_extractionFromOrigin(void){
 
 				FGETC;
 			}while(getIdentifier(&c, false));
-			
+
 			collect_add('\n');
+			
+			// if the characterer that stop the loop
+			// is not pritend here, it will be lost
+			if(c != '(' && !isalnum(c) && isgraph(c)){
+				collect_add(c);
+				collect_add('\n');
+			}
 			continue;
 		}
 
@@ -110,19 +118,40 @@ void cp_1_extractionFromOrigin(void){
 }
 
 void cp_2_separateExtractedContent(void){
-	return; // TODO: work in progress
+	//return; // TODO: work in progress
+	
+	// DEBUG
+	short id = 0;
+	
+	// variables and tables declared in library
+	// environment, with the keyword `local`;
+	// and functions prefixed by `local`.
+	//bool isLibPublic = false;
 
-	free(gf_origin);
-	gf_origin = NULL;
+	// variables and tables prefixeds by `_G`,
+	// declared in some place; and functions
+	// not prefixed by `local`
+	//bool isLibGlobal = false;
+
+	// always that a code block was finded,
+	// the environment "deep" will be increased
+	// and a new `LocalEnv` will be created;
+	// after that the end of the code block is
+	// finded, it will be decreased and the last
+	// object will be freed
+	//unsigned int envLayer = 0;
 
 	FILE *temp;
 	char *word;
 	ident_init();
 
+	fclose(gf_origin);
+	gf_origin = NULL;
+
 	temp = copyFile(collect_get(), NULL);
 
 	char c = 0;
-	while(FGETC != EOF){
+	while((c = fgetc(temp)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
 			continue;
@@ -130,13 +159,33 @@ void cp_2_separateExtractedContent(void){
 
 		word = ident_get();
 
-		if(isdigit(word[0]));
+		// number
+		if(isdigit(word[0]))
+			id = 0;
+		else if(word[0] == '.' && strlen(word) > 1)
+			id = 5;
+		else if(isalpha(word[0]) != 0 || word[0] == '_')
+			if(word[strlen(word) - 1] == '(')
+				id = 1;
+			else if(word[1] == '_')
+				id = 2;
+			else if(word[1] == 'G')
+				id = 3;
+			else
+				id = 4;
+		else
+			id = 6;
+
+		printf("%d - %s\n", id, word); // DEBUG
+		ident_end(true);
 	}
+
 
 	fclose(temp);
 }
 
 void cp_x_tempFinish(void){
+	//fclose(copyFile(collect_get(), "output.lim"));
 	info_verbose();
 	collect_end();
 	info_verbose();

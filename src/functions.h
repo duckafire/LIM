@@ -20,7 +20,7 @@ void collect_end(void);
 void ident_init(void);
 void ident_add(char c);
 char* ident_get(void);
-void ident_end(void);
+void ident_end(short restart);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
