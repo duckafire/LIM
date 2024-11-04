@@ -41,5 +41,7 @@ static void cleanup(void){
 
 	if(gf_origin != NULL)
 		fclose(gf_origin);
+
+	buffers_atexit();
 }
 

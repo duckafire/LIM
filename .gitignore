@@ -1,7 +1,8 @@
+bin-alpha/
+ck-syntax
+clear-cmake
 compile
 install-lim
-clear-cmake
-bin-alpha/
 
 *.lua
 *.lim

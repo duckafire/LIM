@@ -148,6 +148,7 @@ void cp_2_separateExtractedContent(void){
 	buf = copyFile(collect_get(), NULL);
 
 	char c = 0;
+	/*
 	while((c = fgetc(buf)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
@@ -199,7 +200,7 @@ void cp_2_separateExtractedContent(void){
 
 		ident_end(true);
 	}
-
+	*/
 
 	fclose(buf);
 }

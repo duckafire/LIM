@@ -3,13 +3,24 @@
 
 #include <stdio.h>
 
-struct LocalEnv {
+typedef struct LocalEnv{
 	FILE *func;
 	FILE *var; // and tables
 
 	// a chain with local environments
 	struct LocalEnv *next;
-};
+}LocalEnv;
+
+typedef struct FuncEnv{
+	// function identifier
+	char *name;
+
+	// identifiers declared inside it
+	struct LocalEnv *subEnv;
+
+	// the next function enviroment
+	struct FuncEnv *next;
+}FuncEnv;
 
 typedef struct{
 	// original order of elements
@@ -40,8 +51,9 @@ typedef struct{
 	// special characteres and key words
 	FILE *constants;
 
-	struct LocalEnv *head; // for remove all
-	struct LocalEnv *tail; // for access the last
+	// a chain with the functions environments
+	// and them sub-environments
+	struct FuncEnv *head, *tail;
 }GlobalEnv;
 
 #endif

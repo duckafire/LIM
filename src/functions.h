@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "heads.h"
 
 // MAIN
 static void cleanup(void);
@@ -12,6 +13,8 @@ bool strcmp2(char *str, char *v0, char *v1);
 FILE* copyFile(FILE *org, char *dstName);
 
 // BUFFERS
+void buffers_atexit(void);
+
 void collect_init(void);
 void collect_add(char c);
 FILE* collect_get(void);
@@ -23,11 +26,14 @@ char* ident_get(void);
 void ident_end(short restart);
 
 void global_init(void);
-void global_newEnv(void);
-short global_print(char *ident, short bufId);
-void global_rmvEnv(void);
+void global_newFuncEnv(char *name);
+void global_newLocalEnv(char *name);
+void global_print(char *word, char *name, short bufId);
+void global_rmvFuncEnv(void);
+void global_rmvLocalEnv(char *name);
 void global_end(void);
-static FILE* global_getBuf(short bufId);
+static FuncEnv* global_getLocalEnv(char *name);
+static FILE* global_getBuf(short bufId, char *name);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
