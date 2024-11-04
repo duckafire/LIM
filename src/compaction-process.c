@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "heads.h"
 
 static char c;
@@ -118,91 +119,103 @@ void cp_1_extractionFromOrigin(void){
 }
 
 void cp_2_separateExtractedContent(void){
-	//return; // TODO: work in progress
-	
-	// variables and tables declared in library
-	// environment, with the keyword `local`;
-	// and functions prefixed by `local`.
-	bool isLibIdent = false;
+	// root of the library environment
+	// (outside functions)
+	bool isRootEnv = true;
 
-	// variables and tables prefixeds by `_G`,
-	// declared in some place; and functions
-	// not prefixed by `local`
-	bool isGlobalIdent = false;
+	// set that a anonymous function was
+	// finded: `function() end`
+	bool isAnony = false;
 
-	// always that a code block was finded,
-	// the environment "deep" will be increased
-	// and a new `LocalEnv` will be created;
-	// after that the end of the code block is
-	// finded, it will be decreased and the last
-	// object will be freed
-	unsigned int envLayer = 0;
+	// summary of a big condition
+	bool isFunc = false;
 
-	FILE *buf;
-	char *word;
+	// used for guide in decision
+	short prefix = PREFIX_NONE;
+
+	// index to difference the names of
+	// different anonymous functions
+	double anonyId = 0.0;
+
+	// base in TYPE and used to set ENV
+	short envCode;
+
+	// environment name; NULL if it is
+	// the root environment
+	char *envName = NULL;
+
+	// dinamic string that store the
+	// functions (environment) name
+	char *anonyName = NULL;
+
+	// current word
+	char *word = NULL;
+
+	// store the content getted by
+	// last function called by the
+	// "compaction-process"
+	FILE *content;
+
 	ident_init();
-
 	fclose(gf_origin);
 	gf_origin = NULL;
 
-	buf = copyFile(collect_get(), NULL);
+	content = copyFile(collect_get(), NULL);
 
 	char c = 0;
-	/*
-	while((c = fgetc(buf)) != EOF){
+	global_init();
+
+	while((c = fgetc(content)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
 			continue;
 		}
 
+		// save in a buffer
 		word = ident_get();
+		envName = NULL;
 
-		if(strcmp(word, "end"))
-			//envLayer--;
+		// "check prefixes now"
+		if(isRootEnv){
+			prefix = checkPrefixNow(word, prefix);
 
-		if(isalpha(word[0]) != 0 || word[0] == '_'){
-			// indetifiers
-			//envLayer++;
-			//global_newEnv();
+			isFunc = (prefix == PREFIX_LIB_FUNC || prefix == PREFIX_GLOBAL_FUNC || prefix == PREFIX_LOCAL_FUNC);
 
-			// functions
-			if(word[strlen(word) - 1] == '('){
-				if(isLibIdent)
-					global_print(word, ENV_LIB_FUNC);
-				else if(isGlobalIdent)
-					global_print(word, ENV_GLOBAL_FUNC);
-				else
-					global_print(word, ENV_LOCAL_FUNC);
+			if(isFunc && isAnony){
+				isAnony = false;
+				free(anonyName);
 
-			// metamethods
-			}else if(word[1] == '_'){
-				global_print(word, ENV_CONSTANTS);
+			}else if(prefix == PREFIX_ANONYMOUS){
+				isAnony = true;
 
-			// library global
-			}else if(word[1] == 'G'){
-				global_print(word, ENV_LIB_VAR);
+				anonyName = malloc(sizeof(word) + INT_LEN(anonyId++));
 
-			// variables and tables
-			}else{
-				if(isLibIdent)
-					global_print(word, ENV_LIB_VAR);
-				else if(isGlobalIdent)
-					global_print(word, ENV_GLOBAL_VAR);
-				else
-					global_print(word, ENV_LOCAL_VAR);
+				strcpy(anonyName, word);
 			}
-
-		// special characteres, numbers
-		// and table keys
-		}else{
-			global_print(word, ENV_CONSTANTS);
 		}
 
-		ident_end(true);
-	}
-	*/
+		if(isAnony)
+			envCode = TYPE_CONSTANT;
+		else
+			envCode = contentType(word, prefix);
 
-	fclose(buf);
+		if(isAnony)
+			envName = anonyName;
+		else
+			envName = word;
+
+		global_print(word, envName, envCode);
+		ident_end(true);
+
+		// "check prefixes to next cycle"
+		if(envCode == TYPE_CONSTANT)
+			prefix = checkPrefixNextCycle(word, isRootEnv);
+	}
+
+	if(isAnony)
+		free(anonyName);
+
+	fclose(content);
 }
 
 void cp_x_tempFinish(void){

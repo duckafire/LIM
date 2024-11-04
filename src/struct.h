@@ -3,22 +3,13 @@
 
 #include <stdio.h>
 
-typedef struct LocalEnv{
+typedef struct FuncEnv{
+	char *name;
+
 	FILE *func;
 	FILE *var; // and tables
 
-	// a chain with local environments
-	struct LocalEnv *next;
-}LocalEnv;
-
-typedef struct FuncEnv{
-	// function identifier
-	char *name;
-
-	// identifiers declared inside it
-	struct LocalEnv *subEnv;
-
-	// the next function enviroment
+	// next function environment
 	struct FuncEnv *next;
 }FuncEnv;
 

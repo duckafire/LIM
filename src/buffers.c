@@ -69,27 +69,6 @@ void ident_end(short restart){
 }
 
 // GLOBAL ENVORINMENTS
-
-/* explanation
-
-global   ->   func0   ->   func1   ->   func2   ->   funcn   <-   new func are placed
- |              |            |            |            |          and removed here
-env            envn         envn         envn         envn <- new (f)env are placed
-                |            |            |            |      and removed here
-               env2         env2         env2         env2
-                |            |            |            |
-               env1         env1         env1         env1
-                |            |            |            |
-            env0(main)   env0(main)   env0(main)   env0(main)
-
-* func: some function declared in
-root of the library environment.
-
-* main: function environment in that
-will be stored the identifier declared
-in its environment root;
-*/
-
 void global_init(void){
 	// used one time
 	global.order = tmpfile();
@@ -103,12 +82,13 @@ void global_init(void){
 	global.tail = NULL;
 }
 
-void global_newFuncEnv(char *name){
+void global_newEnv(char *name){
 	// insert in chain end
 	FuncEnv *new;
 	new = malloc(sizeof(FuncEnv));
 	new->name = malloc(sizeof(name));
-	new->subEnv = NULL;
+	new->func = tmpfile();
+	new->var  = tmpfile();
 	new->next = NULL;
 
 	// the '(' is included
@@ -117,32 +97,11 @@ void global_newFuncEnv(char *name){
 	if(global.head == NULL){
 		global.head = new;
 		global.tail = new;
-	}else{
-		global.tail->next = new;
-		global.tail = new;
+		return;
 	}
 
-	// "main" environment
-	global_newLocalEnv(name);
-}
-
-void global_newLocalEnv(char *name){
-	// insert in chain first
-	// and push the other
-	FuncEnv *func;
-	func = global_getLocalEnv(name);
-
-	LocalEnv *new;
-	new = malloc(sizeof(LocalEnv));
-	new->func = tmpfile();
-	new->var = tmpfile();
-
-	if(func->subEnv != NULL)
-		new->next = func->subEnv->next;
-	else
-		new->next = NULL;
-
-	func->subEnv = new;
+	global.tail->next = new;
+	global.tail = new;
 }
 
 void global_print(char *word, char *name, short bufId){
@@ -157,7 +116,7 @@ void global_print(char *word, char *name, short bufId){
 		fwrite(c, sizeof(char), 1, buf);
 }
 
-void global_rmvFuncEnv(void){
+void global_rmvEnv(void){
 	// remove the last
 	if(global.head == global.tail){
 		free(global.head);
@@ -170,37 +129,17 @@ void global_rmvFuncEnv(void){
 
 	for(p = global.head; p->next->next != NULL; p = p->next);
 
+	fclose(p->next->func);
+	fclose(p->next->var);
 	free(p->next);
+
 	p->next = NULL;
 	global.tail = p;
 }
 
-void global_rmvLocalEnv(char *name){
-	// remove the first
-	FuncEnv *func;
-	func = global_getLocalEnv(name);
-
-	LocalEnv *rmv;
-
-	rmv = func->subEnv;
-	func->subEnv = rmv->next;
-
-	fclose(rmv->func);
-	fclose(rmv->var);
-
-	rmv->func = NULL;
-	rmv->var = NULL;
-
-	free(rmv);
-}
-
 void global_end(void){
-	while(global.head != NULL){
-		while(global.tail->subEnv != NULL)
-			global_rmvLocalEnv(global.tail->name);
-
-		global_rmvFuncEnv();
-	}
+	while(global.head != NULL)
+		global_rmvEnv();
 
 	fclose(global.order);
 	fclose(global.libVar);
@@ -238,7 +177,7 @@ static FILE* global_getBuf(short bufId, char *name){
 		case ENV_LIB_FUNC:    return global.libFunc; break;
 		case ENV_GLOBAL_VAR:  return global.var; break;
 		case ENV_GLOBAL_FUNC: return global.func; break;
-		case ENV_CONSTANTS:   return global.constants; break;
+		case ENV_CONSTANT:   return global.constants; break;
 	}
 
 	// local
@@ -246,7 +185,7 @@ static FILE* global_getBuf(short bufId, char *name){
 	func = global_getLocalEnv(name);
 
 	switch(bufId){
-		case ENV_LOCAL_VAR:  return func->subEnv->var; break;
-		case ENV_LOCAL_FUNC: return func->subEnv->func; break;
+		case ENV_LOCAL_VAR:  return func->var; break;
+		case ENV_LOCAL_FUNC: return func->func; break;
 	}
 }

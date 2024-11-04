@@ -1,24 +1,55 @@
 #ifndef LIM_DEFINES
 #define LIM_DEFINES
 
+#include <math.h>
+
 // TOOLS
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
 // BUFFERS
-#define ENV_LIB_VAR 0
-#define ENV_LIB_FUNC 1
-#define ENV_GLOBAL_VAR 2
-#define ENV_GLOBAL_FUNC 3
-#define ENV_LOCAL_FUNC 4
-#define ENV_LOCAL_VAR 5
-#define ENV_CONSTANTS 6
+enum{
+	ENV_CONSTANT,
+	ENV_LIB_VAR,
+	ENV_LIB_FUNC,
+	ENV_GLOBAL_VAR,
+	ENV_GLOBAL_FUNC,
+	ENV_LOCAL_FUNC,
+	ENV_LOCAL_VAR,
+};
 
 // CHECK-FLAGS
 #define LARGEST_FLAG 12
 #define INFO_FLAGS 5
 
+// COMPACTION PROCESS
+// it don't work correct if `n` is equal zero or one
+#define INT_LEN(n) ((int)((ceil(log10(n)))*sizeof(char)))
+
+enum{
+	PREFIX_NONE,
+	PREFIX_ANONYMOUS,
+	PREFIX_GLOBAL,
+	PREFIX_LOCAL,
+	PREFIX_LIB_FUNC,
+	PREFIX_LIB_VAR,
+	PREFIX_GLOBAL_FUNC,
+	PREFIX_GLOBAL_VAR,
+	PREFIX_LOCAL_FUNC,
+	PREFIX_LOCAL_VAR,
+};
+
 // CONTENT-TREATMENT
 #define FGETC (c = fgetc(gf_origin))
+
+enum{
+	TYPE_CONSTANT,
+	TYPE_LIB_FUNC,
+	TYPE_LIB_VAR,
+	TYPE_GLOBAL_FUNC,
+	TYPE_GLOBAL_VAR,
+	TYPE_LOCAL_FUNC,
+	TYPE_LOCAL_VAR,
+};
 
 // PRINT-TEXT/ERRORS
 #define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"

@@ -26,11 +26,9 @@ char* ident_get(void);
 void ident_end(short restart);
 
 void global_init(void);
-void global_newFuncEnv(char *name);
-void global_newLocalEnv(char *name);
+void global_newEnv(char *name);
 void global_print(char *word, char *name, short bufId);
-void global_rmvFuncEnv(void);
-void global_rmvLocalEnv(char *name);
+void global_rmvEnv(void);
 void global_end(void);
 static FuncEnv* global_getLocalEnv(char *name);
 static FILE* global_getBuf(short bufId, char *name);
@@ -54,11 +52,15 @@ void cp_x_tempFinish(void);
 bool getIdentifier(char *c, bool isFirst);
 char clearSpaces(void);
 void getSpecial(char c);
+short contentType(char *word, short prefix);
+short checkPrefixNow(char *word, short last);
+short checkPrefixNextCycle(char *word, bool isRootEnv);
 
 static void clearComment(bool isLine);
 static void saveString(char signal);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
+static short checkLuaKeywords(char *word);
 
 // PRINT-TEXT/ERRORS
 void repeatFlag(char *arg, short pos);
