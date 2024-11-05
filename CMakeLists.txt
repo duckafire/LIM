@@ -25,3 +25,8 @@ add_executable(lim
 	${SRC_DIR}/print-text/informations.c
 	${SRC_DIR}/buffers.c
 )
+
+# on the contrary of "(lib)c", "(lib)m" is not
+# auto-implemented by cmake, because of this, its
+# use must be specified (after `add_executable`)
+target_link_libraries(lim m)
