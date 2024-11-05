@@ -104,6 +104,13 @@ void global_newEnv(char *name){
 	global.tail = new;
 }
 
+void global_order(short code){
+	fwrite(&code, sizeof(int), 1, global.order);
+
+	// DEBUG
+	printf("%d\n", code);
+}
+
 void global_print(char *word, char *name, short bufId){
 	// `name == NULL` for print
 	// in a global buffer
@@ -173,11 +180,11 @@ static FuncEnv* global_getLocalEnv(char *name){
 static FILE* global_getBuf(short bufId, char *name){
 	// global
 	switch(bufId){
-		case ENV_LIB_VAR:     return global.libVar; break;
-		case ENV_LIB_FUNC:    return global.libFunc; break;
-		case ENV_GLOBAL_VAR:  return global.var; break;
-		case ENV_GLOBAL_FUNC: return global.func; break;
-		case ENV_CONSTANT:   return global.constants; break;
+		case TYPE_LIB_VAR:     return global.libVar; break;
+		case TYPE_LIB_FUNC:    return global.libFunc; break;
+		case TYPE_GLOBAL_VAR:  return global.var; break;
+		case TYPE_GLOBAL_FUNC: return global.func; break;
+		case TYPE_CONSTANT:    return global.constants; break;
 	}
 
 	// local
@@ -185,7 +192,7 @@ static FILE* global_getBuf(short bufId, char *name){
 	func = global_getLocalEnv(name);
 
 	switch(bufId){
-		case ENV_LOCAL_VAR:  return func->var; break;
-		case ENV_LOCAL_FUNC: return func->func; break;
+		case TYPE_LOCAL_VAR:  return func->var; break;
+		case TYPE_LOCAL_FUNC: return func->func; break;
 	}
 }

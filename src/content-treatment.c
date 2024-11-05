@@ -150,9 +150,6 @@ static bool saveDoubleSignal(char sig_0, char sig_1){
 }
 
 short contentType(char *word, short prefix){
-	if(checkLuaKeywords(word))
-		return TYPE_CONSTANT;
-
 	if(isalpha(word[0]) != 0 || word[0] == '_'){
 		// function
 		if(word[strlen(word) - 1] == '('){
@@ -206,59 +203,70 @@ short checkPrefixNow(char *word, short last){
 }
 
 short checkPrefixNextCycle(char *word, bool isRootEnv){
-	if(strcmp(word, "_G"))
+	if(strcmp(word, "_G") == 0)
 		return PREFIX_LIB_VAR;
 
-	if(strcmp(word, "local"))
+	if(strcmp(word, "local") == 0)
 		if(isRootEnv)
 			return PREFIX_GLOBAL;
 		else
 			return PREFIX_LOCAL;
 
-	if(strcmp(word, "function"))
+	if(strcmp(word, "function") == 0)
 		return PREFIX_LIB_FUNC;
 
 	return PREFIX_NONE;
 }
 
-static short checkLuaKeywords(char *word){
+short checkLuaKeywords(char *word){
 	short kw_len = strlen(word);
 
 	if(kw_len < 2 || kw_len > 9)
-		return 0;
+		return LUA_NONE_KW;
 
 	switch(kw_len){
 		case 2:
 			for(short i = 0; i < kw_len; i++)
-				if(strcmp(word, lua_kw_x2[i]) == 0)
-					return 1;
+				if(strcmp(word, lua_kw_x2[i]) == 0){
+					if(i < 2)
+						return LUAB_OPEN;
+					return LUA_NOB;
+				}
 			break;
 		case 3:
 			for(short i = 0; i < kw_len; i++)
-				if(strcmp(word, lua_kw_x3[i]) == 0)
-					return 1;
+				if(strcmp(word, lua_kw_x3[i]) == 0){
+					if(i == 1)
+						return LUAB_CLOSE;
+					else if(i == 2)
+						return LUAB_OPEN;
+					return LUA_NOB;
+				}
 			break;
 		case 4:
 			for(short i = 0; i < kw_len; i++)
 				if(strcmp(word, lua_kw_x4[i]) == 0)
-					return 1;
+					return LUA_NOB;
 			break;
 		case 5:
 			for(short i = 0; i < kw_len; i++)
-				if(strcmp(word, lua_kw_x5[i]) == 0)
-					return 1;
+				if(strcmp(word, lua_kw_x5[i]) == 0){
+					if(i == 4)
+						return LUAB_OPEN;
+					return LUA_NOB;
+				}
 			break;
 		case 6:
 			for(short i = 0; i < kw_len; i++)
 				if(strcmp(word, lua_kw_x6[i]) == 0)
-					return 1;
+					return LUA_NOB;
 			break;
 		case 9:
 			if(strcmp(word, lua_kw_x9) == 0)
-				return 1;
+				return LUAB_OPEN;
 			break;
 		default: return 0; break;
 	}
 
-	return 0;
+	return LUA_NONE_KW;
 }

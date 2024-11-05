@@ -133,20 +133,33 @@ void cp_2_separateExtractedContent(void){
 	// used for guide in decision
 	short prefix = PREFIX_NONE;
 
+	// related the verification of the
+	// lua keywords
+	short luaKW = LUA_NONE_KW;
+
 	// index to difference the names of
 	// different anonymous functions
-	double anonyId = 0.0;
+	unsigned int anonyId = 0;
+	
+	// this is used to find function end;
+	// `0` is equal root environment
+	unsigned short codeBlockLayer = 0;
 
-	// base in TYPE and used to set ENV
-	short envCode;
+	// base in TYPE constants
+	short envCode = TYPE_NONE;
 
-	// environment name; NULL if it is
-	// the root environment
-	char *envName = NULL;
+	// used to readl "content" (file)
+	char c = 0;
 
 	// dinamic string that store the
-	// functions (environment) name
+	// functions (environment) name;
+	// `NULL` indicate that the "cursor"
+	// is in root environment
 	char *anonyName = NULL;
+
+	// store the function name when the
+	// "cursor" is inside a
+	char *funcName = NULL;
 
 	// current word
 	char *word = NULL;
@@ -157,13 +170,12 @@ void cp_2_separateExtractedContent(void){
 	FILE *content;
 
 	ident_init();
+	global_init();
+
 	fclose(gf_origin);
 	gf_origin = NULL;
 
 	content = copyFile(collect_get(), NULL);
-
-	char c = 0;
-	global_init();
 
 	while((c = fgetc(content)) != EOF){
 		if(c != '\n'){
@@ -171,45 +183,66 @@ void cp_2_separateExtractedContent(void){
 			continue;
 		}
 
-		// save in a buffer
+		envCode = TYPE_NONE;
 		word = ident_get();
-		envName = NULL;
+		luaKW = checkLuaKeywords(word);
 
 		// "check prefixes now"
-		if(isRootEnv){
+		if(luaKW == LUA_NONE_KW || luaKW == LUA_NOB)
 			prefix = checkPrefixNow(word, prefix);
+		
+		if(luaKW == LUA_NOB)
+			envCode = TYPE_CONSTANT;
 
+		// outside functions
+		if(isRootEnv){
 			isFunc = (prefix == PREFIX_LIB_FUNC || prefix == PREFIX_GLOBAL_FUNC || prefix == PREFIX_LOCAL_FUNC);
 
-			if(isFunc && isAnony){
-				isAnony = false;
-				free(anonyName);
-
-			}else if(prefix == PREFIX_ANONYMOUS){
+			if(prefix == PREFIX_ANONYMOUS){
+				isRootEnv = false;
 				isAnony = true;
 
-				anonyName = malloc(sizeof(word) + INT_LEN(anonyId++));
+				free(anonyName);
+				anonyName = malloc(strlen(word) + 1 + INT_LEN(anonyId));
 
-				strcpy(anonyName, word);
+				sprintf(anonyName, "%s%u", word, anonyId);
+				funcName = anonyName;
+			}
+
+			if(isFunc || isAnony){
+				global_newEnv(funcName);
+				codeBlockLayer++;
+			}
+
+		// inside a function
+		}else{
+			if(luaKW == LUAB_OPEN)
+				codeBlockLayer++;
+			else if(luaKW == LUAB_CLOSE && codeBlockLayer > 0)
+				codeBlockLayer--;
+
+			if(codeBlockLayer == 0){
+				isRootEnv = true;
+				isAnony = false;
+
+				funcName = NULL;
 			}
 		}
 
+		// save word content
 		if(isAnony)
 			envCode = TYPE_CONSTANT;
-		else
+		else if(envCode != TYPE_CONSTANT)
 			envCode = contentType(word, prefix);
 
-		if(isAnony)
-			envName = anonyName;
-		else
-			envName = word;
-
-		global_print(word, envName, envCode);
-		ident_end(true);
+		global_order(envCode);
+		global_print(word, funcName, envCode);
 
 		// "check prefixes to next cycle"
 		if(envCode == TYPE_CONSTANT)
 			prefix = checkPrefixNextCycle(word, isRootEnv);
+
+		ident_end(true);
 	}
 
 	if(isAnony)

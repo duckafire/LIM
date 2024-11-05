@@ -7,23 +7,14 @@
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
 // BUFFERS
-enum{
-	ENV_CONSTANT,
-	ENV_LIB_VAR,
-	ENV_LIB_FUNC,
-	ENV_GLOBAL_VAR,
-	ENV_GLOBAL_FUNC,
-	ENV_LOCAL_FUNC,
-	ENV_LOCAL_VAR,
-};
 
 // CHECK-FLAGS
 #define LARGEST_FLAG 12
 #define INFO_FLAGS 5
 
 // COMPACTION PROCESS
-// it don't work correct if `n` is equal zero or one
-#define INT_LEN(n) ((int)((ceil(log10(n)))*sizeof(char)))
+// it don't work correct if `n < 2`
+#define INT_LEN(n) ((n<2)?1:((int)((ceil(log10(n)))*sizeof(char))))
 
 enum{
 	PREFIX_NONE,
@@ -38,10 +29,18 @@ enum{
 	PREFIX_LOCAL_VAR,
 };
 
+enum{ // B = Block
+	LUA_NONE_KW,
+	LUA_NOB,
+	LUAB_CLOSE,
+	LUAB_OPEN,
+};
+
 // CONTENT-TREATMENT
 #define FGETC (c = fgetc(gf_origin))
 
 enum{
+	TYPE_NONE,
 	TYPE_CONSTANT,
 	TYPE_LIB_FUNC,
 	TYPE_LIB_VAR,
