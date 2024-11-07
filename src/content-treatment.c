@@ -18,17 +18,44 @@ static char lua_kw_x6[2][7]={"elseif","repeat"};
 static char lua_kw_x9[9] = "function";
 
 bool getIdentifier(char *c, bool isFirst){
-	if(*c == ' ')
+	if(*c == ' '){
+		// to search the special character
+		// more closeness
 		*c = clearSpaces();
+		
+		// space between different words
+		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c))
+			collect_add('\n');
+	}
 
 	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(')));
 }
 
 char clearSpaces(void){
 	char c;
-	while(FGETC == ' ' && c != EOF);
+	while((FGETC == ' ' || c == '\t')  && c != EOF);
 	return c;
 }
+
+void saveString(char signal){
+	bool invBar = false; // '\'
+	char c = signal;
+
+	do{
+		if(c != '\n' && c != '\t')
+			collect_add(c);
+
+		if(invBar)
+			invBar = false;
+		else if(c == '\\')
+			invBar = true;
+
+	}while((c = fgetc(gf_origin)) != EOF && c != signal);
+
+	collect_add(c);
+	collect_add('\n');
+}
+
 
 void getSpecial(char c){
 	// COMMENTARIES
@@ -93,33 +120,28 @@ static void clearComment(bool isLine){
 				break;
 }
 
-static void saveString(char signal){
-	bool invBar = false; // '\'
-
-	do{
-		collect_add(_c);
-
-		if(invBar){
-			invBar = false;
-			continue;
-		}
-
-		if(_c == '\\'){
-			invBar = true;
-			continue;
-		}
-	}while((_c = fgetc(gf_origin)) != EOF && _c != signal);
-
-	collect_add(_c);
-	collect_add('\n');
-}
-
 static void saveBraces(void){
 	unsigned int qtt = 1;
 
-	while(qtt > 0){
-		if(!isgraph(_c))
+	char before = '{';
+	char after;
+
+	bool cond0, cond1;
+
+	while(qtt > 0 && _c != EOF){
+		after = fgetc(gf_origin);
+		fseek(gf_origin, -1, SEEK_CUR);
+
+		if(isgraph(_c))
 			collect_add(_c);
+		
+		cond0 = (_c == '\n' && isalnum(before) && !isalnum(after));
+		cond1 = ((_c == ' ' || _c == '\t') && isalnum(after) && isalnum(before));
+		
+		if(cond0 || cond1)
+			collect_add(' ');
+
+		before = _c;
 
 		_c = fgetc(gf_origin);
 
@@ -127,6 +149,8 @@ static void saveBraces(void){
 			qtt++;
 		else if(_c == '}')
 			qtt--;
+		else if(_c == '\'' || _c == '"');
+			//saveString(_c);
 	}
 
 	collect_add('}');

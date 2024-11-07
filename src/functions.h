@@ -52,6 +52,7 @@ void cp_x_tempFinish(void);
 // CONTENT-TREATMENT
 bool getIdentifier(char *c, bool isFirst);
 char clearSpaces(void);
+void saveString(char signal);
 void getSpecial(char c);
 short contentType(char *word, short prefix);
 short checkPrefixNow(char *word, short last);
@@ -59,7 +60,6 @@ short checkPrefixNextCycle(char *word, bool isRootEnv);
 short checkLuaKeywords(char *word);
 
 static void clearComment(bool isLine);
-static void saveString(char signal);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
 

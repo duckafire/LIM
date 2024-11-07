@@ -38,6 +38,10 @@ void cp_1_extractionFromOrigin(void){
 	// characteres in number check
 	bool isHex = false;
 
+	// used to identify string after
+	// "normal words"
+	bool isString = false;
+
 	while(FGETC != EOF){
 		// clear "null caracteres", without
 		// `continue` cycle: They are:
@@ -72,7 +76,16 @@ void cp_1_extractionFromOrigin(void){
 			}while(getIdentifier(&c, false));
 
 			collect_add('\n');
+
+			isString = (c == '\'' || c == '"');
 			
+			// without this condition, strings finded
+			// after a "word" will be treated incorrectly
+			if(isString){
+				saveString(c);
+				continue;
+			}
+
 			// if the characterer that stop the loop
 			// is not pritend here, it will be lost
 			if(c != '(' && !isalnum(c) && isgraph(c)){
@@ -116,9 +129,17 @@ void cp_1_extractionFromOrigin(void){
 		// special characteres (:,.{-+)
 		getSpecial(c);
 	}
+
+	FILE *copy;
+	copy = copyFile(collect_get(), NULL);
+	char h;
+	while(fread(&h, sizeof(char), 1, copy) > 0)
+		printf("%c", h);
+	fclose(copy);
 }
 
 void cp_2_separateExtractedContent(void){
+	return;
 	// root of the library environment
 	// (outside functions)
 	bool isRootEnv = true;
