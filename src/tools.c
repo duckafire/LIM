@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include "heads.h"
 
-bool strcmp2(char *str, char *v0, char *v1){
+bool tools_strcmp2(char *str, char *v0, char *v1){
 	if(str == NULL) return 0;
 	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
 }
 
-FILE* copyFile(FILE *src, char *destName){
+FILE* tools_copyFile(FILE *src, char *destName){
 	char c = 0;
 	FILE *dest;
 	const bool cloneBuf = (destName == NULL);

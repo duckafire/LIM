@@ -175,7 +175,7 @@ void info_license(void){
 
 void info_rules(void){
 	message(0,
-		"Compaction rules:",
+		"Compaction rules (work in progress):",
 		" ",
 		"1 - Only global functions will be annexed to the library.",
 		"2 - Global variables, tables and functions will not have them identifiers compacted.",

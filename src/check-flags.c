@@ -17,23 +17,23 @@ void cf_single(void){
 	if(argc == 1)
 		info_welcome();
 
-	if(strcmp2(argv[1], F_VERSION))
+	if(tools_strcmp2(argv[1], F_VERSION))
 		info_version();
 
-	if(strcmp2(argv[1], F_H_LIST))
+	if(tools_strcmp2(argv[1], F_H_LIST))
 		info_helpList();
 
-	if(strcmp2(argv[1], F_HELP)){
+	if(tools_strcmp2(argv[1], F_HELP)){
 		if(argc == 2)
 			info_help(NULL);
 
 		info_help(argv[2]);
 	}
 
-	if(strcmp2(argv[1], F_LICENSE))
+	if(tools_strcmp2(argv[1], F_LICENSE))
 		info_license();
 
-	if(strcmp2(argv[1], F_RULES))
+	if(tools_strcmp2(argv[1], F_RULES))
 		info_rules();
 }
 
@@ -48,26 +48,26 @@ void cf_unexpected(void){
 
 	for(short i = 2; i < argc; i++)
 		for(short j = 0; j < ARRAY_LEN(invalid[i]); j++)
-			if(strcmp2(argv[i], invalid[j][0], invalid[j][1]))
-				unexpectedFlag(argv[i], i);
+			if(tools_strcmp2(argv[i], invalid[j][0], invalid[j][1]))
+				er_unexpectedFlag(argv[i], i);
 }
 
 void cf_toCompaction(void){ // "destineName_1"
 	for(short i = 1; i < argc; i++){
-		if(strcmp2(argv[i], F_VERBOSE)){
+		if(tools_strcmp2(argv[i], F_VERBOSE)){
 			if(g_verbose)
-				repeatFlag(argv[i], i);
+				er_repeatFlag(argv[i], i);
 
 			g_verbose = true;
 			argv[i] = NULL;
 			continue;
 		}
-		if(strcmp2(argv[i], F_NAME)){
+		if(tools_strcmp2(argv[i], F_NAME)){
 			if(i + 1 == argc)
-				argExpected(F_NAME);
+				er_argExpected(F_NAME);
 
 			if(gp_nameDst != NULL)
-				repeatFlag(argv[i], i);
+				er_repeatFlag(argv[i], i);
 
 			gp_nameDst = argv[i + 1];
 
@@ -75,9 +75,9 @@ void cf_toCompaction(void){ // "destineName_1"
 			argv[i + 1] = NULL;
 			continue;
 		}
-		if(strcmp2(argv[i], F_REPLACE)){
+		if(tools_strcmp2(argv[i], F_REPLACE)){
 			if(g_replace)
-				repeatFlag(argv[i], i);
+				er_repeatFlag(argv[i], i);
 
 			g_replace = true;
 			argv[i] = NULL;
@@ -92,20 +92,20 @@ void cf_invalid(void){ // and get name of the origin file
 			continue;
 
 		if(argv[i][0] == '-' || (argv[i][0] == '-' && argv[i][1] == '-'))
-			invalidFlag(argv[i], i);
+			er_invalidFlag(argv[i], i);
 
 		if(gp_nameOrg == NULL){
 			gp_nameOrg = argv[i];
 			continue;
 		}
 
-		filesNamesOverflow();
+		er_filesNamesOverflow();
 	}
 }
 
 void cf_originName(){
 	if(gp_nameOrg == NULL)
-		nameNotSpecified();
+		er_nameNotSpecified();
 }
 
 void cf_destineName_2(bool *dstUsingMalloc){

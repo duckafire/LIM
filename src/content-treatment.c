@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "heads.h"
 
-// to `getSpecial`
+// to `ct_getSpecial`
 // and its process
 static char _c;
 
@@ -19,11 +19,11 @@ static char lua_kw_x8[9]   ="function";
 static char lua_funcs[23][15]  ={"assert","next","require","collectgarbage","pairs","select","dofile","pcall","setmetatable","error","print","tonumber","setmetatable","rawequal","tostring","ipairs","rawget","type","load","rawlen","xpcall","loadfile","rawset"};
 static char lua_tables[9][10]={"coroutine","debug","io","math","os","package","string","table","utf8"};
 
-bool getIdentifier(char *c, bool isFirst){
+bool ct_getIdentifier(char *c, bool isFirst){
 	if(*c == ' '){
 		// to search the special character
 		// more closeness
-		*c = clearSpaces();
+		*c = ct_clearSpaces();
 		
 		// space between different words
 		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c)){
@@ -35,13 +35,13 @@ bool getIdentifier(char *c, bool isFirst){
 	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
 }
 
-char clearSpaces(void){
+char ct_clearSpaces(void){
 	char c;
 	while((FGETC == ' ' || c == '\t')  && c != EOF);
 	return c;
 }
 
-void saveString(char signal){
+void ct_saveString(char signal){
 	bool invBar = false; // '\'
 	char c = signal;
 
@@ -61,7 +61,7 @@ void saveString(char signal){
 }
 
 
-void getSpecial(char c){
+void ct_getSpecial(char c){
 	// COMMENTARIES
 	// line
 	if(c == '-'){
@@ -86,7 +86,7 @@ void getSpecial(char c){
 	// STRINGS
 	_c = c;
 	if(c == '\'' || c == '"'){
-		saveString(c);
+		ct_saveString(c);
 		return;
 	}
 
@@ -154,7 +154,7 @@ static void saveBraces(void){
 		else if(_c == '}')
 			qtt--;
 		else if(_c == '\'' || _c == '"');
-			//saveString(_c);
+			//ct_saveString(_c);
 	}
 
 	collect_add('}');
@@ -177,7 +177,7 @@ static bool saveDoubleSignal(char sig_0, char sig_1){
 	return false;
 }
 
-short contentType(char *word, short prefix){
+short ct_contentType(char *word, short prefix){
 	if(isalpha(word[0]) != 0 || word[0] == '_'){
 		// function
 		if(word[strlen(word) - 1] == '('){
@@ -195,7 +195,7 @@ short contentType(char *word, short prefix){
 			return TYPE_CONSTANT;
 
 		// tables from lua
-		if(checkLuaTabs(word))
+		if(ct_checkLuaTabs(word))
 			return TYPE_FROM_LUA;
 
 		// variables and tables
@@ -213,7 +213,7 @@ short contentType(char *word, short prefix){
 	return TYPE_CONSTANT;
 }
 
-short checkPrefixNow(char *word, short last){
+short ct_checkPrefixNow(char *word, short last){
 	// function(
 	if(last == PREFIX_LUA_TAB)
 		return PREFIX_LUA_TAB_METHOD;
@@ -237,7 +237,7 @@ short checkPrefixNow(char *word, short last){
 	return PREFIX_NONE;
 }
 
-short checkPrefixNextCycle(char *word, bool isRootEnv){
+short ct_checkPrefixNextCycle(char *word, bool isRootEnv){
 	if(strcmp(word, "_G") == 0)
 		return PREFIX_LIB_VAR;
 
@@ -251,13 +251,13 @@ short checkPrefixNextCycle(char *word, bool isRootEnv){
 		return PREFIX_LIB_FUNC;
 
 	// math, table, string
-	if(checkLuaTabs(word))
+	if(ct_checkLuaTabs(word))
 		return PREFIX_LUA_TAB;
 
 	return PREFIX_NONE;
 }
 
-short checkLuaKeywords(char *word){
+short ct_checkLuaKeywords(char *word){
 	short kw_len = strlen(word);
 
 	if(kw_len < 2 || kw_len > 9)
@@ -310,7 +310,7 @@ short checkLuaKeywords(char *word){
 	return LUA_NONE_KW;
 }
 
-short checkLuaFunc(char *word){
+short ct_checkLuaFunc(char *word){
 	// ipairs, next, setmetatable, ...
 	for(short i = 0; i < 23; i++)
 		if(strcmp(word, lua_funcs[i]) == 0)
@@ -319,7 +319,7 @@ short checkLuaFunc(char *word){
 	return LUA_NONE_KW;
 }
 
-bool checkLuaTabs(char *word){
+bool ct_checkLuaTabs(char *word){
 	// math. table, string, ...
 	for(short i = 0; i < 10; i++)
 		if(strcmp(word, lua_tables[i]) == 0)

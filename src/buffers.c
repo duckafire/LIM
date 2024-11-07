@@ -18,7 +18,11 @@ void buffers_atexit(void){
 		global_end();
 }
 
-// COLLECT
+
+
+
+////////// COLLECT //////////
+
 void collect_init(void){
 	collect = tmpfile();
 }
@@ -36,7 +40,10 @@ void collect_end(void){
 	collect = NULL;
 }
 
-// IDENTIFIER
+
+
+////////// IDENTIFIER //////////
+
 void ident_init(void){
 	ident = malloc(1);
 	ident[0] = '\0';
@@ -68,7 +75,10 @@ void ident_end(short restart){
 		ident_init();
 }
 
-// GLOBAL ENVORINMENTS
+
+
+////////// GLOBAL ENVORINMENTS //////////
+
 void global_init(void){
 	// used one time
 	global.order = tmpfile();

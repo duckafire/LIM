@@ -9,8 +9,8 @@
 static void cleanup(void);
 
 // TOOLS
-bool strcmp2(char *str, char *v0, char *v1);
-FILE* copyFile(FILE *org, char *dstName);
+bool tools_strcmp2(char *str, char *v0, char *v1);
+FILE* tools_copyFile(FILE *org, char *dstName);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -51,30 +51,30 @@ void cp_2_separateExtractedContent(void);
 void cp_x_tempFinish(void);
 
 // CONTENT-TREATMENT
-bool getIdentifier(char *c, bool isFirst);
-char clearSpaces(void);
-void saveString(char signal);
-void getSpecial(char c);
-short contentType(char *word, short prefix);
-short checkPrefixNow(char *word, short last);
-short checkPrefixNextCycle(char *word, bool isRootEnv);
-short checkLuaKeywords(char *word);
-short checkLuaFunc(char *word);
-bool checkLuaTabs(char *word);
+bool ct_getIdentifier(char *c, bool isFirst);
+char ct_clearSpaces(void);
+void ct_saveString(char signal);
+void ct_getSpecial(char c);
+short ct_contentType(char *word, short prefix);
+short ct_checkPrefixNow(char *word, short last);
+short ct_checkPrefixNextCycle(char *word, bool isRootEnv);
+short ct_checkLuaKeywords(char *word);
+short ct_checkLuaFunc(char *word);
+bool ct_checkLuaTabs(char *word);
 
 static void clearComment(bool isLine);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
 
-// PRINT-TEXT/ERRORS
-void repeatFlag(char *arg, short pos);
-void unexpectedFlag(char *arg, short pos);
-void argExpected(char *_r, char *requester);
-void invalidFlag(char *arg, short pos);
-void filesNamesOverflow(void);
-void nameNotSpecified(void);
-void nonExistentFile(char *name);
-void fileAlreadyExistent(char *name);
+// PRINT-TEXT/ERRORS (ERror)
+void er_repeatFlag(char *arg, short pos);
+void er_unexpectedFlag(char *arg, short pos);
+void er_argExpected(char *_r, char *requester);
+void er_invalidFlag(char *arg, short pos);
+void er_filesNamesOverflow(void);
+void er_nameNotSpecified(void);
+void er_nonExistentFile(char *name);
+void er_fileAlreadyExistent(char *name);
 
 // PRINT-TEXT/INFORMATIONS
 static void message(char n, ...);

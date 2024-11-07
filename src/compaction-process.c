@@ -12,7 +12,7 @@ void cp_0_checkAndOpenFiles(void){
 
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
-		nonExistentFile(gp_nameOrg);
+		er_nonExistentFile(gp_nameOrg);
 
 	if(!g_verbose){
 		FILE *dst;
@@ -20,7 +20,7 @@ void cp_0_checkAndOpenFiles(void){
 
 		if(dst != NULL){
 			fclose(dst);
-			fileAlreadyExistent(gp_nameDst);
+			er_fileAlreadyExistent(gp_nameDst);
 		}
 	}
 
@@ -64,7 +64,7 @@ void cp_1_extractionFromOrigin(void){
 		// // tables
 		// // tables keys
 		// // functions
-		if(getIdentifier(&c, true)){
+		if(ct_getIdentifier(&c, true)){
 			do{
 				// the dot in first will protect
 				// this key against the compaction
@@ -83,7 +83,7 @@ void cp_1_extractionFromOrigin(void){
 					break;
 
 				FGETC;
-			}while(getIdentifier(&c, false));
+			}while(ct_getIdentifier(&c, false));
 
 			isString = (c == '\'' || c == '"');
 			wasFunc = (strcmp(ident_get(), "function") == 0);
@@ -94,7 +94,7 @@ void cp_1_extractionFromOrigin(void){
 			// without this condition, strings finded
 			// after a "word" will be treated incorrectly
 			if(isString){
-				saveString(c);
+				ct_saveString(c);
 				continue;
 			}
 
@@ -116,7 +116,7 @@ void cp_1_extractionFromOrigin(void){
 				FGETC;
 
 				if(c == ' ')
-					c = clearSpaces();
+					c = ct_clearSpaces();
 
 				// when the first dot is finded, `isFloat`
 				// becomes `true`, after the loop cycle
@@ -139,11 +139,11 @@ void cp_1_extractionFromOrigin(void){
 		}
 
 		// special characteres (:,.{-+)
-		getSpecial(c);
+		ct_getSpecial(c);
 	}
 
 	ident_end(false);
-	fclose(copyFile(collect_get(), "output.lim"));
+	fclose(tools_copyFile(collect_get(), "output.lim"));
 }
 
 void cp_2_separateExtractedContent(void){
@@ -203,7 +203,7 @@ void cp_2_separateExtractedContent(void){
 	fclose(gf_origin);
 	gf_origin = NULL;
 
-	content = copyFile(collect_get(), NULL);
+	content = tools_copyFile(collect_get(), NULL);
 
 	while((c = fgetc(content)) != EOF){
 		if(c != '\n'){
@@ -215,13 +215,13 @@ void cp_2_separateExtractedContent(void){
 		word = ident_get();
 
 		// from lua
-		fromLua = checkLuaKeywords(word);
+		fromLua = ct_checkLuaKeywords(word);
 		if(fromLua == LUA_NONE_KW)
-			fromLua = checkLuaFunc(word);
+			fromLua = ct_checkLuaFunc(word);
 		
 		// "check prefixes now"
 		if(fromLua == LUA_NONE_KW || fromLua == LUA_NOB)
-			prefix = checkPrefixNow(word, prefix);
+			prefix = ct_checkPrefixNow(word, prefix);
 		
 		if(fromLua == LUA_FUNC || prefix == PREFIX_LUA_TAB_METHOD)
 			envCode = TYPE_FROM_LUA;
@@ -268,14 +268,14 @@ void cp_2_separateExtractedContent(void){
 		if(isAnony)
 			envCode = TYPE_CONSTANT;
 		else if(envCode != TYPE_FROM_LUA && envCode != TYPE_CONSTANT && envCode)
-			envCode = contentType(word, prefix);
+			envCode = ct_contentType(word, prefix);
 
 		global_order(envCode);
 		global_print(word, funcName, envCode);
 
 		// "check prefixes to next cycle"
 		if(envCode == TYPE_CONSTANT || envCode == TYPE_FROM_LUA)
-			prefix = checkPrefixNextCycle(word, isRootEnv);
+			prefix = ct_checkPrefixNextCycle(word, isRootEnv);
 
 		ident_end(true);
 	}
@@ -285,7 +285,7 @@ void cp_2_separateExtractedContent(void){
 }
 
 void cp_x_tempFinish(void){
-	//fclose(copyFile(collect_get(), "output.lim"));
+	//fclose(tools_copyFile(collect_get(), "output.lim"));
 	info_verbose();
 	collect_end();
 	info_verbose();

@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 
+// always that a new function is finded on
+// root environment, a new element to
+// "file buffer system" (with this structure)
+// and added to "global buffer chain"
 typedef struct FuncEnv{
 	char *name;
 
@@ -13,6 +17,8 @@ typedef struct FuncEnv{
 	struct FuncEnv *next;
 }FuncEnv;
 
+// for a single element; to separate and to store
+// file content, based in it "type"
 typedef struct{
 	// original order of elements
 	// in script
