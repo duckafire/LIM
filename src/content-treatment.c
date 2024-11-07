@@ -24,8 +24,10 @@ bool getIdentifier(char *c, bool isFirst){
 		*c = clearSpaces();
 		
 		// space between different words
-		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c))
+		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c)){
+			fseek(gf_origin, -1, SEEK_CUR);
 			return false;
+		}
 	}
 
 	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
