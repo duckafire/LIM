@@ -10,6 +10,7 @@ static char c;
 void cp_0_checkAndOpenFiles(void){
 	info_verbose();
 
+	// check all files (exit or not)
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
 		er_nonExistentFile(gp_nameOrg);
@@ -143,7 +144,6 @@ void cp_1_extractionFromOrigin(void){
 	}
 
 	ident_end(false);
-	fclose(tools_copyFile(collect_get(), "output.lim"));
 }
 
 void cp_2_separateExtractedContent(void){
@@ -175,9 +175,6 @@ void cp_2_separateExtractedContent(void){
 
 	// base in TYPE constants
 	short envCode = TYPE_NONE;
-
-	// used to readl "content" (file)
-	char c = 0;
 
 	// dinamic string that store the
 	// functions (environment) name;
@@ -223,6 +220,8 @@ void cp_2_separateExtractedContent(void){
 		if(fromLua == LUA_NONE_KW || fromLua == LUA_NOB)
 			prefix = ct_checkPrefixNow(word, prefix);
 		
+		// change buffer index based on `fromLua`
+		// and `prefix` ("now") values
 		if(fromLua == LUA_FUNC || prefix == PREFIX_LUA_TAB_METHOD)
 			envCode = TYPE_FROM_LUA;
 		else if(fromLua != LUA_NONE_KW)
@@ -230,8 +229,10 @@ void cp_2_separateExtractedContent(void){
 
 		// outside functions
 		if(isRootEnv){
+			// "named" function
 			isFunc = (prefix == PREFIX_LIB_FUNC || prefix == PREFIX_GLOBAL_FUNC || prefix == PREFIX_LOCAL_FUNC);
 
+			// `function() end`
 			if(prefix == PREFIX_ANONYMOUS){
 				isRootEnv = false;
 				isAnony = true;

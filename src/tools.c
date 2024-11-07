@@ -4,7 +4,7 @@
 #include "heads.h"
 
 bool tools_strcmp2(char *str, char *v0, char *v1){
-	if(str == NULL) return 0;
+	if(str == NULL) return false;
 	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
 }
 
@@ -22,6 +22,7 @@ FILE* tools_copyFile(FILE *src, char *destName){
 	
 	fseek(src, 0, SEEK_SET);
 
+	// copy content
 	while(fread(&c, sizeof(char), 1, src) > 0 && c != EOF){
 		if(cloneBuf)
 			fwrite(&c, sizeof(c), 1, dest);

@@ -32,7 +32,8 @@ bool ct_getIdentifier(char *c, bool isFirst){
 		}
 	}
 
-	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
+	// ([a-zA-Z] or '_') or (!isF and ([0-9] or '.' or '(' or ':'))
+	return (isalpha(*c) != 0 || *c == '_' || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
 }
 
 char ct_clearSpaces(void){

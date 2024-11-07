@@ -60,50 +60,50 @@ void info_helpList(void){
 }
 
 void info_help(char *flag){
-	if(strcmp2(flag, F_VERSION))
+	if(tools_strcmp2(flag, F_VERSION))
 		message(0,
 			"lim {-v | --version}",
 			" ",
 			"Print the program version",
 		NULL);
-	else if(strcmp2(flag, F_H_LIST ))
+	else if(tools_strcmp2(flag, F_H_LIST ))
 		message(0,
 			"lim {-hl | --help-list}",
 			" ",
 			"Print all flags, in list format, without description",
 		NULL);
-	else if(strcmp2(flag, F_HELP   ))
+	else if(tools_strcmp2(flag, F_HELP   ))
 		message(0,
 			"lim {-h | --help} [flag]",
 			" ",
 			"Print informations about main flags or about a specific flag.",
 		NULL);
-	else if(strcmp2(flag, F_VERBOSE))
+	else if(tools_strcmp2(flag, F_VERBOSE))
 		message(0,
 			"lim {-V | --verbose} <origin>",
 			" ",
 			"Print informations about the compaction, during this process.",
 		NULL);
-	else if(strcmp2(flag, F_NAME   ))
+	else if(tools_strcmp2(flag, F_NAME   ))
 		message(0,
 			"lim <origin> {-n | --name} <destine-name>",
 			" ",
 			"Specify that the next argument is the output file name.",
 		NULL);
-	else if(strcmp2(flag, F_REPLACE))
+	else if(tools_strcmp2(flag, F_REPLACE))
 		message(0,
 			"lim {-r | --replace} <origin>",
 			" ",
 			"Specify that, if already exist a file with the same name of the",
 			"output file, it must be replaced.",
 		NULL);
-	else if(strcmp2(flag, F_LICENSE))
+	else if(tools_strcmp2(flag, F_LICENSE))
 		message(0,
 			"lim {-l | --license}",
 			" ",
 			"Print the program license.",
 		NULL);
-	else if(strcmp2(flag, F_RULES))
+	else if(tools_strcmp2(flag, F_RULES))
 		message(0,
 			"lim {-R | --rules}",
 			" ",

@@ -32,7 +32,6 @@ void global_print(char *word, char *name, short bufId);
 void global_rmvEnv(void);
 GlobalEnv* global_get(void);
 void global_end(void);
-static FuncEnv* global_getLocalEnv(char *name);
 static FILE* global_getBuf(short bufId, char *name);
 
 // CHECK-FLAGS

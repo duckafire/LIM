@@ -81,13 +81,13 @@ void ident_end(short restart){
 
 void global_init(void){
 	// used one time
-	global.order = tmpfile();
-	global.libVar = tmpfile();
-	global.libFunc = tmpfile();
-	global.var = tmpfile();
-	global.func = tmpfile();
+	global.order     = tmpfile();
+	global.libVar    = tmpfile();
+	global.libFunc   = tmpfile();
+	global.var       = tmpfile();
+	global.func      = tmpfile();
 	global.constants = tmpfile();
-	global.luaFunc = tmpfile();
+	global.luaFunc   = tmpfile();
 	
 	global.head = NULL;
 	global.tail = NULL;
@@ -123,14 +123,15 @@ void global_print(char *word, char *name, short bufId){
 	// `name == NULL` for print
 	// in a global buffer
 	FILE *buf;
-	buf = global_getBuf(bufId, name);
-
 	unsigned int i = 0;
 	char *c = NULL;
+	char n = '\n';
+
+	buf = global_getBuf(bufId, name);
+
 	for(c = &word[i]; *c != '\0'; c = &word[++i])
 		fwrite(c, sizeof(char), 1, buf);
 
-	char n = '\n';
 	fwrite(&n, sizeof(char), 1, buf);
 }
 
@@ -143,8 +144,8 @@ void global_rmvEnv(void){
 		return;
 	}
 
+	// get element from chain
 	FuncEnv *p;
-
 	for(p = global.head; p->next->next != NULL; p = p->next);
 
 	fclose(p->next->func);
@@ -171,27 +172,16 @@ void global_end(void){
 	fclose(global.constants);
 	fclose(global.luaFunc);
 
-	global.order = NULL;
-	global.libVar = NULL;
-	global.libFunc = NULL;
-	global.var = NULL;
-	global.func = NULL;
+	global.order     = NULL;
+	global.libVar    = NULL;
+	global.libFunc   = NULL;
+	global.var       = NULL;
+	global.func      = NULL;
 	global.constants = NULL;
-	global.luaFunc = NULL;
+	global.luaFunc   = NULL;
 	
 	global.head = NULL;
 	global.tail = NULL;
-}
-
-static FuncEnv* global_getLocalEnv(char *name){
-	if(global.head == global.tail)
-		return global.head;
-
-	FuncEnv *p;
-
-	for(p = global.head; strcmp(p->name, name) != 0 && p != NULL; p = p->next);
-
-	return p;
 }
 
 static FILE* global_getBuf(short bufId, char *name){
@@ -206,11 +196,15 @@ static FILE* global_getBuf(short bufId, char *name){
 	}
 
 	// local
-	FuncEnv *func;
-	func = global_getLocalEnv(name);
+	FuncEnv *f;
+
+	if(global.head == global.tail)
+		f = global.head;
+	else
+		for(f = global.head; strcmp(f->name, name) != 0 && f != NULL; f = f->next);
 
 	switch(bufId){
-		case TYPE_LOCAL_VAR:  return func->var; break;
-		case TYPE_LOCAL_FUNC: return func->func; break;
+		case TYPE_LOCAL_VAR:  return f->var; break;
+		case TYPE_LOCAL_FUNC: return f->func; break;
 	}
 }

@@ -13,7 +13,7 @@ void cf_setArgValues(int c, char *v[]){
 }
 
 void cf_single(void){
-	// information (exit)
+	// information (call and exit)
 	if(argc == 1)
 		info_welcome();
 
@@ -38,6 +38,7 @@ void cf_single(void){
 }
 
 void cf_unexpected(void){
+	// they can be used only like 1th argument
 	char invalid[INFO_FLAGS][2][LARGEST_FLAG] = {
 		{F_VERSION},
 		{F_H_LIST},
@@ -53,6 +54,8 @@ void cf_unexpected(void){
 }
 
 void cf_toCompaction(void){ // "destineName_1"
+	// action flags
+	
 	for(short i = 1; i < argc; i++){
 		if(tools_strcmp2(argv[i], F_VERBOSE)){
 			if(g_verbose)
@@ -62,6 +65,7 @@ void cf_toCompaction(void){ // "destineName_1"
 			argv[i] = NULL;
 			continue;
 		}
+
 		if(tools_strcmp2(argv[i], F_NAME)){
 			if(i + 1 == argc)
 				er_argExpected(F_NAME);
@@ -75,6 +79,7 @@ void cf_toCompaction(void){ // "destineName_1"
 			argv[i + 1] = NULL;
 			continue;
 		}
+		
 		if(tools_strcmp2(argv[i], F_REPLACE)){
 			if(g_replace)
 				er_repeatFlag(argv[i], i);
@@ -86,8 +91,12 @@ void cf_toCompaction(void){ // "destineName_1"
 	}
 }
 
-void cf_invalid(void){ // and get name of the origin file
+void cf_invalid(void){
+	// and get name to origin file
+
 	for(short i = 1; i < argc; i++){
+		// it receive NULL from
+		// "cf_toCompaction"
 		if(argv[i] == NULL)
 			continue;
 
@@ -127,6 +136,9 @@ void cf_destineName_2(bool *dstUsingMalloc){
 			strcpy(temp, gp_nameOrg);
 
 		gp_nameDst = temp;
+
+		// used to specify if the memory
+		// will need to be free
 		*dstUsingMalloc = true;
 	}
 }
