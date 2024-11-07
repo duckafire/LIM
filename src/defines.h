@@ -19,6 +19,8 @@
 enum{
 	PREFIX_NONE = -1,
 	PREFIX_ANONYMOUS,
+	PREFIX_LUA_TAB, // math, string, table, ...
+	PREFIX_LUA_TAB_METHOD, // .random, .sub, .insert, ....
 	PREFIX_GLOBAL,
 	PREFIX_LOCAL,
 	PREFIX_LIB_FUNC,
@@ -34,14 +36,16 @@ enum{ // B = Block
 	LUA_NOB,
 	LUAB_CLOSE,
 	LUAB_OPEN,
+	LUA_FUNC,
 };
 
 // CONTENT-TREATMENT
-#define FGETC (c = fgetc(gf_origin))
+#define FGETC (c=fgetc(gf_origin))
 
 enum{
 	TYPE_NONE = -1,
 	TYPE_CONSTANT,
+	TYPE_FROM_LUA, // tables and functions
 	TYPE_LIB_FUNC,
 	TYPE_LIB_VAR,
 	TYPE_GLOBAL_FUNC,

@@ -15,7 +15,9 @@ static char lua_kw_x3[5][4]={"and","end","for","nil","not"};
 static char lua_kw_x4[3][5]={"else","then","true"};
 static char lua_kw_x5[5][6]={"break","false","local","until","while"};
 static char lua_kw_x6[2][7]={"elseif","repeat"};
-static char lua_kw_x8[9] = "function";
+static char lua_kw_x8[9]   ="function";
+static char lua_funcs[23][15]  ={"assert","next","require","collectgarbage","pairs","select","dofile","pcall","setmetatable","error","print","tonumber","setmetatable","rawequal","tostring","ipairs","rawget","type","load","rawlen","xpcall","loadfile","rawset"};
+static char lua_tables[9][10]={"coroutine","debug","io","math","os","package","string","table","utf8"};
 
 bool getIdentifier(char *c, bool isFirst){
 	if(*c == ' '){
@@ -192,6 +194,10 @@ short contentType(char *word, short prefix){
 		if(word[1] == '_')
 			return TYPE_CONSTANT;
 
+		// tables from lua
+		if(checkLuaTabs(word))
+			return TYPE_FROM_LUA;
+
 		// variables and tables
 		if(prefix == PREFIX_LIB_VAR)
 			return TYPE_LIB_VAR;
@@ -209,6 +215,9 @@ short contentType(char *word, short prefix){
 
 short checkPrefixNow(char *word, short last){
 	// function(
+	if(last == PREFIX_LUA_TAB)
+		return PREFIX_LUA_TAB_METHOD;
+
 	if(strcmp(word, "function(") == 0)
 		return PREFIX_ANONYMOUS;
 
@@ -240,6 +249,10 @@ short checkPrefixNextCycle(char *word, bool isRootEnv){
 
 	if(strcmp(word, "function") == 0)
 		return PREFIX_LIB_FUNC;
+
+	// math, table, string
+	if(checkLuaTabs(word))
+		return PREFIX_LUA_TAB;
 
 	return PREFIX_NONE;
 }
@@ -295,4 +308,22 @@ short checkLuaKeywords(char *word){
 	}
 
 	return LUA_NONE_KW;
+}
+
+short checkLuaFunc(char *word){
+	// ipairs, next, setmetatable, ...
+	for(short i = 0; i < 23; i++)
+		if(strcmp(word, lua_funcs[i]) == 0)
+			return LUA_FUNC;
+
+	return LUA_NONE_KW;
+}
+
+bool checkLuaTabs(char *word){
+	// math. table, string, ...
+	for(short i = 0; i < 10; i++)
+		if(strcmp(word, lua_tables[i]) == 0)
+			return true;
+
+	return false;
 }

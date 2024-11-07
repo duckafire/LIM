@@ -77,6 +77,7 @@ void global_init(void){
 	global.var = tmpfile();
 	global.func = tmpfile();
 	global.constants = tmpfile();
+	global.luaFunc = tmpfile();
 	
 	global.head = NULL;
 	global.tail = NULL;
@@ -106,9 +107,6 @@ void global_newEnv(char *name){
 
 void global_order(short code){
 	fwrite(&code, sizeof(int), 1, global.order);
-
-	// DEBUG
-	printf("%d\n", code);
 }
 
 void global_print(char *word, char *name, short bufId){
@@ -119,8 +117,11 @@ void global_print(char *word, char *name, short bufId){
 
 	unsigned int i = 0;
 	char *c = NULL;
-	for(c = &word[i]; *c != '\0'; c = &word[i++])
+	for(c = &word[i]; *c != '\0'; c = &word[++i])
 		fwrite(c, sizeof(char), 1, buf);
+
+	char n = '\n';
+	fwrite(&n, sizeof(char), 1, buf);
 }
 
 void global_rmvEnv(void){
@@ -144,6 +145,10 @@ void global_rmvEnv(void){
 	global.tail = p;
 }
 
+GlobalEnv* global_get(void){
+	return &global;
+}
+
 void global_end(void){
 	while(global.head != NULL)
 		global_rmvEnv();
@@ -154,6 +159,7 @@ void global_end(void){
 	fclose(global.var);
 	fclose(global.func);
 	fclose(global.constants);
+	fclose(global.luaFunc);
 
 	global.order = NULL;
 	global.libVar = NULL;
@@ -161,6 +167,7 @@ void global_end(void){
 	global.var = NULL;
 	global.func = NULL;
 	global.constants = NULL;
+	global.luaFunc = NULL;
 	
 	global.head = NULL;
 	global.tail = NULL;
@@ -185,6 +192,7 @@ static FILE* global_getBuf(short bufId, char *name){
 		case TYPE_GLOBAL_VAR:  return global.var; break;
 		case TYPE_GLOBAL_FUNC: return global.func; break;
 		case TYPE_CONSTANT:    return global.constants; break;
+		case TYPE_FROM_LUA:    return global.luaFunc; break;
 	}
 
 	// local

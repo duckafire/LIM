@@ -30,6 +30,7 @@ void global_newEnv(char *name);
 void global_order(short code);
 void global_print(char *word, char *name, short bufId);
 void global_rmvEnv(void);
+GlobalEnv* global_get(void);
 void global_end(void);
 static FuncEnv* global_getLocalEnv(char *name);
 static FILE* global_getBuf(short bufId, char *name);
@@ -58,6 +59,8 @@ short contentType(char *word, short prefix);
 short checkPrefixNow(char *word, short last);
 short checkPrefixNextCycle(char *word, bool isRootEnv);
 short checkLuaKeywords(char *word);
+short checkLuaFunc(char *word);
+bool checkLuaTabs(char *word);
 
 static void clearComment(bool isLine);
 static void saveBraces(void);

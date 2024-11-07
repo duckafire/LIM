@@ -163,7 +163,7 @@ void cp_2_separateExtractedContent(void){
 
 	// related the verification of the
 	// lua keywords
-	short luaKW = LUA_NONE_KW;
+	short fromLua = LUA_NONE_KW;
 
 	// index to difference the names of
 	// different anonymous functions
@@ -213,13 +213,19 @@ void cp_2_separateExtractedContent(void){
 
 		envCode = TYPE_NONE;
 		word = ident_get();
-		luaKW = checkLuaKeywords(word);
 
+		// from lua
+		fromLua = checkLuaKeywords(word);
+		if(fromLua == LUA_NONE_KW)
+			fromLua = checkLuaFunc(word);
+		
 		// "check prefixes now"
-		if(luaKW == LUA_NONE_KW || luaKW == LUA_NOB)
+		if(fromLua == LUA_NONE_KW || fromLua == LUA_NOB)
 			prefix = checkPrefixNow(word, prefix);
 		
-		if(luaKW != LUA_NONE_KW)
+		if(fromLua == LUA_FUNC || prefix == PREFIX_LUA_TAB_METHOD)
+			envCode = TYPE_FROM_LUA;
+		else if(fromLua != LUA_NONE_KW)
 			envCode = TYPE_CONSTANT;
 
 		// outside functions
@@ -245,9 +251,9 @@ void cp_2_separateExtractedContent(void){
 
 		// inside a function
 		}else{
-			if(luaKW == LUAB_OPEN)
+			if(fromLua == LUAB_OPEN)
 				codeBlockLayer++;
-			else if(luaKW == LUAB_CLOSE && codeBlockLayer > 0)
+			else if(fromLua == LUAB_CLOSE && codeBlockLayer > 0)
 				codeBlockLayer--;
 
 			if(codeBlockLayer == 0){
@@ -261,22 +267,20 @@ void cp_2_separateExtractedContent(void){
 		// save word content
 		if(isAnony)
 			envCode = TYPE_CONSTANT;
-		else if(envCode != TYPE_CONSTANT)
+		else if(envCode != TYPE_FROM_LUA && envCode != TYPE_CONSTANT && envCode)
 			envCode = contentType(word, prefix);
 
 		global_order(envCode);
 		global_print(word, funcName, envCode);
 
 		// "check prefixes to next cycle"
-		if(envCode == TYPE_CONSTANT)
+		if(envCode == TYPE_CONSTANT || envCode == TYPE_FROM_LUA)
 			prefix = checkPrefixNextCycle(word, isRootEnv);
 
 		ident_end(true);
 	}
 
-	if(isAnony)
-		free(anonyName);
-
+	free(anonyName);
 	fclose(content);
 }
 

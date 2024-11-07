@@ -41,6 +41,10 @@ typedef struct{
 	// strings, metamethods, key tables,
 	// special characteres and key words
 	FILE *constants;
+	
+	// they will be used for create a
+	// "reference scope"
+	FILE *luaFunc;
 
 	// a chain with the functions environments
 	// and them sub-environments
