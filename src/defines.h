@@ -17,7 +17,7 @@
 #define INT_LEN(n) ((n<2)?1:((int)((ceil(log10(n)))*sizeof(char))))
 
 enum{
-	PREFIX_NONE,
+	PREFIX_NONE = -1,
 	PREFIX_ANONYMOUS,
 	PREFIX_GLOBAL,
 	PREFIX_LOCAL,
@@ -30,7 +30,7 @@ enum{
 };
 
 enum{ // B = Block
-	LUA_NONE_KW,
+	LUA_NONE_KW = -1,
 	LUA_NOB,
 	LUAB_CLOSE,
 	LUAB_OPEN,
@@ -40,7 +40,7 @@ enum{ // B = Block
 #define FGETC (c = fgetc(gf_origin))
 
 enum{
-	TYPE_NONE,
+	TYPE_NONE = -1,
 	TYPE_CONSTANT,
 	TYPE_LIB_FUNC,
 	TYPE_LIB_VAR,

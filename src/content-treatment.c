@@ -15,7 +15,7 @@ static char lua_kw_x3[5][4]={"and","end","for","nil","not"};
 static char lua_kw_x4[3][5]={"else","then","true"};
 static char lua_kw_x5[5][6]={"break","false","local","until","while"};
 static char lua_kw_x6[2][7]={"elseif","repeat"};
-static char lua_kw_x9[9] = "function";
+static char lua_kw_x8[9] = "function";
 
 bool getIdentifier(char *c, bool isFirst){
 	if(*c == ' '){
@@ -25,10 +25,10 @@ bool getIdentifier(char *c, bool isFirst){
 		
 		// space between different words
 		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c))
-			collect_add('\n');
+			return false;
 	}
 
-	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(')));
+	return ((isalpha(*c) != 0 || *c == '_') || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
 }
 
 char clearSpaces(void){
@@ -211,7 +211,7 @@ short checkPrefixNow(char *word, short last){
 		return PREFIX_ANONYMOUS;
 
 	// local function
-	if((last == PREFIX_GLOBAL || last == PREFIX_LOCAL) && strcmp(word, "function") == 0)
+	if(last == PREFIX_LIB_FUNC || ((last == PREFIX_GLOBAL || last == PREFIX_LOCAL) && strcmp(word, "function") == 0))
 		if(last == PREFIX_GLOBAL)
 			return PREFIX_GLOBAL_FUNC;
 		else
@@ -285,8 +285,8 @@ short checkLuaKeywords(char *word){
 				if(strcmp(word, lua_kw_x6[i]) == 0)
 					return LUA_NOB;
 			break;
-		case 9:
-			if(strcmp(word, lua_kw_x9) == 0)
+		case 8:
+			if(strcmp(word, lua_kw_x8) == 0)
 				return LUAB_OPEN;
 			break;
 		default: return 0; break;

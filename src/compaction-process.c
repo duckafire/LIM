@@ -42,6 +42,13 @@ void cp_1_extractionFromOrigin(void){
 	// "normal words"
 	bool isString = false;
 
+	// used to protect methods name, like:
+	// function tab.met0() end
+	// function tab:met1() end
+	bool wasFunc = false;
+
+	ident_init();
+
 	while(FGETC != EOF){
 		// clear "null caracteres", without
 		// `continue` cycle: They are:
@@ -62,10 +69,13 @@ void cp_1_extractionFromOrigin(void){
 				// the dot in first will protect
 				// this key against the compaction
 				// process
-				if(c == '.')
+				if(c == '.' && !wasFunc){
 					collect_add('\n');
+					ident_add('\n');
+				}
 
 				collect_add(c);
+				ident_add(c);
 
 				// this parenthesis specify that
 				// this identify belongs to function
@@ -75,10 +85,12 @@ void cp_1_extractionFromOrigin(void){
 				FGETC;
 			}while(getIdentifier(&c, false));
 
+			isString = (c == '\'' || c == '"');
+			wasFunc = (strcmp(ident_get(), "function") == 0);
+			
+			ident_end(true);
 			collect_add('\n');
 
-			isString = (c == '\'' || c == '"');
-			
 			// without this condition, strings finded
 			// after a "word" will be treated incorrectly
 			if(isString){
@@ -130,16 +142,11 @@ void cp_1_extractionFromOrigin(void){
 		getSpecial(c);
 	}
 
-	FILE *copy;
-	copy = copyFile(collect_get(), NULL);
-	char h;
-	while(fread(&h, sizeof(char), 1, copy) > 0)
-		printf("%c", h);
-	fclose(copy);
+	ident_end(false);
+	fclose(copyFile(collect_get(), "output.lim"));
 }
 
 void cp_2_separateExtractedContent(void){
-	return;
 	// root of the library environment
 	// (outside functions)
 	bool isRootEnv = true;
@@ -212,7 +219,7 @@ void cp_2_separateExtractedContent(void){
 		if(luaKW == LUA_NONE_KW || luaKW == LUA_NOB)
 			prefix = checkPrefixNow(word, prefix);
 		
-		if(luaKW == LUA_NOB)
+		if(luaKW != LUA_NONE_KW)
 			envCode = TYPE_CONSTANT;
 
 		// outside functions
@@ -231,6 +238,7 @@ void cp_2_separateExtractedContent(void){
 			}
 
 			if(isFunc || isAnony){
+				funcName = word;
 				global_newEnv(funcName);
 				codeBlockLayer++;
 			}
