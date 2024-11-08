@@ -24,13 +24,11 @@ enum{
 	PREFIX_NONE = -1, 
 	// for checkPrefixNow
 	PREFIX_ANONYMOUS,      // functions() end
-	PREFIX_LUA_TAB_METHOD, // .random, .sub, .insert, ....
 	PREFIX_GLOBAL_FUNC,    // function (in root enviroment) 
 	PREFIX_GLOBAL_VAR,     // variable/table (~)
 	PREFIX_LOCAL_FUNC,     // function (inside function)
 	PREFIX_LOCAL_VAR,      // variable/table (~)
 	// for checkPrefixNextCycle
-	PREFIX_LUA_TAB,  // math, string, table, ...
 	PREFIX_GLOBAL,   // <local> <function <name> | <variable> [=] [value]>
 	PREFIX_LOCAL,    // ~
 	PREFIX_LIB_FUNC, // function declared without `local`
@@ -61,6 +59,7 @@ enum{
 	TYPE_GLOBAL_VAR,
 	TYPE_LOCAL_FUNC,
 	TYPE_LOCAL_VAR,
+	TYPE_USE_OR_CALL,
 };
 
 // PRINT-TEXT/ERRORS (Error MeSsaGe)

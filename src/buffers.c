@@ -86,6 +86,7 @@ void global_init(void){
 	global.libFunc   = tmpfile();
 	global.var       = tmpfile();
 	global.func      = tmpfile();
+	global.useOrCall = tmpfile();
 	global.constants = tmpfile();
 	global.luaFunc   = tmpfile();
 	
@@ -115,8 +116,10 @@ void global_newEnv(char *name){
 	global.tail = new;
 }
 
-void global_order(short code){
+void global_order(short code, char *word){
 	fwrite(&code, sizeof(int), 1, global.order);
+
+	fprintf(stdout, "%d - %s\n", code, word);
 }
 
 void global_print(char *word, char *name, short bufId){
@@ -169,6 +172,7 @@ void global_end(void){
 	fclose(global.libFunc);
 	fclose(global.var);
 	fclose(global.func);
+	fclose(global.useOrCall);
 	fclose(global.constants);
 	fclose(global.luaFunc);
 
@@ -177,6 +181,7 @@ void global_end(void){
 	global.libFunc   = NULL;
 	global.var       = NULL;
 	global.func      = NULL;
+	global.useOrCall = NULL;
 	global.constants = NULL;
 	global.luaFunc   = NULL;
 	
@@ -187,12 +192,13 @@ void global_end(void){
 static FILE* global_getBuf(short bufId, char *name){
 	// global
 	switch(bufId){
-		case TYPE_LIB_VAR:     return global.libVar; break;
-		case TYPE_LIB_FUNC:    return global.libFunc; break;
-		case TYPE_GLOBAL_VAR:  return global.var; break;
-		case TYPE_GLOBAL_FUNC: return global.func; break;
+		case TYPE_LIB_VAR:     return global.libVar;    break;
+		case TYPE_LIB_FUNC:    return global.libFunc;   break;
+		case TYPE_GLOBAL_VAR:  return global.var;       break;
+		case TYPE_GLOBAL_FUNC: return global.func;      break;
 		case TYPE_CONSTANT:    return global.constants; break;
-		case TYPE_FROM_LUA:    return global.luaFunc; break;
+		case TYPE_FROM_LUA:    return global.luaFunc;   break;
+		case TYPE_USE_OR_CALL: return global.useOrCall; break;
 	}
 
 	// local

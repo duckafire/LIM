@@ -42,6 +42,10 @@ typedef struct{
 	// `local function <name>()`
 	FILE *func;
 
+	// use of variables, or tables, and
+	// functions call
+	FILE *useOrCall;
+
 	// content that not will be compacted;
 	// they are: numbers, booleans, `nil`,
 	// strings, metamethods, key tables,

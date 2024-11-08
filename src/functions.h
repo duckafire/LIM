@@ -27,7 +27,7 @@ void ident_end(short restart);
 
 void global_init(void);
 void global_newEnv(char *name);
-void global_order(short code);
+void global_order(short code, char *word);
 void global_print(char *word, char *name, short bufId);
 void global_rmvEnv(void);
 GlobalEnv* global_get(void);
@@ -54,12 +54,12 @@ bool ct_getIdentifier(char *c, bool isFirst);
 char ct_clearSpaces(void);
 void ct_saveString(char signal);
 void ct_getSpecial(char c);
-short ct_contentType(char *word, short prefix);
-short ct_checkPrefixNow(char *word, short last);
-short ct_checkPrefixNextCycle(char *word, bool isRootEnv);
-short ct_checkLuaKeywords(char *word);
+
 short ct_checkLuaFunc(char *word);
-bool ct_checkLuaTabs(char *word);
+short ct_checkPrefixNow(char *word, short last, bool isRootEnv);
+short ct_contentType(char *word, short prefix);
+short ct_checkPrefixNextCycle(char *word, short cur, bool isRootEnv);
+short ct_checkLuaKeywords(char *word);
 
 static void clearComment(bool isLine);
 static void saveBraces(void);

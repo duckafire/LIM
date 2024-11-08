@@ -217,12 +217,10 @@ void cp_2_separateExtractedContent(void){
 			fromLua = ct_checkLuaFunc(word);
 		
 		// "check prefixes now"
-		if(fromLua == LUA_NONE_KW || fromLua == LUA_NOB)
-			prefix = ct_checkPrefixNow(word, prefix);
+		prefix = ct_checkPrefixNow(word, prefix, isRootEnv);
 		
 		// change buffer index based on `fromLua`
-		// and `prefix` ("now") values
-		if(fromLua == LUA_FUNC || prefix == PREFIX_LUA_TAB_METHOD)
+		if(fromLua == LUA_FUNC)
 			envCode = TYPE_FROM_LUA;
 		else if(fromLua != LUA_NONE_KW)
 			envCode = TYPE_CONSTANT;
@@ -268,15 +266,15 @@ void cp_2_separateExtractedContent(void){
 		// save word content
 		if(isAnony)
 			envCode = TYPE_CONSTANT;
-		else if(envCode != TYPE_FROM_LUA && envCode != TYPE_CONSTANT && envCode)
+		else if(envCode == TYPE_NONE)
 			envCode = ct_contentType(word, prefix);
 
-		global_order(envCode);
+		global_order(envCode, word);
 		global_print(word, funcName, envCode);
 
 		// "check prefixes to next cycle"
-		if(envCode == TYPE_CONSTANT || envCode == TYPE_FROM_LUA)
-			prefix = ct_checkPrefixNextCycle(word, isRootEnv);
+		if(envCode == TYPE_CONSTANT)
+			prefix = ct_checkPrefixNextCycle(word, prefix, isRootEnv);
 
 		ident_end(true);
 	}
@@ -286,7 +284,6 @@ void cp_2_separateExtractedContent(void){
 }
 
 void cp_x_tempFinish(void){
-	//fclose(tools_copyFile(collect_get(), "output.lim"));
 	info_verbose();
 	collect_end();
 	info_verbose();
