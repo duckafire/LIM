@@ -161,10 +161,6 @@ void cp_2_separateExtractedContent(void){
 	// used for guide in decision
 	short prefix = PREFIX_NONE;
 
-	// related the verification of the
-	// lua keywords
-	short fromLua = LUA_NONE_KW;
-
 	// index to difference the names of
 	// different anonymous functions
 	unsigned int anonyId = 0;
@@ -174,7 +170,7 @@ void cp_2_separateExtractedContent(void){
 	unsigned short codeBlockLayer = 0;
 
 	// base in TYPE constants
-	short envCode = TYPE_NONE;
+	short typeCode = TYPE_NONE;
 
 	// dinamic string that store the
 	// functions (environment) name;
@@ -208,52 +204,31 @@ void cp_2_separateExtractedContent(void){
 			continue;
 		}
 
-		envCode = TYPE_NONE;
 		word = ident_get();
 
-		// from lua
-		fromLua = ct_checkLuaKeywords(word);
-		if(fromLua == LUA_NONE_KW)
-			fromLua = ct_checkLuaFunc(word);
+		// get and set content (word) type
+		typeCode = TYPE_NONE;
 		
-		// "check prefixes now"
-		prefix = ct_checkPrefixNow(word, prefix, isRootEnv);
-		
-		// change buffer index based on `fromLua`
-		if(fromLua == LUA_FUNC)
-			envCode = TYPE_FROM_LUA;
-		else if(fromLua != LUA_NONE_KW)
-			envCode = TYPE_CONSTANT;
+		if(prefix != PREFIX_NONE)
+			typeCode = readPrefix(word, prefix, isRootEnv);
+
+		if(typeCode == TYPE_NONE)
+			typeCode = readCurWord(word);
+
+		prefix = setPrefix(word, prefix, isRootEnv);
 
 		// outside functions
 		if(isRootEnv){
-			// "named" function
-			isFunc = (prefix == PREFIX_LIB_FUNC || prefix == PREFIX_GLOBAL_FUNC || prefix == PREFIX_LOCAL_FUNC);
+			funcName = checkAndCreateNewEnv(word, typeCode);
 
-			// `function() end`
-			if(prefix == PREFIX_ANONYMOUS){
-				isRootEnv = false;
-				isAnony = true;
-
-				free(anonyName);
-				anonyName = malloc(strlen(word) + 1 + INT_LEN(anonyId));
-
-				sprintf(anonyName, "%s%u", word, anonyId);
-				funcName = anonyName;
-			}
-
-			if(isFunc || isAnony){
-				funcName = word;
+			if(funcName != NULL){
 				global_newEnv(funcName);
 				codeBlockLayer++;
+				isRootEnv = false;
 			}
-
 		// inside a function
 		}else{
-			if(fromLua == LUAB_OPEN)
-				codeBlockLayer++;
-			else if(fromLua == LUAB_CLOSE && codeBlockLayer > 0)
-				codeBlockLayer--;
+			checkAndUpLayer(word, &codeBlockLayer);
 
 			if(codeBlockLayer == 0){
 				isRootEnv = true;
@@ -263,18 +238,8 @@ void cp_2_separateExtractedContent(void){
 			}
 		}
 
-		// save word content
-		if(isAnony)
-			envCode = TYPE_CONSTANT;
-		else if(envCode == TYPE_NONE)
-			envCode = ct_contentType(word, prefix);
-
-		global_order(envCode, word);
-		global_print(word, funcName, envCode);
-
-		// "check prefixes to next cycle"
-		if(envCode == TYPE_CONSTANT)
-			prefix = ct_checkPrefixNextCycle(word, prefix, isRootEnv);
+		global_order(typeCode, word);
+		global_print(word, funcName, typeCode);
 
 		ident_end(true);
 	}

@@ -192,13 +192,14 @@ void global_end(void){
 static FILE* global_getBuf(short bufId, char *name){
 	// global
 	switch(bufId){
-		case TYPE_LIB_VAR:     return global.libVar;    break;
-		case TYPE_LIB_FUNC:    return global.libFunc;   break;
-		case TYPE_GLOBAL_VAR:  return global.var;       break;
-		case TYPE_GLOBAL_FUNC: return global.func;      break;
 		case TYPE_CONSTANT:    return global.constants; break;
-		case TYPE_FROM_LUA:    return global.luaFunc;   break;
+		case TYPE_ANONYMOUS:   return global.constants; break;
 		case TYPE_USE_OR_CALL: return global.useOrCall; break;
+		case TYPE_FROM_LUA:    return global.luaFunc;   break;
+		case TYPE_LIB_FUNC:    return global.libFunc;   break;
+		case TYPE_LIB_VAR:     return global.libVar;    break;
+		case TYPE_GLOBAL_FUNC: return global.func;      break;
+		case TYPE_GLOBAL_VAR:  return global.var;       break;
 	}
 
 	// local

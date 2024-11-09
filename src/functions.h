@@ -55,15 +55,18 @@ char ct_clearSpaces(void);
 void ct_saveString(char signal);
 void ct_getSpecial(char c);
 
-short ct_checkLuaFunc(char *word);
-short ct_checkPrefixNow(char *word, short last, bool isRootEnv);
-short ct_contentType(char *word, short prefix);
-short ct_checkPrefixNextCycle(char *word, short cur, bool isRootEnv);
-short ct_checkLuaKeywords(char *word);
+short readPrefix(char *word, short prefix, bool isRootEnv);
+short readCurWord(char *word);
+short setPrefix(char *word, short prefix, bool isRootEnv);
+char* checkAndCreateNewEnv(char *word, short typeCode);
+void checkAndUpLayer(char *word, unsigned short *code);
 
 static void clearComment(bool isLine);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
+static bool checkLuaKeywords(char *word);
+static bool checkLuaFuncs(char *word);
+static bool checkLuaTabs(char *word);
 
 // PRINT-TEXT/ERRORS (ERror)
 void er_repeatFlag(char *arg, short pos);

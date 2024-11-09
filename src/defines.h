@@ -15,52 +15,36 @@
 #define INFO_FLAGS 5
 
 // COMPACTION PROCESS
-// it don't work correct if `n < 2`
-#define INT_LEN(n) ((n<2)?1:((int)((ceil(log10(n)))*sizeof(char))))
-
-// used set a "spectation" after
-// read a specify word
-enum{
-	PREFIX_NONE = -1, 
-	// for checkPrefixNow
-	PREFIX_ANONYMOUS,      // functions() end
-	PREFIX_GLOBAL_FUNC,    // function (in root enviroment) 
-	PREFIX_GLOBAL_VAR,     // variable/table (~)
-	PREFIX_LOCAL_FUNC,     // function (inside function)
-	PREFIX_LOCAL_VAR,      // variable/table (~)
-	// for checkPrefixNextCycle
-	PREFIX_GLOBAL,   // <local> <function <name> | <variable> [=] [value]>
-	PREFIX_LOCAL,    // ~
-	PREFIX_LIB_FUNC, // function declared without `local`
-	PREFIX_LIB_VAR,  // tables and variables prefixed by `_G.`
-};
-
-// identify content from lua
-enum{ // B = Block
-	LUA_NONE_KW = -1, // it is not from lua
-	LUA_NOB,          // it is a lua keyword
-	LUAB_CLOSE,       // it is "end" (block)
-	LUAB_OPEN,        // it can open a block
-	LUA_FUNC,         // ipairs, tostring, ...
-};
 
 // CONTENT-TREATMENT
 #define FGETC (c=fgetc(gf_origin))
 
-// used for to get a specify buffer for
-// store a word
+// it don't work correct if `n < 2`
+#define INT_LEN(n) ((n<2)?1:((int)((ceil(log10(n)))*sizeof(char))))
+
+enum{
+	PREFIX_NONE = -1,
+	PREFIX_G,          // _G
+	PREFIX_FUNCTION,   // function
+	PREFIX_LOCAL,      // local
+	PREFIX_LOCAL_FUNC, // local function
+	PREFIX_LUA_TABLE   // table, math, ...
+};
+
 enum{
 	TYPE_NONE = -1,
-	TYPE_CONSTANT,
-	TYPE_FROM_LUA, // tables and functions
-	TYPE_LIB_FUNC,
-	TYPE_LIB_VAR,
-	TYPE_GLOBAL_FUNC,
-	TYPE_GLOBAL_VAR,
-	TYPE_LOCAL_FUNC,
-	TYPE_LOCAL_VAR,
-	TYPE_USE_OR_CALL,
+	TYPE_CONSTANT,    // repeat, table, and
+	TYPE_ANONYMOUS,   // function() end
+	TYPE_USE_OR_CALL, // func() || var + var1
+	TYPE_FROM_LUA,    // math, pairs, .random, ...
+	TYPE_LIB_FUNC,    // functio <name>
+	TYPE_LIB_VAR,     // _G.<name>
+	TYPE_GLOBAL_FUNC, // local function (root env)
+	TYPE_GLOBAL_VAR,  // loca <name> (~)
+	TYPE_LOCAL_FUNC,  // local function (func env)
+	TYPE_LOCAL_VAR,   // local <name> (~)
 };
+
 
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
 #define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"
