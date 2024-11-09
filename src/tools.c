@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "heads.h"
@@ -33,4 +34,17 @@ FILE* tools_copyFile(FILE *src, char *destName){
 	fseek(src,  0, SEEK_SET);
 	fseek(dest, 0, SEEK_SET);
 	return dest;
+}
+
+char* tools_rmvParen(char *word){
+	unsigned short len = strlen(word);
+
+	char *temp;
+	temp = malloc(len + 1);
+	strcpy(temp, word);
+
+	if(temp[len - 1] == '(')
+		temp[len - 1] = '\0';
+
+	return temp;
 }

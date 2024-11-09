@@ -39,6 +39,11 @@ bool ct_getIdentifier(char *c, bool isFirst){
 		}
 	}
 
+	if(*c == '(' && checkLuaKeywords(ident_get(), true)){
+		fseek(gf_origin, -1, SEEK_CUR);
+		return false;
+	}
+
 	// ([a-zA-Z] or '_') or (!isF and ([0-9] or '.' or '(' or ':'))
 	return (isalpha(*c) != 0 || *c == '_' || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
 }
@@ -213,7 +218,7 @@ short readCurWord(char *word){
 			return TYPE_ANONYMOUS;
 
 		// from lua
-		if(checkLuaKeywords(word))
+		if(checkLuaKeywords(word, false))
 			return TYPE_CONSTANT;
 
 		if(checkLuaFuncs(word) || checkLuaTabs(word))
@@ -256,9 +261,9 @@ char* checkAndCreateNewEnv(char *word, short typeCode){
 		free(commoName);
 		commoName = NULL;
 
-		anonyName = malloc(strlen(word) + 1 + INT_LEN(anonyId++));
+		anonyName = malloc(2 + INT_LEN(anonyId++));
 
-		sprintf(anonyName, "%s%u", word, anonyId);
+		sprintf(anonyName, "f%u", anonyId);
 
 		return anonyName;
 	}
@@ -284,46 +289,41 @@ void checkAndUpLayer(char *word, unsigned short *code){
 		*code = *code - 1;
 }
 
-static bool checkLuaKeywords(char *word){
-	for(short i = 0; i < 21; i++)
-		if(strcmp(word, lua_keywords[i]) == 0)
-			return true;
-
-	return false;
-}
-
-static bool checkLuaFuncs(char *word){
-	unsigned short len = strlen(word);
+static bool checkLuaKeywords(char *word, bool stage1){
 	char *tocmp = word;
+	tocmp = tools_rmvParen(word);
 
-	if(word[len - 1] == '('){
-		tocmp = malloc(len + 1);
-		strcpy(tocmp, word);
+	// with(out) `function`
+	unsigned short max = ((stage1) ? 20 : 21);
 
-		// replace '('
-		tocmp[len - 1] = '\0';
-
-		// to use `free`
-		len = -1;
-	}
-
-	for(short i = 0; i < 21; i++){
-		if(strcmp(tocmp, lua_funcs[i]) == 0){
-			if(len == -1)
-				free(tocmp);
-
+	for(short i = 0; i < max; i++){
+		if(strcmp(tocmp, lua_keywords[i]) == 0){
+			free(tocmp);
 			return true;
 		}
 	}
 
-	if(len == -1)
-		free(tocmp);
+	free(tocmp);
+	return false;
+}
 
+static bool checkLuaFuncs(char *word){
+	char *tocmp = word;
+	tocmp = tools_rmvParen(word);
+
+	for(short i = 0; i < 23; i++){
+		if(strcmp(tocmp, lua_funcs[i]) == 0){
+			free(tocmp);
+			return true;
+		}
+	}
+
+	free(tocmp);
 	return false;
 }
 
 static bool checkLuaTabs(char *word){
-	for(short i = 0; i < 21; i++)
+	for(short i = 0; i < 9; i++)
 		if(strcmp(word, lua_tabs[i]) == 0)
 			return true;
 

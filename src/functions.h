@@ -11,6 +11,7 @@ static void cleanup(void);
 // TOOLS
 bool tools_strcmp2(char *str, char *v0, char *v1);
 FILE* tools_copyFile(FILE *org, char *dstName);
+char* tools_rmvParen(char *word);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -65,7 +66,7 @@ void checkAndUpLayer(char *word, unsigned short *code);
 static void clearComment(bool isLine);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
-static bool checkLuaKeywords(char *word);
+static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
 static bool checkLuaTabs(char *word);
 

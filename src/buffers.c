@@ -117,9 +117,13 @@ void global_newEnv(char *name){
 }
 
 void global_order(short code, char *word){
-	fwrite(&code, sizeof(int), 1, global.order);
+	char c;
+	
+	c = code + '0';
+	fwrite(&c, sizeof(char), 1, global.order);
 
-	fprintf(stdout, "%d - %s\n", code, word);
+	c = '\n';
+	fwrite(&c, sizeof(char), 1, global.order);
 }
 
 void global_print(char *word, char *name, short bufId){
