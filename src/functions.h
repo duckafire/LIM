@@ -41,7 +41,7 @@ void cf_unexpected(void);
 void cf_toCompaction(void);
 void cf_invalid(void);
 void cf_originName(void);
-void cf_destineName_2(bool *dstUsingMalloc);
+void cf_destineName_2(void);
 
 // COMPACTION-PROCESS
 void cp_0_checkAndOpenFiles(void);
@@ -50,6 +50,7 @@ void cp_2_separateExtractedContent(void);
 void cp_x_tempFinish(void);
 
 // CONTENT-TREATMENT
+void ct_atexit(void);
 bool ct_getIdentifier(char *c, bool isFirst);
 char ct_clearSpaces(void);
 void ct_saveString(char signal);

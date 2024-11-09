@@ -117,28 +117,22 @@ void cf_originName(){
 		er_nameNotSpecified();
 }
 
-void cf_destineName_2(bool *dstUsingMalloc){
+void cf_destineName_2(void){
 	if(gp_nameDst == NULL){
-		short maxToFor = strlen(gp_nameOrg) + 1;
+		short len = strlen(gp_nameOrg);
 
 		char *temp;
-		temp = malloc(maxToFor);
+		temp = malloc(len);
 		memset(temp, '\0', sizeof(temp));
+		strcpy(temp, gp_nameOrg);
 
 		// remove extension (".lua")
-		if(gp_nameOrg[maxToFor - 5] == '.'
-		&& gp_nameOrg[maxToFor - 4] == 'l'
-		&& gp_nameOrg[maxToFor - 3] == 'u'
-		&& gp_nameOrg[maxToFor - 2] == 'a')
-			for(short i = 0; i < maxToFor - 5; i++)
-				temp[i] = gp_nameOrg[i];
-		else
-			strcpy(temp, gp_nameOrg);
+		if(gp_nameOrg[len - 4] == '.'
+		&& gp_nameOrg[len - 3] == 'l'
+		&& gp_nameOrg[len - 2] == 'u'
+		&& gp_nameOrg[len - 1] == 'a')
+			temp[len - 4] = '\0';
 
 		gp_nameDst = temp;
-
-		// used to specify if the memory
-		// will need to be free
-		*dstUsingMalloc = true;
 	}
 }

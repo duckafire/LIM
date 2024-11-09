@@ -12,8 +12,6 @@ char *gp_nameDst = NULL;
 
 FILE *gf_origin = NULL;
 
-static bool dstUsingMalloc = false;
-
 int main(int argc, char *argv[]){
 	atexit(cleanup);
 
@@ -24,7 +22,7 @@ int main(int argc, char *argv[]){
 	cf_toCompaction(); // "destineName_1"
 	cf_invalid();
 	cf_originName();
-	cf_destineName_2(&dstUsingMalloc);
+	cf_destineName_2();
 
 	// Compaction Process
 	cp_0_checkAndOpenFiles();
@@ -36,12 +34,12 @@ int main(int argc, char *argv[]){
 }
 
 static void cleanup(void){
-	if(dstUsingMalloc)
-		free(gp_nameDst);
+	free(gp_nameDst);
 
 	if(gf_origin != NULL)
 		fclose(gf_origin);
 
 	buffers_atexit();
+	ct_atexit();
 }
 

@@ -9,9 +9,18 @@
 // and its process
 static char _c;
 
+// "checkAndCreateNewEnv"
+static char *anonyName = NULL;
+static char *commoName = NULL;
+
 static const char lua_keywords[21][9] = {"do","if","in","or","and","end","for","nil","not","else","then","true","break","false","local","until","while","elseif","repeat","return","function"};
 static const char lua_funcs[23][15] = {"assert","next","require","collectgarbage","pairs","select","dofile","pcall","getmetatable","error","print","tonumber","setmetatable","rawequal","tostring","ipairs","rawget","type","load","rawlen","xpcall","loadfile","rawset"};
 static const char lua_tabs[9][10] = {"bit32","courotine","debug","io","math","os","package","string","table"};
+
+void ct_atexit(void){
+	free(anonyName);
+	free(commoName);
+}
 
 
 
@@ -240,8 +249,6 @@ short setPrefix(char *word, short prefix, bool isRootEnv){
 }
 
 char* checkAndCreateNewEnv(char *word, short typeCode){
-	static char *anonyName = NULL;
-	static char *commoName = NULL;
 	static unsigned short anonyId = 0;
 
 	if(typeCode == TYPE_ANONYMOUS){
