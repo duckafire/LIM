@@ -35,6 +35,26 @@ GlobalEnv* global_get(void);
 void global_end(void);
 static FILE* global_getBuf(short bufId, char *name);
 
+void refe_init(void);
+void refe_add(char *table, char *func);
+void refe_treeToQueue(void);
+RefeQueue* refe_getQueue(void);
+void refe_endTree(void);
+void refe_endQueue(void);
+static void refe_newNode(RefeNode *node, char id, char *content);
+static void refe_newCell(RefeCell *cell, char *content);
+static RefeNode* refe_getTableBuf(char *table);
+static void refe_subtreeToQueue(RefeNode *node, char *table);
+static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table);
+static void refe_createQueueItem(char *origin, char *content, unsigned short quantity);
+static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item);
+static unsigned short refe_getOrgLen(char *table);
+static void refe_newNode(RefeNode *node, char id, char *content);
+static void refe_newCell(RefeCell *cell, char *content);
+static void refe_endNode(RefeNode *node);
+static void refe_endCell(RefeCell *cell);
+static void refe_freeQueueItem(RefeQueue *item);
+
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
 void cf_single(void);
@@ -48,6 +68,7 @@ void cf_destineName_2(void);
 void cp_0_checkAndOpenFiles(void);
 void cp_1_extractionFromOrigin(void);
 void cp_2_separateExtractedContent(void);
+void cp_3_buildingGlobalScopes(void);
 void cp_x_tempFinish(void);
 
 // CONTENT-TREATMENT

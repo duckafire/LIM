@@ -61,4 +61,42 @@ typedef struct{
 	struct FuncEnv *head, *tail;
 }GlobalEnv;
 
+// referece trees
+typedef struct RefeCell{
+	char *content;
+	unsigned short quantity;
+	struct RefeCell *next;
+}RefeCell;
+
+typedef struct RefeNode{
+	char id;
+	char *content;
+	unsigned short quantity;
+	struct RefeCell *next;
+	struct RefeNode *left, *right;
+}RefeNode;
+
+typedef struct RefeQueue{
+	char *origin; // math, string; NULL = none ("func")
+	char *content;
+	unsigned short quantity;
+	struct RefeQueue *next;
+}RefeQueue;
+
+typedef struct RefeTree{
+	RefeQueue *queue;
+
+	RefeNode *func;
+
+	RefeNode *math;
+	RefeNode *string;
+	RefeNode *table;
+	RefeNode *debug;
+	RefeNode *package;
+	RefeNode *utf8;
+	RefeNode *io;
+	RefeNode *os;
+	RefeNode *courotine;
+}RefeTree;
+
 #endif

@@ -14,8 +14,9 @@ static char *anonyName = NULL;
 static char *commoName = NULL;
 
 static const char lua_keywords[21][9] = {"do","if","in","or","and","end","for","nil","not","else","then","true","break","false","local","until","while","elseif","repeat","return","function"};
-static const char lua_funcs[23][15] = {"assert","next","require","collectgarbage","pairs","select","dofile","pcall","getmetatable","error","print","tonumber","setmetatable","rawequal","tostring","ipairs","rawget","type","load","rawlen","xpcall","loadfile","rawset"};
-static const char lua_tabs[9][10] = {"bit32","courotine","debug","io","math","os","package","string","table"};
+static const char lua_funcs[23][15] = {"print","tonumber","tostring","ipairs","type","pairs","assert","error","setmetatable","getmetatable","rawset","rawget","rawlen","rawequal","pcall","xpcall","select","next","collectgarbage","require","load","dofile","loadfile"};
+
+static const char lua_tabs[9][10] = {"courotine","debug","io","math","os","package","string","table", "utf8"};
 
 void ct_atexit(void){
 	free(anonyName);

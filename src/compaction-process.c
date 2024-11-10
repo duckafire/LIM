@@ -248,6 +248,8 @@ void cp_2_separateExtractedContent(void){
 	fclose(content);
 }
 
+void cp_3_buildingGlobalScopes(void){}
+
 void cp_x_tempFinish(void){
 	info_verbose();
 	collect_end();
