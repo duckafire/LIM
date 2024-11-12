@@ -261,7 +261,7 @@ void refe_add(char *table, char *func){
 
 static void refe_newNode(RefeNode *node, char id, char *content){
 	if(id == node->id){
-		if(strcmp(node->content, content) == 0)
+		if(node->content != NULL && strcmp(node->content, content) == 0)
 			node->quantity++;
 		else if(node->next == NULL){
 			NEW_REFE_CELL(node->next, content);
@@ -290,7 +290,7 @@ static void refe_newNode(RefeNode *node, char id, char *content){
 }
 
 static void refe_newCell(RefeCell *cell, char *content){
-	if(strcmp(cell->content, content) == 0){
+	if(cell->content != NULL && strcmp(cell->content, content) == 0){
 		cell->quantity++;
 		return;
 	}
@@ -388,8 +388,8 @@ static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item){
 	}
 
 	if(cursor->next->quantity == item->quantity){
-		unsigned int cursorLen = strlen(cursor->next->content) + refe_getOrgLen(item->origin);
-		unsigned int itemLen = strlen(cursor->next->content) + refe_getOrgLen(item->origin);
+		unsigned int cursorLen = tools_strlen2(cursor->next->content) + tools_strlen2(item->origin);
+		unsigned int itemLen = tools_strlen2(cursor->next->content) + tools_strlen2(item->origin);
 
 		if(cursorLen < itemLen){
 			cursor->next = item;
@@ -404,13 +404,6 @@ static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item){
 	}
 
 	refe_insertQueueItem(cursor->next, item);
-}
-
-static unsigned short refe_getOrgLen(char *table){
-	if(table == NULL)
-		return 0;
-
-	return strlen(table);
 }
 
 RefeQueue* refe_getQueue(void){

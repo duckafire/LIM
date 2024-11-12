@@ -48,3 +48,10 @@ char* tools_rmvParen(char *word){
 
 	return temp;
 }
+
+unsigned short tools_strlen2(char *str){
+	if(str == NULL)
+		return 0;
+
+	return strlen(str);
+}

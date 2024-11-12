@@ -12,6 +12,7 @@ static void cleanup(void);
 bool tools_strcmp2(char *str, char *v0, char *v1);
 FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
+unsigned short tools_strlen2(char *word);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -48,7 +49,6 @@ static void refe_subtreeToQueue(RefeNode *node, char *table);
 static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table);
 static void refe_createQueueItem(char *origin, char *content, unsigned short quantity);
 static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item);
-static unsigned short refe_getOrgLen(char *table);
 static void refe_newNode(RefeNode *node, char id, char *content);
 static void refe_newCell(RefeCell *cell, char *content);
 static void refe_endNode(RefeNode *node);
@@ -83,13 +83,13 @@ short readCurWord(char *word);
 short setPrefix(char *word, short prefix, bool isRootEnv);
 char* checkAndCreateNewEnv(char *word, short typeCode);
 void checkAndUpLayer(char *word, unsigned short *code);
+bool checkLuaTabs(char *word);
 
 static void clearComment(bool isLine);
 static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
 static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
-static bool checkLuaTabs(char *word);
 
 // PRINT-TEXT/ERRORS (ERror)
 void er_repeatFlag(char *arg, short pos);

@@ -323,7 +323,7 @@ static bool checkLuaFuncs(char *word){
 	return false;
 }
 
-static bool checkLuaTabs(char *word){
+bool checkLuaTabs(char *word){
 	for(short i = 0; i < 9; i++)
 		if(strcmp(word, lua_tabs[i]) == 0)
 			return true;

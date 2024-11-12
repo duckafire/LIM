@@ -248,7 +248,61 @@ void cp_2_separateExtractedContent(void){
 	fclose(content);
 }
 
-void cp_3_buildingGlobalScopes(void){}
+void cp_3_buildingGlobalScopes(void){
+	// references from lua
+	FILE *references, *scope = tmpfile();
+	references = tools_copyFile((global_get())->luaFunc, NULL);
+
+	unsigned short len;
+	char *word = NULL;
+
+	char *table = NULL;
+
+	ident_init();
+	refe_init();
+
+	while((c = fgetc(references)) != EOF){
+		if(c != '\n'){
+			ident_add(c);
+			continue;
+		}
+		
+		if(word != NULL)
+			free(word);
+
+		len = strlen(ident_get());
+		word = malloc(len + 1);
+		strcpy(word, ident_get());
+		ident_end(true);
+
+		if(word[0] != '.' && word[len - 1] != '(' && checkLuaTabs(word)){
+			if(table != NULL){
+				refe_add(NULL, table);
+				free(table);
+			}
+
+			table = malloc(len + 1);
+			strcpy(table, word);
+			continue;
+		}
+
+		if(table != NULL){
+			refe_add(table, word);
+			free(table);
+			table = NULL;
+			continue;
+		}
+
+		refe_add(NULL, word);
+	}
+
+	free(word);
+	if(table != NULL)
+		free(table);
+
+	ident_end(false);
+	refe_endTree();
+}
 
 void cp_x_tempFinish(void){
 	info_verbose();
