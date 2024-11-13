@@ -13,6 +13,8 @@ bool tools_strcmp2(char *str, char *v0, char *v1);
 FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
 unsigned short tools_strlen2(char *word);
+char* tools_newStrNoParen(char *str);
+bool tools_strcmpNoParen(char *_str0, char *_str1);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -44,13 +46,13 @@ void refe_endTree(void);
 void refe_endQueue(void);
 static void refe_newNode(RefeNode *node, char id, char *content);
 static void refe_newCell(RefeCell *cell, char *content);
+static RefeNode* refe_createNode(char id, char *content);
+static RefeCell* refe_createCell(char *content);
 static RefeNode* refe_getTableBuf(char *table);
 static void refe_subtreeToQueue(RefeNode *node, char *table);
 static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table);
 static void refe_createQueueItem(char *origin, char *content, unsigned short quantity);
 static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item);
-static void refe_newNode(RefeNode *node, char id, char *content);
-static void refe_newCell(RefeCell *cell, char *content);
 static void refe_endNode(RefeNode *node);
 static void refe_endCell(RefeCell *cell);
 static void refe_freeQueueItem(RefeQueue *item);

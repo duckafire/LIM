@@ -261,11 +261,11 @@ void refe_add(char *table, char *func){
 
 static void refe_newNode(RefeNode *node, char id, char *content){
 	if(id == node->id){
-		if(node->content != NULL && strcmp(node->content, content) == 0)
+		if(tools_strcmpNoParen(node->content, content))
 			node->quantity++;
-		else if(node->next == NULL){
-			NEW_REFE_CELL(node->next, content);
-		}else
+		else if(node->next == NULL)
+			node->next = refe_createCell(content);
+		else
 			refe_newCell(node->next, content);
 
 		return;
@@ -273,7 +273,7 @@ static void refe_newNode(RefeNode *node, char id, char *content){
 
 	if(id < node->id){
 		if(node->left == NULL){
-			NEW_REFE_NODE(node->left, id, content);
+			node->left = refe_createNode(id, content);
 			return;
 		}
 
@@ -282,7 +282,7 @@ static void refe_newNode(RefeNode *node, char id, char *content){
 	}
 
 	if(node->right == NULL){
-		NEW_REFE_NODE(node->right, id, content);
+		node->right = refe_createNode(id, content);
 		return;
 	}
 
@@ -290,17 +290,47 @@ static void refe_newNode(RefeNode *node, char id, char *content){
 }
 
 static void refe_newCell(RefeCell *cell, char *content){
-	if(cell->content != NULL && strcmp(cell->content, content) == 0){
+	if(tools_strcmpNoParen(cell->content, content)){
 		cell->quantity++;
 		return;
 	}
 	
 	if(cell->next == NULL){
-		NEW_REFE_CELL(cell, content);
+		cell = refe_createCell(content);
 		return;
 	}
 
 	refe_newCell(cell->next, content);
+}
+
+static RefeNode* refe_createNode(char id, char *content){
+	RefeNode *node;
+	node = malloc(sizeof(RefeNode));
+	node->id = id;
+	node->next = NULL;
+	node->left = NULL;
+	node->right = NULL;
+	node->quantity = 0;
+	node->content = NULL;
+
+	if(content != NULL){
+		node->content = malloc(strlen(content) + 1);
+		strcpy(node->content, content);
+		node->quantity++;
+	}
+
+	return node;
+}
+
+static RefeCell* refe_createCell(char *content){
+	RefeCell *cell;
+
+	cell = malloc(sizeof(RefeCell));
+	cell->quantity = 0;
+	cell->content = content;
+	cell->next = NULL;
+
+	return cell;
 }
 
 static RefeNode* refe_getTableBuf(char *table){

@@ -55,3 +55,34 @@ unsigned short tools_strlen2(char *str){
 
 	return strlen(str);
 }
+
+char* tools_newStrNoParen(char *_str){
+	unsigned short len = strlen(_str);
+	char *str;
+
+	str = malloc(len + 1);
+	strcpy(str, _str);
+
+	if(str[len - 1] == '(')
+		str[len - 1] = '\0';
+
+	return str;
+}
+
+bool tools_strcmpNoParen(char *_str0, char *_str1){
+	if(_str0 == NULL || _str1 == NULL)
+		return false;
+
+	char *str0;
+	char *str1;
+
+	str0 = tools_newStrNoParen(_str0);
+	str1 = tools_newStrNoParen(_str1);
+
+	bool result = (strcmp(str0, str1) == 0);
+
+	free(str0);
+	free(str1);
+	return result;
+
+}

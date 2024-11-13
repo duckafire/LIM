@@ -285,9 +285,9 @@ char* checkAndCreateNewEnv(char *word, short typeCode){
 
 void checkAndUpLayer(char *word, unsigned short *code){
 	if(strcmp(word, "if") == 0 || strcmp(word, "do") == 0 || strcmp(word, "function") == 0)
-		*code = *code + 1;
+		(*code)++;
 	else if(*code > 0 && strcmp(word, "end") == 0)
-		*code = *code - 1;
+		(*code)--;
 }
 
 static bool checkLuaKeywords(char *word, bool stage1){

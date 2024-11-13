@@ -7,26 +7,7 @@
 #define ARRAY_LEN(a) (sizeof(a) / sizeof(a[0]))
 
 // BUFFERS
-#define NEW_REFE_ROOTS(node) NEW_REFE_NODE(node, 'm', NULL)
-
-#define NEW_REFE_NODE(node, chr, ctt)           \
-	node = malloc(sizeof(RefeNode));            \
-	node->id = chr;                             \
-	node->next = NULL;                          \
-	node->left = NULL;                          \
-	node->right = NULL;                         \
-	node->quantity = 0;                         \
-	if(ctt != NULL){                            \
-		node->content = malloc(strlen(ctt) + 1);\
-		strcpy(node->content, ctt);             \
-	}else                                       \
-		node->content = NULL;
-
-#define NEW_REFE_CELL(cell, ctt)    \
-	cell = malloc(sizeof(RefeCell));\
-	cell->quantity = 0;             \
-	cell->content = content;        \
-	cell->next = NULL;
+#define NEW_REFE_ROOTS(node) node=refe_createNode('m', NULL)
 
 // CHECK-FLAGS
 // the bigger size between all flags
