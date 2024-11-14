@@ -47,9 +47,9 @@ enum{
 };
 
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
-#define E_MSG_FORMAT_0 "[LIM] %s: \"%s\" (#%d)\n\n"
-#define E_MSG_FORMAT_1 "[LIM] %s: \"%s\"\n\n"
-#define E_MSG_FORMAT_2 "[LIM] %s.\n\n"
+#define E_MSG_FORMAT_0 "<LIM> %s: \"%s\" (#%d)\n\n"
+#define E_MSG_FORMAT_1 "<LIM> %s: \"%s\"\n\n"
+#define E_MSG_FORMAT_2 "<LIM> %s.\n\n"
 
 #define E_MSG_1 "Invalid use of the flag (repetition)"
 #define E_MSG_2 "Unexpected use of the flag"

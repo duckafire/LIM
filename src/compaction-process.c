@@ -9,13 +9,16 @@ static char c;
 
 void cp_0_checkAndOpenFiles(void){
 	info_verbose();
+	info_verbose();
 
 	// check all files (exit or not)
+	info_verbose();
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
 		er_nonExistentFile(gp_nameOrg);
 
-	if(!g_verbose){
+	info_verbose();
+	if(!g_replace){
 		FILE *dst;
 		dst = fopen(gp_nameDst, "r");
 
@@ -24,8 +27,6 @@ void cp_0_checkAndOpenFiles(void){
 			er_fileAlreadyExistent(gp_nameDst);
 		}
 	}
-
-	collect_init();
 }
 
 void cp_1_extractionFromOrigin(void){
@@ -48,8 +49,11 @@ void cp_1_extractionFromOrigin(void){
 	// function tab:met1() end
 	bool wasFunc = false;
 
+	info_verbose();
+	collect_init();
 	ident_init();
 
+	info_verbose();
 	while(FGETC != EOF){
 		// clear "null caracteres", without
 		// `continue` cycle: They are:
@@ -142,11 +146,15 @@ void cp_1_extractionFromOrigin(void){
 		// special characteres (:,.{-+)
 		ct_getSpecial(c);
 	}
+	info_verbose();
 
+	info_verbose();
 	ident_end(false);
 }
 
 void cp_2_separateExtractedContent(void){
+	info_verbose();
+
 	// root of the library environment
 	// (outside functions)
 	bool isRootEnv = true;
@@ -190,14 +198,19 @@ void cp_2_separateExtractedContent(void){
 	// "compaction-process"
 	FILE *content;
 
+	info_verbose();
 	ident_init();
 	global_init();
 
+	info_verbose();
 	fclose(gf_origin);
 	gf_origin = NULL;
-
 	content = tools_copyFile(collect_get(), NULL);
 
+	info_verbose();
+	collect_end();
+
+	info_verbose();
 	while((c = fgetc(content)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
@@ -244,11 +257,15 @@ void cp_2_separateExtractedContent(void){
 		ident_end(true);
 	}
 
+	info_verbose();
 	free(anonyName);
+	ident_end(false);
 	fclose(content);
 }
 
 void cp_3_buildingGlobalScopes(void){
+	info_verbose();
+
 	// references from lua
 	FILE *references, *scope = tmpfile();
 	references = tools_copyFile((global_get())->luaFunc, NULL);
@@ -258,9 +275,11 @@ void cp_3_buildingGlobalScopes(void){
 
 	char *table = NULL;
 
+	info_verbose();
 	ident_init();
 	refe_init();
 
+	info_verbose();
 	while((c = fgetc(references)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
@@ -295,17 +314,17 @@ void cp_3_buildingGlobalScopes(void){
 
 		refe_add(NULL, word);
 	}
+	info_verbose();
 
 	free(word);
 	if(table != NULL)
 		free(table);
 
+	info_verbose();
 	ident_end(false);
 	refe_endTree();
 }
 
 void cp_x_tempFinish(void){
-	info_verbose();
-	collect_end();
 	info_verbose();
 }

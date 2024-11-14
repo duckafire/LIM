@@ -23,7 +23,7 @@ static void message(char n, ...){
 
 static bool verboseMsg(short value, char *msg){
 	if(verboseID == value){
-		fprintf(stdout, "[LIM] %s.\n", msg);
+		fprintf(stdout, "[LIM] %s\n", msg);
 		return true;
 	}
 	return false;
@@ -131,19 +131,32 @@ void info_verbose(void){
 
 	verboseID++;
 
-	if(verboseMsg(0, "[LIM] Compaction started")) return;
-	if(verboseMsg(1, "[LIM] Extracting content from origin")) return;
-	//if(verboseMsg(2, "[LIM] Separating content in buffers, base in them type")) return;
-	//if(verboseMsg(3, "[LIM] Creating references functions from Lua, Tic80 and 'head'")) return;
-	//if(verboseMsg(4, "[LIM] Compacting 'private' indentifiers")) return;
-	//if(verboseMsg(5, "[LIM] Compacting environments from blocks of code")) return;
-	//if(verboseMsg(6, "[LIM] Merging content buffers")) return;
-	//if(verboseMsg(7, "[LIM] Packing code")) return;
-	//if(verboseMsg(8, "[LIM] Process finished!")) return;
-	
-	// temp
-	if(verboseMsg(2, "[LIM-alpha-debug] Process finished (alpha)")) return;
-	if(verboseMsg(3, "[LIM-alpha-debug] See the output in file: \"output.lim\"")) return;
+	if(verboseMsg(0, "COMPACTION STARTED!")) return;
+	if(verboseMsg(1, "STAGE 0: check specified files.")) return;
+	if(verboseMsg(2, "Checking origin file...")) return;
+	if(g_replace){
+		if(verboseMsg(3, "REPLACE: ON => checking if destine file already exist...")) return;
+	}else{
+		if(verboseMsg(3, "REPLACE: OFF =x")) return;
+	}
+	if(verboseMsg(4, "STAGE 1: extract content from origin.")) return;
+	if(verboseMsg(5, "Starting buffer: \"collect\"; \"ident\".")) return;
+	if(verboseMsg(6, "Read and extract process started.")) return;
+	if(verboseMsg(7, "Read and extract process finished.")) return;
+	if(verboseMsg(8, "Ending buffer: \"ident\".")) return;
+	if(verboseMsg(9, "STAGE 2: separate extracted content.")) return;
+	if(verboseMsg(10, "Starting buffer: \"ident\"; \"global\".")) return;
+	if(verboseMsg(11, "Getting extracted content...")) return;
+	if(verboseMsg(12, "Ending buffer: \"collect\".")) return;
+	if(verboseMsg(13, "Read and separate process started.")) return;
+	if(verboseMsg(14, "Read and separate process finished.")) return;
+	if(verboseMsg(15, "Ending buffer: \"ident\".")) return;
+	if(verboseMsg(16, "STAGE 3: building global scope to FUNCTIONs REFERENCES.")) return;
+	if(verboseMsg(17, "Starting buffer: \"ident\", \"refe\".")) return;
+	if(verboseMsg(18, "Read and build process started.")) return;
+	if(verboseMsg(19, "Read and build process finished.")) return;
+	if(verboseMsg(20, "- WORK IN PROGRESS] Ending buffer: \"ident\", \"refe\".")) return;
+	if(verboseMsg(21, "- WORK IN PROGRESS] Alpha process finished!")) return;
 }
 
 void info_license(void){
@@ -177,11 +190,23 @@ void info_rules(void){
 	message(0,
 		"Compaction rules (work in progress):",
 		" ",
-		"1 - Only global functions will be annexed to the library.",
-		"2 - Global variables, tables and functions will not have them identifiers compacted.",
-		"3 - The identifiers annexed to the tables will not be compacted.",
-		"4 - Global variables and tables need to be declared with the prefix '_G'.",
-		"5 - The use of '[[ ]]', to declare strings, is not supported (use '\\n').",
+		"1 - Global variables and tables must ALWAYS to be prefixed by \"_G.\".",
+		"2 - Global variables, tables and functions will be added to the library table.",
+		"3 - Variables, tables and functions declared inside aligned functions must not have",
+		"    the same name.",
+		"4 - \"L\" is a reservated identifier to appoint the library table, because of this,",
+		"    it must not be used to other purposes.",
+		"5 - Variables and tables, global and local, declared in root environment will be",
+		"    hoisted to the top of this environment, like what happen with variables declared",
+		"    with \"var\" in JavaScript.",
+		"6 - Global variables, tables and function, and table keys, will not be their",
+		"    identifiers compacted.",
+		"7 - Functions declared inside of tables environment will not be their content",
+		"    currectly compacted.",
+		"    > Try: <table>.<ident>=function()end",
+		"    > Instead <table>={<ident>=function()end}",
+		"8 - The use of \"[[]]\", to declare string, is not supported (use \"\\n\" to apply",
+		"    line feed).",
 	NULL);
 
 	exit(0);
