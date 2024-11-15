@@ -10,11 +10,10 @@ static void cleanup(void);
 
 // TOOLS
 bool tools_strcmp2(char *str, char *v0, char *v1);
+bool tools_strcmp3(char *str0, char *str1);
 FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
 unsigned short tools_strlen2(char *word);
-char* tools_newStrNoParen(char *str);
-bool tools_strcmpNoParen(char *_str0, char *_str1);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -41,9 +40,8 @@ static FILE* global_getBuf(short bufId, char *name);
 void refe_init(void);
 void refe_add(char *table, char *func);
 void refe_treeToQueue(void);
-RefeQueue* refe_getQueue(void);
+RefeQueue* refe_getAndRmvQueueItem(void);
 void refe_endTree(void);
-void refe_endQueue(void);
 static void refe_newNode(RefeNode *node, char id, char *content);
 static void refe_newCell(RefeCell *cell, char *content);
 static RefeNode* refe_createNode(char id, char *content);
@@ -55,7 +53,18 @@ static void refe_createQueueItem(char *origin, char *content, unsigned short qua
 static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item);
 static void refe_endNode(RefeNode *node);
 static void refe_endCell(RefeCell *cell);
-static void refe_freeQueueItem(RefeQueue *item);
+
+void scope_init(void);
+void scope_add(char *word, short bufId);
+FILE* scope_get(short bufId);
+void scope_end(void);
+
+void nick_init(void);
+static void nick_upChar(long id);
+static void nick_upAll(long last);
+void nick_up(void);
+char *nick_get(void);
+void nick_end(void);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
@@ -70,7 +79,7 @@ void cf_destineName_2(void);
 void cp_0_checkAndOpenFiles(void);
 void cp_1_extractionFromOrigin(void);
 void cp_2_separateExtractedContent(void);
-void cp_3_buildingGlobalScopes(void);
+void cp_3_buildingReferenceScope(void);
 void cp_x_tempFinish(void);
 
 // CONTENT-TREATMENT

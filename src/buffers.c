@@ -7,6 +7,8 @@ static FILE *collect = NULL;
 static char *ident = NULL; // identifier
 static GlobalEnv global;
 static RefeTree refe;
+static LibScope scope;
+static char *nick = NULL; // buffer be like
 
 void buffers_atexit(void){
 	if(collect != NULL)
@@ -21,8 +23,13 @@ void buffers_atexit(void){
 	if(refe.func != NULL)
 		refe_endTree();
 
-	if(refe.queue != NULL)
-		refe_endQueue();
+	if(refe.queue != NULL){
+		RefeQueue *i;
+		while((i = refe_getAndRmvQueueItem()) != NULL);
+	}
+
+	if(nick != NULL)
+		nick_end();
 }
 
 
@@ -35,7 +42,7 @@ void collect_init(void){
 }
 
 void collect_add(char c){
-	fwrite(&c, sizeof(char), 1, collect);
+	fputc(c, collect);
 }
 
 FILE* collect_get(void){
@@ -124,13 +131,8 @@ void global_newEnv(char *name){
 }
 
 void global_order(short code, char *word){
-	char c;
-	
-	c = code + '0';
-	fwrite(&c, sizeof(char), 1, global.order);
-
-	c = '\n';
-	fwrite(&c, sizeof(char), 1, global.order);
+	fputc(code + '0', global.order);
+	fputc('\n', global.order);
 }
 
 void global_print(char *word, char *name, short bufId){
@@ -139,14 +141,13 @@ void global_print(char *word, char *name, short bufId){
 	FILE *buf;
 	unsigned int i = 0;
 	char *c = NULL;
-	char n = '\n';
 
 	buf = global_getBuf(bufId, name);
 
 	for(c = &word[i]; *c != '\0'; c = &word[++i])
-		fwrite(c, sizeof(char), 1, buf);
+		fputc(*c, buf);
 
-	fwrite(&n, sizeof(char), 1, buf);
+	fputc('\n', buf);
 }
 
 void global_rmvEnv(void){
@@ -251,6 +252,10 @@ void refe_add(char *table, char *func){
 	content = malloc(strlen(func) + 1);
 	strcpy(content, func);
 
+	unsigned int last = strlen(content) - 1;
+	if(content[last] == '(')
+		content[last] = '\0';
+
 	if(table == NULL){
 		refe_newNode(refe.func, content[0], content);
 		return;
@@ -261,7 +266,7 @@ void refe_add(char *table, char *func){
 
 static void refe_newNode(RefeNode *node, char id, char *content){
 	if(id == node->id){
-		if(tools_strcmpNoParen(node->content, content))
+		if(tools_strcmp3(node->content, content))
 			node->quantity++;
 		else if(node->next == NULL)
 			node->next = refe_createCell(content);
@@ -290,7 +295,7 @@ static void refe_newNode(RefeNode *node, char id, char *content){
 }
 
 static void refe_newCell(RefeCell *cell, char *content){
-	if(tools_strcmpNoParen(cell->content, content)){
+	if(tools_strcmp3(cell->content, content)){
 		cell->quantity++;
 		return;
 	}
@@ -359,6 +364,19 @@ void refe_treeToQueue(void){
 	refe_subtreeToQueue(refe.utf8,      "utf8");
 }
 
+RefeQueue* refe_getAndRmvQueueItem(void){
+	// after the use, the pointer
+	// returned need to be freed
+	RefeQueue *itemRemoved;
+
+	itemRemoved = refe.queue;
+
+	if(refe.queue != NULL)
+		refe.queue = refe.queue->next;
+
+	return itemRemoved;
+}
+
 static void refe_subtreeToQueue(RefeNode *node, char *table){
 	if(node == NULL)
 		return;
@@ -392,8 +410,14 @@ static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table){
 static void refe_createQueueItem(char *origin, char *content, unsigned short quantity){
 	RefeQueue *item;
 	item = malloc(sizeof(RefeQueue));
-	item->origin = malloc(strlen(origin) + 1);
-	strcpy(item->origin, origin);
+
+	if(origin != NULL){
+		item->origin = malloc(strlen(origin) + 1);
+		strcpy(item->origin, origin);
+	}else{
+		item->origin = NULL;
+	}
+
 	item->content = content;
 	item->quantity = quantity;
 
@@ -427,17 +451,19 @@ static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item){
 		}
 
 		refe_insertQueueItem(cursor->next, item);
+		return;
 	}
 
 	if(cursor->next->quantity < item->quantity){
+		RefeQueue *buf;
+		buf = cursor->next;
+
+		cursor->next = item;
+		item->next = buf;
 		return;
 	}
 
 	refe_insertQueueItem(cursor->next, item);
-}
-
-RefeQueue* refe_getQueue(void){
-	return refe.queue;
 }
 
 void refe_endTree(void){
@@ -464,20 +490,6 @@ void refe_endTree(void){
 	refe.courotine = NULL;
 }
 
-void refe_endQueue(void){
-	refe_freeQueueItem(refe.queue);
-	refe.queue = NULL;
-}
-
-static void refe_freeQueueItem(RefeQueue *item){
-	if(item == NULL)
-		return;
-
-	refe_freeQueueItem(item->next);
-
-	free(item);
-}
-
 static void refe_endNode(RefeNode *node){
 	if(node == NULL)
 		return;
@@ -500,4 +512,104 @@ static void refe_endCell(RefeCell *cell){
 	if(cell->content != NULL)
 		free(cell->content);
 	free(cell);
+}
+
+
+
+
+////////// SCOPE //////////
+
+void scope_init(void){
+	scope.addr = tmpfile();
+	scope.func = tmpfile();
+	scope.var  = tmpfile();
+}
+
+void scope_add(char *word, short bufId){
+	FILE *buf;
+	buf = scope_get(bufId);
+
+	unsigned short i = 0;
+	char *c = NULL;
+	for(c = &word[i]; *c != '\0'; c = &word[++i])
+		fputc(*c, buf);
+
+	fputc(',', buf);
+}
+
+FILE* scope_get(short bufId){
+	switch(bufId){
+		case SCOPE_ADDR: return scope.addr;
+		case SCOPE_FUNC: return scope.func;
+		case SCOPE_VAR:  return scope.var;
+	}
+}
+
+void scope_end(void){
+	fclose(scope.addr);
+	fclose(scope.func);
+	fclose(scope.var);
+
+	scope.addr = NULL;
+	scope.func = NULL;
+	scope.var  = NULL;
+}
+
+
+
+
+////////// NICK //////////
+
+void nick_init(void){
+	nick = malloc(sizeof(char) * 2);
+	nick[0] = 'A';
+	nick[1] = '\0';
+}
+
+static void nick_upChar(long id){
+	if(nick[id] == '_'){
+		nick[id] = 'M';
+		return;
+	}
+
+	nick[id] += 1;
+
+	if(nick[id] == 'L')
+		nick[id] = '_';
+}
+
+static void nick_upAll(long last){
+	if(last > -1){
+		if(nick[last] == 'Z'){
+			nick[last] = 'A';
+			nick_upAll(last - 1);
+			return;
+		}
+
+		nick_upChar(last);
+		return;
+	}
+
+	char *buf;
+	buf = nick;
+
+	last = strlen(nick) + 1;
+	nick = malloc(last);
+	
+	nick[0] = 'A';
+	strcat(nick, buf);
+	free(buf);
+}
+
+void nick_up(void){
+	nick_upAll( strlen(nick) - 1 );
+}
+
+char *nick_get(void){
+	return nick;
+}
+
+void nick_end(void){
+	free(nick);
+	nick = NULL;
 }

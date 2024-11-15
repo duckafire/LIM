@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 	cp_0_checkAndOpenFiles();
 	cp_1_extractionFromOrigin();
 	cp_2_separateExtractedContent();
-	cp_3_buildingGlobalScopes();
+	cp_3_buildingReferenceScope();
 	cp_x_tempFinish();
 
 	return 0;

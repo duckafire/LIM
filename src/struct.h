@@ -99,4 +99,13 @@ typedef struct RefeTree{
 	RefeNode *courotine;
 }RefeTree;
 
+typedef struct{
+	// value of function references (address):
+	// A,B=math.random,tonumber
+	FILE *addr;
+
+	FILE *func;
+	FILE *var;
+}LibScope;
+
 #endif

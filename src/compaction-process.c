@@ -263,7 +263,7 @@ void cp_2_separateExtractedContent(void){
 	fclose(content);
 }
 
-void cp_3_buildingGlobalScopes(void){
+void cp_3_buildingReferenceScope(void){
 	info_verbose();
 
 	// references from lua
@@ -322,9 +322,89 @@ void cp_3_buildingGlobalScopes(void){
 
 	info_verbose();
 	ident_end(false);
+
+	refe_treeToQueue();
 	refe_endTree();
+	scope_init();
+	nick_init();
+
+	char *fullContent;
+	char *fullCttBuf;
+	RefeQueue *item;
+
+	scope_add("local ", SCOPE_FUNC);
+
+	// remove ',' placed by the last call
+	fseek(scope_get(SCOPE_FUNC), -1, SEEK_CUR);
+
+	while((item = refe_getAndRmvQueueItem()) != NULL){
+		// get full content from queue item
+		fullContent = malloc(sizeof(char) * 2);
+		strcpy(fullContent, "\0\0");
+
+		if(item->origin != NULL){
+			fullCttBuf = malloc(strlen(item->origin) + 1);
+			strcpy(fullCttBuf, item->origin);
+
+			free(fullContent);
+			fullContent = fullCttBuf;
+		}
+
+		if(item->content != NULL){
+			fullCttBuf = malloc(strlen(fullContent) + strlen(item->content) + 1);
+			strcpy(fullCttBuf, fullContent);
+			strcat(fullCttBuf, item->content);
+
+			free(fullContent);
+			fullContent = fullCttBuf;
+		}
+
+		// print content getted from
+		// item in specify buffers
+		scope_add(nick_get(), SCOPE_FUNC);
+		scope_add(fullContent, SCOPE_ADDR);
+
+		// free dinamic memories
+		if(item->origin != NULL)
+			free(item->origin);
+
+		if(item->content != NULL)
+			free(item->content);
+
+		free(item);
+		free(fullContent);
+		nick_up();
+	}
+
+	// merge functions values (addre)
+	// with their references (func)
+	FILE *src, *dest;
+	src = scope_get(SCOPE_ADDR);
+	dest = scope_get(SCOPE_FUNC);
+
+	fseek(src, 0, SEEK_SET);
+	fseek(dest, -1, SEEK_END); // remove last ','
+	fputc('=', dest);
+
+	while(fread(&c, sizeof(char), 1, src) > 0)
+		fwrite(&c, sizeof(char), 1, dest);
+
+	fseek(dest, -1, SEEK_END); // remove last ','
+	fputc('\n', dest);
+
+	fclose(tools_copyFile(dest, "output.lim"));
+	scope_end();
+	nick_end();
 }
 
 void cp_x_tempFinish(void){
 	info_verbose();
+	//fclose(tools_copyFile(global_get()->order    , "output/order.lim"));
+	//fclose(tools_copyFile(global_get()->libVar   , "output/libVar.lim"));
+	//fclose(tools_copyFile(global_get()->libFunc  , "output/libFunc.lim"));
+	//fclose(tools_copyFile(global_get()->var      , "output/var.lim"));
+	//fclose(tools_copyFile(global_get()->func     , "output/func.lim"));
+	//fclose(tools_copyFile(global_get()->useOrCall, "output/useOrCall.lim"));
+	//fclose(tools_copyFile(global_get()->constants, "output/constants.lim"));
+	//fclose(tools_copyFile(global_get()->luaFunc  , "output/luaFunc.lim"));
 }

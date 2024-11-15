@@ -9,6 +9,12 @@
 // BUFFERS
 #define NEW_REFE_ROOTS(node) node=refe_createNode('m', NULL)
 
+enum{
+	SCOPE_ADDR,
+	SCOPE_FUNC,
+	SCOPE_VAR,
+};
+
 // CHECK-FLAGS
 // the bigger size between all flags
 #define LARGEST_FLAG 12
