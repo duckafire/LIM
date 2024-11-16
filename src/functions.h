@@ -30,7 +30,8 @@ void ident_end(short restart);
 
 void global_init(void);
 void global_newEnv(char *name);
-void global_order(short code, char *word);
+void global_order(short code);
+void global_getOrder(short *code);
 void global_print(char *word, char *name, short bufId);
 void global_rmvEnv(void);
 GlobalEnv* global_get(void);

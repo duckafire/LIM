@@ -12,9 +12,9 @@ static void message(char n, ...){
 	char *cur;
 
 	while((cur = va_arg(parag, char*)) != NULL)
-		fprintf(stdout, "%s\n", cur);
+		printf("%s\n", cur);
 
-	fputc('\n', stdout);
+	putchar('\n');
 	va_end(parag);
 	exit(0);
 }
@@ -129,7 +129,7 @@ void info_verbose(short mode, ...){
 	if(mode == VM_NORMAL || mode == VM_TITLE){
 		char lf = (mode == VM_TITLE) ? '\n' : '\0';
 
-		fprintf(stdout, "%c[LIM] %s\n", lf, va_arg(text, char*));
+		printf("%c[LIM] %s\n", lf, va_arg(text, char*));
 		va_end(text);
 		return;
 	}
@@ -141,9 +141,9 @@ void info_verbose(short mode, ...){
 		else
 			strcpy(content, "finished.\0");
 
-		fprintf(stdout, "[LIM] Read and %s process %s", va_arg(text, char*), content);
+		printf("[LIM] Read and %s process %s", va_arg(text, char*), content);
 
-		fputc('\n', stdout);
+		putchar('\n');
 		va_end(text);
 		return;
 	}
@@ -154,12 +154,12 @@ void info_verbose(short mode, ...){
 	else
 		strcpy(content, "Ending\0");
 
-	fprintf(stdout, "[LIM] %s buffer:", content);
+	printf("[LIM] %s buffer:", content);
 
 	while((cur = va_arg(text, char*)) != NULL)
-		fprintf(stdout, " \"%s\";", cur);
+		printf(" \"%s\";", cur);
 
-	fputc('\n', stdout);
+	putchar('\n');
 	va_end(text);
 }
 

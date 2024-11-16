@@ -12,7 +12,7 @@ void cp_0_checkAndOpenFiles(void){
 	info_verbose(VM_TITLE, "STAGE 0: check specified files.");
 
 	// check all files (exit or not)
-	info_verbose(VM_NORMAL, "Checkin origin file...");
+	info_verbose(VM_NORMAL, "Checking and openning origin file...");
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
 		er_nonExistentFile(gp_nameOrg);
@@ -154,6 +154,10 @@ void cp_1_extractionFromOrigin(void){
 
 	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
+
+	info_verbose(VM_NORMAL, "Closing origin file.");
+	fclose(gf_origin);
+	gf_origin = NULL;
 }
 
 void cp_2_separateExtractedContent(void){
@@ -207,8 +211,6 @@ void cp_2_separateExtractedContent(void){
 	global_init();
 
 	info_verbose(VM_NORMAL, "Getting extracted content...");
-	fclose(gf_origin);
-	gf_origin = NULL;
 	content = tools_copyFile(collect_get(), NULL);
 
 	info_verbose(VM_END_BUF, "collect", NULL);
@@ -255,7 +257,7 @@ void cp_2_separateExtractedContent(void){
 			}
 		}
 
-		global_order(typeCode, word);
+		global_order(typeCode);
 		global_print(word, funcName, typeCode);
 
 		ident_end(true);
@@ -477,6 +479,7 @@ void cp_3_buildingGlobalScope(void){
 	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
 }
+
 void cp_x_mergingContentAndPackingLibrary(void){
 	info_verbose(VM_TITLE, "STAGE X (final): merge all content and pack library");
 	

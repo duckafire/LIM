@@ -130,9 +130,12 @@ void global_newEnv(char *name){
 	global.tail = new;
 }
 
-void global_order(short code, char *word){
-	fputc(code + '0', global.order);
-	fputc('\n', global.order);
+void global_order(short code){
+	fwrite(&code, sizeof(short), 1, global.order);
+}
+
+void global_getOrder(short *code){
+	fread(code, sizeof(short), 1, global.order);
 }
 
 void global_print(char *word, char *name, short bufId){
