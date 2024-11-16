@@ -8,17 +8,21 @@
 static char c;
 
 void cp_0_checkAndOpenFiles(void){
-	info_verbose();
-	info_verbose();
+	info_verbose(VM_NORMAL, "COMPACTION STARTED!");
+	info_verbose(VM_TITLE, "STAGE 0: check specified files.");
 
 	// check all files (exit or not)
-	info_verbose();
+	info_verbose(VM_NORMAL, "Checkin origin file...");
 	gf_origin = fopen(gp_nameOrg, "r");
 	if(gf_origin == NULL)
 		er_nonExistentFile(gp_nameOrg);
 
-	info_verbose();
-	if(!g_replace){
+	if(g_replace){
+		info_verbose(VM_NORMAL, "REPLACE: ON =x");
+
+	}else{
+		info_verbose(VM_NORMAL, "REPLACE OFF => checking if destine file already exist...");
+
 		FILE *dst;
 		dst = fopen(gp_nameDst, "r");
 
@@ -30,7 +34,7 @@ void cp_0_checkAndOpenFiles(void){
 }
 
 void cp_1_extractionFromOrigin(void){
-	info_verbose();
+	info_verbose(VM_TITLE, "STAGE 1: extrat content from origin.");
 
 	// for not add line feed after dot
 	// from float number
@@ -49,11 +53,11 @@ void cp_1_extractionFromOrigin(void){
 	// function tab:met1() end
 	bool wasFunc = false;
 
-	info_verbose();
+	info_verbose(VM_START_BUF, "collect", "ident", NULL);
 	collect_init();
 	ident_init();
 
-	info_verbose();
+	info_verbose(VM_START_PRO, "extract", NULL);
 	while(FGETC != EOF){
 		// clear "null caracteres", without
 		// `continue` cycle: They are:
@@ -146,14 +150,14 @@ void cp_1_extractionFromOrigin(void){
 		// special characteres (:,.{-+)
 		ct_getSpecial(c);
 	}
-	info_verbose();
+	info_verbose(VM_END_PRO, "extract", NULL);
 
-	info_verbose();
+	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
 }
 
 void cp_2_separateExtractedContent(void){
-	info_verbose();
+	info_verbose(VM_TITLE, "STAGE 2: separate extracted content.");
 
 	// root of the library environment
 	// (outside functions)
@@ -198,19 +202,19 @@ void cp_2_separateExtractedContent(void){
 	// "compaction-process"
 	FILE *content;
 
-	info_verbose();
+	info_verbose(VM_START_BUF, "ident", "global", NULL);
 	ident_init();
 	global_init();
 
-	info_verbose();
+	info_verbose(VM_NORMAL, "Getting extracted content...");
 	fclose(gf_origin);
 	gf_origin = NULL;
 	content = tools_copyFile(collect_get(), NULL);
 
-	info_verbose();
+	info_verbose(VM_END_BUF, "collect", NULL);
 	collect_end();
 
-	info_verbose();
+	info_verbose(VM_START_PRO, "separate", NULL);
 	while((c = fgetc(content)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
@@ -256,36 +260,50 @@ void cp_2_separateExtractedContent(void){
 
 		ident_end(true);
 	}
+	info_verbose(VM_END_PRO, "separate", NULL);
 
-	info_verbose();
+	info_verbose(VM_END_BUF, "ident", NULL);
 	free(anonyName);
 	ident_end(false);
 	fclose(content);
 }
 
 void cp_3_buildingReferenceScope(void){
-	info_verbose();
+	info_verbose(VM_TITLE, "STAGE 3: building referece scope.");
 
 	// references from lua
+	// (copying content extracted before)
 	FILE *references, *scope = tmpfile();
 	references = tools_copyFile((global_get())->luaFunc, NULL);
 
+	// length of "word"; used to get its lat
+	// character and/or set a dinamic pointer size
 	unsigned short len;
-	char *word = NULL;
 
+	// math, string, table, ...; if it suffix will
+	// not be valid, it will be treaty like "word"
 	char *table = NULL;
 
-	info_verbose();
+	// store the current word collected; if it do
+	// not have dot or parenthesis, it is a "table",
+	// otherwise it is a function (pairs, type, ...)
+	char *word = NULL;
+
+	info_verbose(VM_START_BUF, "ident", "refe (tree)", NULL);
 	ident_init();
 	refe_init();
 
-	info_verbose();
+	info_verbose(VM_START_PRO, "collect", NULL);
 	while((c = fgetc(references)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
 			continue;
 		}
 		
+		// different the before stage, here the "word"
+		// not store the "word_get()" pointer, it store
+		// a copy of the content from this "object", in
+		// a independent pointer
 		if(word != NULL)
 			free(word);
 
@@ -294,17 +312,24 @@ void cp_3_buildingReferenceScope(void){
 		strcpy(word, ident_get());
 		ident_end(true);
 
+		// word is a table
 		if(word[0] != '.' && word[len - 1] != '(' && checkLuaTabs(word)){
+			// a table was collected, but after it,
+			// none function was placed
 			if(table != NULL){
 				refe_add(NULL, table);
 				free(table);
 			}
 
+			// copy word content to print
+			// it the next cycle
 			table = malloc(len + 1);
 			strcpy(table, word);
 			continue;
 		}
 
+		// print the table finded before with
+		// the function finded right now
 		if(table != NULL){
 			refe_add(table, word);
 			free(table);
@@ -312,19 +337,26 @@ void cp_3_buildingReferenceScope(void){
 			continue;
 		}
 
+		// function no prefixed by a table
+		// (tonumber, next, select, ...)
 		refe_add(NULL, word);
 	}
-	info_verbose();
+	info_verbose(VM_END_PRO, "collect", NULL);
 
 	free(word);
 	if(table != NULL)
 		free(table);
 
-	info_verbose();
+	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
 
+	info_verbose(VM_START_BUF, "refe (queue)", NULL);
 	refe_treeToQueue();
+
+	info_verbose(VM_END_BUF, "refe (tree)", NULL);
 	refe_endTree();
+
+	info_verbose(VM_START_BUF, "scope", "nick", NULL);
 	scope_init();
 	nick_init();
 
@@ -332,16 +364,22 @@ void cp_3_buildingReferenceScope(void){
 	char *fullCttBuf;
 	RefeQueue *item;
 
+	info_verbose(VM_NORMAL, "Adding \"local\" keyword to scope");
 	scope_add("local ", SCOPE_FUNC);
 
 	// remove ',' placed by the last call
 	fseek(scope_get(SCOPE_FUNC), -1, SEEK_CUR);
 
+	// all references are readed and classified, now they need
+	// to be positioned in a "Lua declaration structure":
+	// local ident0,ident1,identn=value0,value1,valuen
+	info_verbose(VM_START_PRO, "build", NULL);
 	while((item = refe_getAndRmvQueueItem()) != NULL){
 		// get full content from queue item
 		fullContent = malloc(sizeof(char) * 2);
 		strcpy(fullContent, "\0\0");
 
+		// get
 		if(item->origin != NULL){
 			fullCttBuf = malloc(strlen(item->origin) + 1);
 			strcpy(fullCttBuf, item->origin);
@@ -350,6 +388,7 @@ void cp_3_buildingReferenceScope(void){
 			fullContent = fullCttBuf;
 		}
 
+		// get (and merge)
 		if(item->content != NULL){
 			fullCttBuf = malloc(strlen(fullContent) + strlen(item->content) + 1);
 			strcpy(fullCttBuf, fullContent);
@@ -375,9 +414,11 @@ void cp_3_buildingReferenceScope(void){
 		free(fullContent);
 		nick_up();
 	}
+	info_verbose(VM_END_PRO, "build", NULL);
 
 	// merge functions values (addre)
 	// with their references (func)
+	info_verbose(VM_NORMAL, "Merging the reference with their respective functions...");
 	FILE *src, *dest;
 	src = scope_get(SCOPE_ADDR);
 	dest = scope_get(SCOPE_FUNC);
@@ -386,19 +427,30 @@ void cp_3_buildingReferenceScope(void){
 	fseek(dest, -1, SEEK_END); // remove last ','
 	fputc('=', dest);
 
-	while(fread(&c, sizeof(char), 1, src) > 0)
-		fwrite(&c, sizeof(char), 1, dest);
+	// "identifiers" and "address" were positioned in
+	// different buffers:
+	// [BUF 0] local ident0,ident1,identn
+	// [BUF 0] value0,value1,valuen
+	// it loop will merge them:
+	// local identn=valuen
+	while((c = fgetc(src)) != EOF)
+		fputc(c, dest);
 
 	fseek(dest, -1, SEEK_END); // remove last ','
 	fputc('\n', dest);
+	info_verbose(VM_NORMAL, "Merge finished");
 
 	fclose(tools_copyFile(dest, "output.lim"));
+
+	// actually, "refe (queue)" is
+	// ended during the build process
+	info_verbose(VM_END_BUF, "refe (queue)", "scope", "nick", NULL);
 	scope_end();
 	nick_end();
 }
 
 void cp_x_tempFinish(void){
-	info_verbose();
+	info_verbose(VM_TITLE, "ALPHA PROCESS FINISHED!");
 	//fclose(tools_copyFile(global_get()->order    , "output/order.lim"));
 	//fclose(tools_copyFile(global_get()->libVar   , "output/libVar.lim"));
 	//fclose(tools_copyFile(global_get()->libFunc  , "output/libFunc.lim"));

@@ -114,13 +114,12 @@ void er_fileAlreadyExistent(char *name);
 
 // PRINT-TEXT/INFORMATIONS
 static void message(char n, ...);
-static bool verboseMsg(short value, char *msg);
 
 void info_welcome(void);
 void info_version(void);
 void info_helpList(void);
 void info_help(char *flag);
-void info_verbose(void);
+void info_verbose(short mode, ...);
 void info_license(void);
 void info_rules(void);
 

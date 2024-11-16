@@ -18,11 +18,10 @@ bool tools_strcmp3(char *str0, char *str1){
 FILE* tools_copyFile(FILE *src, char *destName){
 	char c = 0;
 	FILE *dest;
-	const bool cloneBuf = (destName == NULL);
 
 	// use `destName == NULL` for
 	// temporary buffers
-	if(cloneBuf)
+	if(destName == NULL)
 		dest = tmpfile();
 	else
 		dest = fopen(destName, "w");
@@ -30,12 +29,8 @@ FILE* tools_copyFile(FILE *src, char *destName){
 	fseek(src, 0, SEEK_SET);
 
 	// copy content
-	while(fread(&c, sizeof(char), 1, src) > 0 && c != EOF){
-		if(cloneBuf)
-			fwrite(&c, sizeof(c), 1, dest);
-		else
-			fprintf(dest, "%c", c);
-	}
+	while((c = fgetc(src)) != EOF)
+		fputc(c, dest);
 
 	fseek(src,  0, SEEK_SET);
 	fseek(dest, 0, SEEK_SET);

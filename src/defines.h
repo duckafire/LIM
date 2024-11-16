@@ -76,4 +76,13 @@ enum{
 #define F_LICENSE "-l","--license"
 #define F_RULES   "-R","--rules"
 
+enum{ // Verbose Mode
+	VM_NORMAL,
+	VM_TITLE,
+	VM_START_PRO,
+	VM_END_PRO,
+	VM_START_BUF,
+	VM_END_BUF,
+};
+
 #endif

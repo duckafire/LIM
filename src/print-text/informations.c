@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include "../heads.h"
 
-static short verboseID = -1;
-
 static void message(char n, ...){
 	va_list parag;
 	va_start(parag, n);
@@ -19,14 +17,6 @@ static void message(char n, ...){
 	fputc('\n', stdout);
 	va_end(parag);
 	exit(0);
-}
-
-static bool verboseMsg(short value, char *msg){
-	if(verboseID == value){
-		fprintf(stdout, "[LIM] %s\n", msg);
-		return true;
-	}
-	return false;
 }
 
 void info_welcome(void){
@@ -126,37 +116,51 @@ void info_help(char *flag){
 	exit(0);
 }
 
-void info_verbose(void){
+void info_verbose(short mode, ...){
 	if(!g_verbose) return;
 
-	verboseID++;
+	char *cur;        // #3
+	char content[16]; // #2 & #3
+	va_list text;     // #all
 
-	if(verboseMsg(0, "COMPACTION STARTED!")) return;
-	if(verboseMsg(1, "STAGE 0: check specified files.")) return;
-	if(verboseMsg(2, "Checking origin file...")) return;
-	if(g_replace){
-		if(verboseMsg(3, "REPLACE: ON => checking if destine file already exist...")) return;
-	}else{
-		if(verboseMsg(3, "REPLACE: OFF =x")) return;
+	va_start(text, mode);
+
+	// #1: [LIM] ~
+	if(mode == VM_NORMAL || mode == VM_TITLE){
+		char lf = (mode == VM_TITLE) ? '\n' : '\0';
+
+		fprintf(stdout, "%c[LIM] %s\n", lf, va_arg(text, char*));
+		va_end(text);
+		return;
 	}
-	if(verboseMsg(4, "STAGE 1: extract content from origin.")) return;
-	if(verboseMsg(5, "Starting buffer: \"collect\"; \"ident\".")) return;
-	if(verboseMsg(6, "Read and extract process started.")) return;
-	if(verboseMsg(7, "Read and extract process finished.")) return;
-	if(verboseMsg(8, "Ending buffer: \"ident\".")) return;
-	if(verboseMsg(9, "STAGE 2: separate extracted content.")) return;
-	if(verboseMsg(10, "Starting buffer: \"ident\"; \"global\".")) return;
-	if(verboseMsg(11, "Getting extracted content...")) return;
-	if(verboseMsg(12, "Ending buffer: \"collect\".")) return;
-	if(verboseMsg(13, "Read and separate process started.")) return;
-	if(verboseMsg(14, "Read and separate process finished.")) return;
-	if(verboseMsg(15, "Ending buffer: \"ident\".")) return;
-	if(verboseMsg(16, "STAGE 3: building global scope to FUNCTIONs REFERENCES.")) return;
-	if(verboseMsg(17, "Starting buffer: \"ident\", \"refe\".")) return;
-	if(verboseMsg(18, "Read and build process started.")) return;
-	if(verboseMsg(19, "Read and build process finished.")) return;
-	if(verboseMsg(20, "- WORK IN PROGRESS] Ending buffer: \"ident\", \"refe\".")) return;
-	if(verboseMsg(21, "- WORK IN PROGRESS] Alpha process finished!")) return;
+	
+	// #2: [LIM] Read and ~ process started/finished.
+	if(mode == VM_START_PRO || mode == VM_END_PRO){
+		if(mode == VM_START_PRO)
+			strcpy(content, "started.\0");
+		else
+			strcpy(content, "finished.\0");
+
+		fprintf(stdout, "[LIM] Read and %s process %s", va_arg(text, char*), content);
+
+		fputc('\n', stdout);
+		va_end(text);
+		return;
+	}
+
+	// #3: [LIM] Starting/Ending buffer: "~0"; "~n";
+	if(mode == VM_START_BUF)
+		strcpy(content, "Starting\0");
+	else
+		strcpy(content, "Ending\0");
+
+	fprintf(stdout, "[LIM] %s buffer:", content);
+
+	while((cur = va_arg(text, char*)) != NULL)
+		fprintf(stdout, " \"%s\";", cur);
+
+	fputc('\n', stdout);
+	va_end(text);
 }
 
 void info_license(void){
