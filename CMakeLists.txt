@@ -24,6 +24,7 @@ add_executable(lim
 	${SRC_DIR}/print-text/errors.c
 	${SRC_DIR}/print-text/informations.c
 	${SRC_DIR}/buffers.c
+	${SRC_DIR}/header.c
 )
 
 # on the contrary of "(lib)c", "(lib)m" is not

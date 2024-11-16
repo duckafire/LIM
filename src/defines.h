@@ -75,6 +75,7 @@ enum{
 #define F_REPLACE "-r","--replace"
 #define F_LICENSE "-l","--license"
 #define F_RULES   "-R","--rules"
+#define F_NO_HEAD "-nh","--no-header-file"
 
 enum{ // Verbose Mode
 	VM_NORMAL,

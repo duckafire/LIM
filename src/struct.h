@@ -108,4 +108,24 @@ typedef struct{
 	FILE *var;
 }LibScope;
 
+typedef struct{
+	// content that will be placed in top
+	// of the file, outside library
+	// environment/pack, like credits
+	FILE *top;
+
+	// already content compacted, that will be
+	// placed after library scopes
+	FILE *scope;
+
+	// list of function that will receive
+	// a reference, like lua functions
+	FILE *list;
+
+	// store words that were getted from header
+	// file, like buffer "ident", but it is
+	// specify to header
+	char *word;
+}HeaderFile;
+
 #endif

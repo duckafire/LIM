@@ -6,6 +6,7 @@
 
 bool g_verbose = false;
 bool g_replace = false;
+bool g_headfile = true;
 
 char *gp_nameOrg = NULL;
 char *gp_nameDst = NULL;

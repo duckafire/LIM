@@ -14,6 +14,10 @@ bool tools_strcmp3(char *str0, char *str1);
 FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
 unsigned short tools_strlen2(char *word);
+void tools_fcat(FILE *src, FILE *dest);
+void tools_initDimStr(char **buf);
+void tools_addDimStr(char *buf, char c);
+void tools_endDimStr(char **buf, bool restart);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -103,6 +107,17 @@ static void saveBraces(void);
 static bool saveDoubleSignal(char sig_0, char sig_1);
 static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
+
+// HEADER
+void head_init(void);
+void head_printTop(FILE *dest);
+void head_printScope(FILE *dest);
+bool head_checkFuncList(char *word);
+void head_end(void);
+static bool head_getFromOrigin(FILE *src, FILE *dest);
+static void head_initWord(void);
+static void head_addWord(char c);
+static void head_endWord(bool restart);
 
 // PRINT-TEXT/ERRORS (ERror)
 void er_repeatFlag(char *arg, short pos);

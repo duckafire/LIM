@@ -59,22 +59,11 @@ void collect_end(void){
 ////////// IDENTIFIER //////////
 
 void ident_init(void){
-	ident = malloc(1);
-	ident[0] = '\0';
+	tools_initDimStr(&ident);
 }
 
 void ident_add(char c){
-	unsigned int len = strlen(ident) + 3;
-
-	char *temp;
-	temp = malloc(len);
-
-	memset(temp, '\0', len);
-	strcpy(temp, ident);
-	temp[len - 3] = c;
-
-	free(ident);
-	ident = temp;
+	tools_addDimStr(ident_get(), c);
 }
 
 char* ident_get(void){
@@ -82,11 +71,7 @@ char* ident_get(void){
 }
 
 void ident_end(short restart){
-	free(ident);
-	ident = NULL;
-
-	if(restart)
-		ident_init();
+	tools_endDimStr(&ident, restart);
 }
 
 

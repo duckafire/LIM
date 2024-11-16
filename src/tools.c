@@ -56,3 +56,40 @@ unsigned short tools_strlen2(char *str){
 
 	return strlen(str);
 }
+
+void tools_fcat(FILE *src, FILE *dest){
+	char c;
+
+	fseek(src,  0, SEEK_SET);
+	fseek(dest, 0, SEEK_END);
+
+	while((c = fgetc(src)) != EOF)
+		fputc(c, dest);
+}
+
+void tools_initDimStr(char **buf){
+	*buf = malloc(sizeof(char));
+	*buf[0] = '\0';
+}
+
+void tools_addDimStr(char *buf, char c){
+	unsigned short len = strlen(buf);
+
+	char *tmp;
+	tmp = malloc(len + 1);
+	strcpy(tmp, buf);
+
+	free(buf);
+	buf = malloc(len + 2);
+	sprintf("%s%c", tmp, c);
+
+	free(tmp);
+}
+
+void tools_endDimStr(char **buf, bool restart){
+	free(*buf);
+	*buf = NULL;
+
+	if(restart)
+		tools_initDimStr(buf);
+}

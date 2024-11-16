@@ -88,6 +88,15 @@ void cf_toCompaction(void){ // "destineName_1"
 			argv[i] = NULL;
 			continue;
 		}
+
+		if(tools_strcmp2(argv[i], F_NO_HEAD)){
+			if(!g_headfile)
+				er_repeatFlag(argv[i], i);
+
+			g_headfile = false;
+			argv[i] = NULL;
+			continue;
+		}
 	}
 }
 
