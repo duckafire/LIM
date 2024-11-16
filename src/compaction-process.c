@@ -268,8 +268,9 @@ void cp_2_separateExtractedContent(void){
 	fclose(content);
 }
 
-void cp_3_buildingReferencesScope(void){
-	info_verbose(VM_TITLE, "STAGE 3: building referece scope.");
+void cp_3_buildingGlobalScope(void){
+	// REFERENCE SCOPE
+	info_verbose(VM_TITLE, "STAGE 3: building global scope.");
 
 	// references from lua
 	// (copying content extracted before)
@@ -364,9 +365,9 @@ void cp_3_buildingReferencesScope(void){
 	char *fullCttBuf;
 	RefeQueue *item;
 
-	info_verbose(VM_NORMAL, "Adding \"local\" keyword to scope");
+	info_verbose(VM_NORMAL, "Adding \"local\" keyword to functions reference scope");
 	scope_add("local ", SCOPE_FUNC);
-	tools_rmvLastComma(scope_get(SCOPE_FUNC));
+	scope_rmvLastComma(SCOPE_FUNC);
 
 	// all references are readed and classified, now they need
 	// to be positioned in a "Lua declaration structure":
@@ -417,12 +418,14 @@ void cp_3_buildingReferencesScope(void){
 	// merge functions values (addre)
 	// with their references (func)
 	info_verbose(VM_NORMAL, "Merging the reference with their respective functions...");
+
+	// summaries
 	FILE *src, *dest;
-	src = scope_get(SCOPE_ADDR);
+	src  = scope_get(SCOPE_ADDR);
 	dest = scope_get(SCOPE_FUNC);
 
 	fseek(src, 0, SEEK_SET);
-	tools_rmvLastComma(dest);
+	scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
 	fputc('=', dest);
 
 	// "identifiers" and "address" were positioned in
@@ -434,27 +437,29 @@ void cp_3_buildingReferencesScope(void){
 	while((c = fgetc(src)) != EOF)
 		fputc(c, dest);
 
-	tools_rmvLastComma(dest);
+	scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
 	fputc('\n', dest);
 	info_verbose(VM_NORMAL, "Merge finished");
-
-	fclose(tools_copyFile(dest, "refe-scope.lim")); // TODO
 
 	// actually, "refe (queue)" is
 	// ended during the build process
 	info_verbose(VM_END_BUF, "refe (queue)", "scope", "nick", NULL);
 	nick_end();
-}
 
-void cp_4_buildingVariablesScope(void){
+
+
+	// VARIABLES SCOPE
 	FILE *variables;
 	variables = tools_copyFile((global_get())->var, NULL);
 
+	info_verbose(VM_START_BUF, "ident", NULL);
 	ident_init();
 
+	info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope");
 	scope_add("local ", SCOPE_VAR);
-	tools_rmvLastComma(scope_get(SCOPE_VAR));
+	scope_rmvLastComma(SCOPE_VAR);
 
+	info_verbose(VM_START_PRO, "collect (2)", NULL);
 	while((c = fgetc(variables)) != EOF){
 		if(c != '\n'){
 			ident_add(c);
@@ -464,24 +469,51 @@ void cp_4_buildingVariablesScope(void){
 		scope_add(ident_get(), SCOPE_VAR);
 		ident_end(true);
 	}
+	info_verbose(VM_END_PRO, "collect (2)", NULL);
 
-	tools_rmvLastComma(scope_get(SCOPE_VAR));
+	scope_rmvLastComma(SCOPE_VAR);
 	fputc('\n', scope_get(SCOPE_VAR));
 	
-	fclose(tools_copyFile(scope_get(SCOPE_VAR), "var-scope.lim")); // TODO
-
+	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
-	scope_end();
 }
+void cp_x_mergingContentAndPackingLibrary(void){
+	info_verbose(VM_TITLE, "STAGE X (final): merge all content and pack library");
+	
+	// getting content from buffers
+	info_verbose(VM_NORMAL, "Getting content from buffers...");
+	FILE *fscope, *vscope, *output;
+	fscope = scope_get(SCOPE_FUNC);
+	vscope = scope_get(SCOPE_VAR);
 
-void cp_x_tempFinish(void){
-	info_verbose(VM_TITLE, "ALPHA PROCESS FINISHED!");
-	//fclose(tools_copyFile(global_get()->order    , "output/order.lim"));
-	//fclose(tools_copyFile(global_get()->libVar   , "output/libVar.lim"));
-	//fclose(tools_copyFile(global_get()->libFunc  , "output/libFunc.lim"));
-	//fclose(tools_copyFile(global_get()->var      , "output/var.lim"));
-	//fclose(tools_copyFile(global_get()->func     , "output/func.lim"));
-	//fclose(tools_copyFile(global_get()->useOrCall, "output/useOrCall.lim"));
-	//fclose(tools_copyFile(global_get()->constants, "output/constants.lim"));
-	//fclose(tools_copyFile(global_get()->luaFunc  , "output/luaFunc.lim"));
+	fseek(fscope, 0, SEEK_SET);
+	fseek(vscope, 0, SEEK_SET);
+
+	// writting in output file
+	info_verbose(VM_NORMAL, "Creating output file...");
+	output = fopen("output.lim", "w");
+
+	info_verbose(VM_NORMAL, "Starting pack...");
+	fputs("local L={}\ndo\n", output);
+
+	info_verbose(VM_NORMAL, "Printing variables and scope scope...");
+	while((c = fgetc(vscope)) != EOF)
+		fputc(c, output);
+
+	info_verbose(VM_NORMAL, "Printing functions references scope...");
+	while((c = fgetc(fscope)) != EOF)
+		fputc(c, output);
+
+	info_verbose(VM_NORMAL, "Closing pack...");
+	fputs("end\n--local reference=L", output);
+
+	// finishing
+	info_verbose(VM_NORMAL, "Finishing output file...");
+	fclose(output);
+
+	info_verbose(VM_END_BUF, "global", "scope", NULL);
+	global_end();
+	scope_end();
+
+	info_verbose(VM_TITLE, "(alpha) PROCESS FINISHED!");
 }

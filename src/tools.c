@@ -56,7 +56,3 @@ unsigned short tools_strlen2(char *str){
 
 	return strlen(str);
 }
-
-void tools_rmvLastComma(FILE *file){
-	fseek(file, -1, SEEK_CUR);
-}

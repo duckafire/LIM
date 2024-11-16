@@ -545,6 +545,10 @@ FILE* scope_get(short bufId){
 	}
 }
 
+void scope_rmvLastComma(short bufId){
+	fseek(scope_get(bufId), -1, SEEK_CUR);
+}
+
 void scope_end(void){
 	fclose(scope.addr);
 	fclose(scope.func);

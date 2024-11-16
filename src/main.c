@@ -28,9 +28,8 @@ int main(int argc, char *argv[]){
 	cp_0_checkAndOpenFiles();
 	cp_1_extractionFromOrigin();
 	cp_2_separateExtractedContent();
-	cp_3_buildingReferencesScope();
-	cp_4_buildingVariablesScope();
-	cp_x_tempFinish();
+	cp_3_buildingGlobalScope();
+	cp_x_mergingContentAndPackingLibrary();
 
 	return 0;
 }

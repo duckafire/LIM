@@ -14,7 +14,6 @@ bool tools_strcmp3(char *str0, char *str1);
 FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
 unsigned short tools_strlen2(char *word);
-void tools_rmvLastComma(FILE *file);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -58,6 +57,7 @@ static void refe_endCell(RefeCell *cell);
 void scope_init(void);
 void scope_add(char *word, short bufId);
 FILE* scope_get(short bufId);
+void scope_rmvLastComma(short bufId);
 void scope_end(void);
 
 void nick_init(void);
@@ -80,9 +80,8 @@ void cf_destineName_2(void);
 void cp_0_checkAndOpenFiles(void);
 void cp_1_extractionFromOrigin(void);
 void cp_2_separateExtractedContent(void);
-void cp_3_buildingReferencesScope(void);
-void cp_4_buildingVariablesScope(void);
-void cp_x_tempFinish(void);
+void cp_3_buildingGlobalScope(void);
+void cp_x_mergingContentAndPackingLibrary(void);
 
 // CONTENT-TREATMENT
 void ct_atexit(void);
