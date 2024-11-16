@@ -268,7 +268,7 @@ void cp_2_separateExtractedContent(void){
 	fclose(content);
 }
 
-void cp_3_buildingReferenceScope(void){
+void cp_3_buildingReferencesScope(void){
 	info_verbose(VM_TITLE, "STAGE 3: building referece scope.");
 
 	// references from lua
@@ -366,9 +366,7 @@ void cp_3_buildingReferenceScope(void){
 
 	info_verbose(VM_NORMAL, "Adding \"local\" keyword to scope");
 	scope_add("local ", SCOPE_FUNC);
-
-	// remove ',' placed by the last call
-	fseek(scope_get(SCOPE_FUNC), -1, SEEK_CUR);
+	tools_rmvLastComma(scope_get(SCOPE_FUNC));
 
 	// all references are readed and classified, now they need
 	// to be positioned in a "Lua declaration structure":
@@ -424,7 +422,7 @@ void cp_3_buildingReferenceScope(void){
 	dest = scope_get(SCOPE_FUNC);
 
 	fseek(src, 0, SEEK_SET);
-	fseek(dest, -1, SEEK_END); // remove last ','
+	tools_rmvLastComma(dest);
 	fputc('=', dest);
 
 	// "identifiers" and "address" were positioned in
@@ -436,17 +434,44 @@ void cp_3_buildingReferenceScope(void){
 	while((c = fgetc(src)) != EOF)
 		fputc(c, dest);
 
-	fseek(dest, -1, SEEK_END); // remove last ','
+	tools_rmvLastComma(dest);
 	fputc('\n', dest);
 	info_verbose(VM_NORMAL, "Merge finished");
 
-	fclose(tools_copyFile(dest, "output.lim"));
+	fclose(tools_copyFile(dest, "refe-scope.lim")); // TODO
 
 	// actually, "refe (queue)" is
 	// ended during the build process
 	info_verbose(VM_END_BUF, "refe (queue)", "scope", "nick", NULL);
-	scope_end();
 	nick_end();
+}
+
+void cp_4_buildingVariablesScope(void){
+	FILE *variables;
+	variables = tools_copyFile((global_get())->var, NULL);
+
+	ident_init();
+
+	scope_add("local ", SCOPE_VAR);
+	tools_rmvLastComma(scope_get(SCOPE_VAR));
+
+	while((c = fgetc(variables)) != EOF){
+		if(c != '\n'){
+			ident_add(c);
+			continue;
+		}
+
+		scope_add(ident_get(), SCOPE_VAR);
+		ident_end(true);
+	}
+
+	tools_rmvLastComma(scope_get(SCOPE_VAR));
+	fputc('\n', scope_get(SCOPE_VAR));
+	
+	fclose(tools_copyFile(scope_get(SCOPE_VAR), "var-scope.lim")); // TODO
+
+	ident_end(false);
+	scope_end();
 }
 
 void cp_x_tempFinish(void){
