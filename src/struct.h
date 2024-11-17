@@ -56,6 +56,10 @@ typedef struct{
 	// "reference scope"
 	FILE *luaFunc;
 
+	// list of function getted from
+	// "header.lim", in "List Patition"
+	FILE *headFunc;
+
 	// a chain with the functions environments
 	// and them sub-environments
 	struct FuncEnv *head, *tail;

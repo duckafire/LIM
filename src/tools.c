@@ -67,12 +67,12 @@ void tools_fcat(FILE *src, FILE *dest){
 		fputc(c, dest);
 }
 
-void tools_initDimStr(char **buf){
+void tools_initDinStr(char **buf){
 	*buf = malloc(sizeof(char));
 	*buf[0] = '\0';
 }
 
-void tools_addDimStr(char *buf, char c){
+void tools_addDinStr(char *buf, char c){
 	unsigned short len = strlen(buf);
 
 	char *tmp;
@@ -89,10 +89,20 @@ void tools_addDimStr(char *buf, char c){
 	free(tmp);
 }
 
-void tools_endDimStr(char **buf, bool restart){
+void tools_endDinStr(char **buf, bool restart){
 	free(*buf);
 	*buf = NULL;
 
 	if(restart)
-		tools_initDimStr(buf);
+		tools_initDinStr(buf);
+}
+
+long tools_filelen(FILE *file){
+	long cursor = ftell(file);
+	fseek(file, 0, SEEK_END);
+
+	long len = ftell(file);
+	fseek(file, cursor, SEEK_SET);
+
+	return len;
 }

@@ -59,11 +59,11 @@ void collect_end(void){
 ////////// IDENTIFIER //////////
 
 void ident_init(void){
-	tools_initDimStr(&ident);
+	tools_initDinStr(&ident);
 }
 
 void ident_add(char c){
-	tools_addDimStr(ident_get(), c);
+	tools_addDinStr(ident_get(), c);
 }
 
 char* ident_get(void){
@@ -71,7 +71,7 @@ char* ident_get(void){
 }
 
 void ident_end(short restart){
-	tools_endDimStr(&ident, restart);
+	tools_endDinStr(&ident, restart);
 }
 
 
@@ -88,6 +88,7 @@ void global_init(void){
 	global.useOrCall = tmpfile();
 	global.constants = tmpfile();
 	global.luaFunc   = tmpfile();
+	global.headFunc  = tmpfile();
 	
 	global.head = NULL;
 	global.tail = NULL;
@@ -175,6 +176,7 @@ void global_end(void){
 	fclose(global.useOrCall);
 	fclose(global.constants);
 	fclose(global.luaFunc);
+	fclose(global.headFunc);
 
 	global.order     = NULL;
 	global.libVar    = NULL;
@@ -184,6 +186,7 @@ void global_end(void){
 	global.useOrCall = NULL;
 	global.constants = NULL;
 	global.luaFunc   = NULL;
+	global.headFunc  = NULL;
 	
 	global.head = NULL;
 	global.tail = NULL;
@@ -196,6 +199,7 @@ static FILE* global_getBuf(short bufId, char *name){
 		case TYPE_ANONYMOUS:   return global.constants; break;
 		case TYPE_USE_OR_CALL: return global.useOrCall; break;
 		case TYPE_FROM_LUA:    return global.luaFunc;   break;
+		case TYPE_FROM_HEAD:   return global.headFunc;  break;
 		case TYPE_LIB_FUNC:    return global.libFunc;   break;
 		case TYPE_LIB_VAR:     return global.libVar;    break;
 		case TYPE_GLOBAL_FUNC: return global.func;      break;

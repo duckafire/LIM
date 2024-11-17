@@ -15,9 +15,10 @@ FILE* tools_copyFile(FILE *org, char *dstName);
 char* tools_rmvParen(char *word);
 unsigned short tools_strlen2(char *word);
 void tools_fcat(FILE *src, FILE *dest);
-void tools_initDimStr(char **buf);
-void tools_addDimStr(char *buf, char c);
-void tools_endDimStr(char **buf, bool restart);
+void tools_initDinStr(char **buf);
+void tools_addDinStr(char *buf, char c);
+void tools_endDinStr(char **buf, bool restart);
+long tools_filelen(FILE *file);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -113,11 +114,13 @@ char* head_init(void);
 bool head_printTop(FILE *dest);
 bool head_printScope(FILE *dest);
 bool head_checkFuncList(char *word);
+void head_initWord(void);
+void head_addWord(char c);
+char *head_getWord(void);
+void head_endWord(bool restart);
+FILE* head_getList(void);
 void head_end(void);
 static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);
-static void head_initWord(void);
-static void head_addWord(char c);
-static void head_endWord(bool restart);
 
 // PRINT-TEXT/ERRORS (ERror)
 void er_repeatFlag(char *arg, short pos);

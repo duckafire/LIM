@@ -174,6 +174,11 @@ bool head_checkFuncList(char *word){
 
 	char c;
 
+	// for "end" head.word before
+	// to leave this function
+	bool found = false;
+
+	head_initWord();
 	fseek(head.list, 0, SEEK_SET);
 
 	while((c = fgetc(head.list)) != EOF){
@@ -182,33 +187,46 @@ bool head_checkFuncList(char *word){
 			continue;
 		}
 
-		if(strcmp(word, head.word) == 0)
-			return true;
+		if(strcmp(word, head.word) == 0){
+			found = true;
+			break;
+		}
+
+		head_endWord(true);
 	}
 
-	return false;
+	head_endWord(false);
+	return found;
 }
 
-static void head_initWord(void){
-	tools_initDimStr(&head.word);
+void head_initWord(void){
+	tools_initDinStr(&head.word);
 }
 
-static void head_addWord(char c){
-	tools_addDimStr(head.word, c);
+void head_addWord(char c){
+	tools_addDinStr(head.word, c);
 }
 
-static void head_endWord(bool restart){
-	tools_endDimStr(&head.word, restart);
+char *head_getWord(void){
+	return head.word;
+}
+
+void head_endWord(bool restart){
+	tools_endDinStr(&head.word, restart);
+}
+
+FILE *head_getList(void){
+	return head.list;
 }
 
 void head_end(){
-	if(!g_headfile)
+	if(!g_headfile || head.top == NULL)
 		return;
 
-	if(head.top != NULL){
-		fclose(head.top);
-		head.top = NULL;
-	}
+	fclose(tools_copyFile(head.list, "list.lim"));
+
+	fclose(head.top);
+	head.top = NULL;
 
 	if(head.scope != NULL){
 		fclose(head.scope);

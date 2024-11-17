@@ -225,6 +225,9 @@ short readCurWord(char *word){
 		if(checkLuaFuncs(word) || checkLuaTabs(word))
 			return TYPE_FROM_LUA;
 
+		if(head_checkFuncList(word))
+			return TYPE_FROM_HEAD;
+
 		// use of variables and tables;
 		// and function call
 		return TYPE_USE_OR_CALL;

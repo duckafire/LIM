@@ -44,6 +44,7 @@ enum{
 	TYPE_ANONYMOUS,   // function() end
 	TYPE_USE_OR_CALL, // func() || var + var1
 	TYPE_FROM_LUA,    // math, pairs, .random, ...
+	TYPE_FROM_HEAD,   // function from "List Partition", from "header.lim"
 	TYPE_LIB_FUNC,    // functio <name>
 	TYPE_LIB_VAR,     // _G.<name>
 	TYPE_GLOBAL_FUNC, // local function (root env)

@@ -293,69 +293,106 @@ void cp_3_buildingGlobalScope(void){
 
 	// store the current word collected; if it do
 	// not have dot or parenthesis, it is a "table",
-	// otherwise it is a function (pairs, type, ...)
+	// otherwise it is a function (pairs, type, ...);
+	// different the before stage, here the "word"
+	// not store the "word_get()" pointer, it store
+	// a copy of the content from this "object", in
+	// a independent pointer.
 	char *word = NULL;
+
+	// lists of functions that will be to win a
+	// reference (from Lua and from "header.lim")
+	FILE *fileList[2] = {references, head_getList()};
 
 	info_verbose(VM_START_BUF, "ident", "refe (tree)", NULL);
 	ident_init();
+	head_initWord();
 	refe_init();
 
+	fclose(tools_copyFile(head_getList(), "list.lim"));
+
 	info_verbose(VM_START_PRO, "collect", NULL);
-	while((c = fgetc(references)) != EOF){
-		if(c != '\n'){
-			ident_add(c);
-			continue;
-		}
-		
-		// different the before stage, here the "word"
-		// not store the "word_get()" pointer, it store
-		// a copy of the content from this "object", in
-		// a independent pointer
-		if(word != NULL)
-			free(word);
+	for(short fileId = 0; fileId < 2; fileId++){
+		fseek(fileList[ fileId ], 0, SEEK_SET);
 
-		len = strlen(ident_get());
-		word = malloc(len + 1);
-		strcpy(word, ident_get());
-		ident_end(true);
+		while((c = fgetc(fileList[ fileId ])) != EOF){
+			if(fileId == 0){
+				if(c != '\n'){
+					ident_add(c);
+					continue;
+				}
+				
+				if(word != NULL)
+					free(word);
 
-		// word is a table
-		if(word[0] != '.' && word[len - 1] != '(' && checkLuaTabs(word)){
-			// a table was collected, but after it,
-			// none function was placed
-			if(table != NULL){
-				refe_add(NULL, table);
-				free(table);
+				len = strlen(ident_get());
+				word = malloc(len + 1);
+				strcpy(word, ident_get());
+				ident_end(true);
+			}else{
+				if(c != ' '){
+					head_addWord(c);
+					continue;
+				}
+
+				if(word != NULL)
+					free(word);
+
+				len = strlen(head_getWord());
+				word = malloc(len + 1);
+				strcpy(word, head_getWord());
+				head_endWord(true);
 			}
 
-			// copy word content to print
-			// it the next cycle
-			table = malloc(len + 1);
-			strcpy(table, word);
-			continue;
+			// word is a table
+			if(word[0] != '.' && word[len - 1] != '(' && (fileId == 1 || checkLuaTabs(word))){
+				// a table was collected, but after it,
+				// none function was placed
+				if(table != NULL){
+					refe_add(NULL, table);
+					free(table);
+				}
+
+				// copy word content to print
+				// it the next cycle
+				table = malloc(len + 1);
+				strcpy(table, word);
+				continue;
+			}
+
+			// print the table finded before with
+			// the function finded right now
+			if(table != NULL){
+				refe_add(table, word);
+				free(table);
+				table = NULL;
+				continue;
+			}
+
+			// function no prefixed by a table
+			// (tonumber, next, select, ...)
+			refe_add(NULL, word);
+			//free(word);
+			//word = NULL;
 		}
 
-		// print the table finded before with
-		// the function finded right now
+		if(word != NULL){
+			//refe_add(NULL, word);
+			free(word);
+			word = NULL;
+		}
+
 		if(table != NULL){
-			refe_add(table, word);
+			refe_add(NULL, table);
 			free(table);
 			table = NULL;
-			continue;
 		}
-
-		// function no prefixed by a table
-		// (tonumber, next, select, ...)
-		refe_add(NULL, word);
 	}
 	info_verbose(VM_END_PRO, "collect", NULL);
 
-	free(word);
-	if(table != NULL)
-		free(table);
-
 	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
+	head_endWord(false);
 
 	info_verbose(VM_START_BUF, "refe (queue)", NULL);
 	refe_treeToQueue();
@@ -412,7 +449,10 @@ void cp_3_buildingGlobalScope(void){
 		if(item->origin != NULL)
 			free(item->origin);
 
-		if(item->content != NULL)
+		// BUG: "double free"
+		// only when there are many
+		// function in origin file
+		if(item->content != NULL);
 			free(item->content);
 
 		free(item);
@@ -425,27 +465,28 @@ void cp_3_buildingGlobalScope(void){
 	// with their references (func)
 	info_verbose(VM_NORMAL, "Merging the reference with their respective functions...");
 
-	// summaries
-	FILE *src, *dest;
-	src  = scope_get(SCOPE_ADDR);
-	dest = scope_get(SCOPE_FUNC);
+	if(tools_filelen(scope_get(SCOPE_ADDR)) > 1){
+		// summaries
+		FILE *src, *dest;
+		src  = scope_get(SCOPE_ADDR);
+		dest = scope_get(SCOPE_FUNC);
 
-	fseek(src, 0, SEEK_SET);
-	scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
-	fputc('=', dest);
+		fseek(src, 0, SEEK_SET);
+		scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
+		fputc('=', dest);
 
-	// "identifiers" and "address" were positioned in
-	// different buffers:
-	// [BUF 0] local ident0,ident1,identn
-	// [BUF 0] value0,value1,valuen
-	// it loop will merge them:
-	// local identn=valuen
-	while((c = fgetc(src)) != EOF)
-		fputc(c, dest);
+		// "identifiers" and "address" were positioned in
+		// different buffers:
+		// [BUF 0] local ident0,ident1,identn
+		// [BUF 1] value0,value1,valuen
+		// it loop will merge them:
+		// local identn=valuen
+		tools_fcat(src, dest);
 
-	scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
-	fputc('\n', dest);
-	info_verbose(VM_NORMAL, "Merge finished");
+		scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
+		fputc('\n', dest);
+		info_verbose(VM_NORMAL, "Merge finished");
+	}
 
 	// actually, "refe (queue)" is
 	// ended during the build process
@@ -461,9 +502,11 @@ void cp_3_buildingGlobalScope(void){
 	info_verbose(VM_START_BUF, "ident", NULL);
 	ident_init();
 
-	info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope");
-	scope_add("local ", SCOPE_VAR);
-	scope_rmvLastComma(SCOPE_VAR);
+	if(tools_filelen(scope_get(SCOPE_VAR)) > 1){
+		info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope");
+		scope_add("local ", SCOPE_VAR);
+		scope_rmvLastComma(SCOPE_VAR);
+	}
 
 	info_verbose(VM_START_PRO, "collect (2)", NULL);
 	while((c = fgetc(variables)) != EOF){
@@ -506,13 +549,19 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	info_verbose(VM_NORMAL, "Starting pack...");
 	fputs("local L={}\ndo\n", output);
 
-	info_verbose(VM_NORMAL, "Printing variables and scope scope...");
-	while((c = fgetc(vscope)) != EOF)
-		fputc(c, output);
+	if(tools_filelen(vscope) > 1){
+		info_verbose(VM_NORMAL, "Printing variables and table scope...");
+		tools_fcat(vscope, output);
+	}else{
+		info_verbose(VM_NORMAL, "Empty variables scope");
+	}
 
-	info_verbose(VM_NORMAL, "Printing functions references scope...");
-	while((c = fgetc(fscope)) != EOF)
-		fputc(c, output);
+	if(tools_filelen(fscope) > 1){
+		info_verbose(VM_NORMAL, "Printing functions references scope...");
+		tools_fcat(fscope, output);
+	}else{
+		info_verbose(VM_NORMAL, "Empty function scope.");
+	}
 
 	if(head_printScope(output))
 		info_verbose(VM_NORMAL, "The \"Scope Partition\" was printed.");
