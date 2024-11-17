@@ -81,6 +81,7 @@ void cf_toCompaction(void);
 void cf_invalid(void);
 void cf_originName(void);
 void cf_destineName_2(void);
+static void cf_setDestineName(char *src, bool withPath);
 
 // COMPACTION-PROCESS
 void cp_0_checkAndOpenFiles(void);
@@ -114,10 +115,6 @@ char* head_init(void);
 bool head_printTop(FILE *dest);
 bool head_printScope(FILE *dest);
 bool head_checkFuncList(char *word);
-void head_initWord(void);
-void head_addWord(char c);
-char *head_getWord(void);
-void head_endWord(bool restart);
 FILE* head_getList(void);
 void head_end(void);
 static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);

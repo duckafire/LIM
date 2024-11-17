@@ -377,7 +377,6 @@ static void refe_subtreeToQueue(RefeNode *node, char *table){
 	refe_subtreeToQueue(node->right, table);
 	refe_subtreeQueueToMainQueue(node->next, table);
 	
-
 	if(node->content == NULL)
 		return;
 
@@ -396,7 +395,13 @@ static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table){
 
 	refe_subtreeQueueToMainQueue(cell->next, table);
 
-	refe_createQueueItem(table, cell->content, cell->quantity);
+	char *content = NULL;
+
+	content = malloc(strlen(cell->content) + 1);
+	strcpy(content, cell->content);
+	cell->content = NULL;
+
+	refe_createQueueItem(table, content, cell->quantity);
 }
 
 static void refe_createQueueItem(char *origin, char *content, unsigned short quantity){

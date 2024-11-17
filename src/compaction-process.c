@@ -278,11 +278,6 @@ void cp_3_buildingGlobalScope(void){
 	// REFERENCE SCOPE
 	info_verbose(VM_TITLE, "STAGE 3: building global scope.");
 
-	// references from lua
-	// (copying content extracted before)
-	FILE *references, *scope = tmpfile();
-	references = tools_copyFile((global_get())->luaFunc, NULL);
-
 	// length of "word"; used to get its lat
 	// character and/or set a dinamic pointer size
 	unsigned short len;
@@ -302,47 +297,35 @@ void cp_3_buildingGlobalScope(void){
 
 	// lists of functions that will be to win a
 	// reference (from Lua and from "header.lim")
-	FILE *fileList[2] = {references, head_getList()};
+	FILE *fileList[2] = {
+		tools_copyFile((global_get())->luaFunc, NULL),
+		tools_copyFile((global_get())->headFunc, NULL),
+	};
 
 	info_verbose(VM_START_BUF, "ident", "refe (tree)", NULL);
 	ident_init();
-	head_initWord();
 	refe_init();
-
-	fclose(tools_copyFile(head_getList(), "list.lim"));
 
 	info_verbose(VM_START_PRO, "collect", NULL);
 	for(short fileId = 0; fileId < 2; fileId++){
+		if(fileList[ fileId ] == NULL)
+			break;
+
 		fseek(fileList[ fileId ], 0, SEEK_SET);
 
 		while((c = fgetc(fileList[ fileId ])) != EOF){
-			if(fileId == 0){
-				if(c != '\n'){
-					ident_add(c);
-					continue;
-				}
-				
-				if(word != NULL)
-					free(word);
-
-				len = strlen(ident_get());
-				word = malloc(len + 1);
-				strcpy(word, ident_get());
-				ident_end(true);
-			}else{
-				if(c != ' '){
-					head_addWord(c);
-					continue;
-				}
-
-				if(word != NULL)
-					free(word);
-
-				len = strlen(head_getWord());
-				word = malloc(len + 1);
-				strcpy(word, head_getWord());
-				head_endWord(true);
+			if(c != '\n'){
+				ident_add(c);
+				continue;
 			}
+			
+			if(word != NULL)
+				free(word);
+
+			len = strlen(ident_get());
+			word = malloc(len + 1);
+			strcpy(word, ident_get());
+			ident_end(true);
 
 			// word is a table
 			if(word[0] != '.' && word[len - 1] != '(' && (fileId == 1 || checkLuaTabs(word))){
@@ -377,7 +360,7 @@ void cp_3_buildingGlobalScope(void){
 		}
 
 		if(word != NULL){
-			//refe_add(NULL, word);
+			refe_add(NULL, word);
 			free(word);
 			word = NULL;
 		}
@@ -392,7 +375,6 @@ void cp_3_buildingGlobalScope(void){
 
 	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
-	head_endWord(false);
 
 	info_verbose(VM_START_BUF, "refe (queue)", NULL);
 	refe_treeToQueue();
@@ -408,7 +390,7 @@ void cp_3_buildingGlobalScope(void){
 	char *fullCttBuf;
 	RefeQueue *item;
 
-	info_verbose(VM_NORMAL, "Adding \"local\" keyword to functions reference scope");
+	info_verbose(VM_NORMAL, "Adding \"local\" keyword to functions reference scope.");
 	scope_add("local ", SCOPE_FUNC);
 	scope_rmvLastComma(SCOPE_FUNC);
 
@@ -449,9 +431,6 @@ void cp_3_buildingGlobalScope(void){
 		if(item->origin != NULL)
 			free(item->origin);
 
-		// BUG: "double free"
-		// only when there are many
-		// function in origin file
 		if(item->content != NULL);
 			free(item->content);
 
@@ -465,7 +444,7 @@ void cp_3_buildingGlobalScope(void){
 	// with their references (func)
 	info_verbose(VM_NORMAL, "Merging the reference with their respective functions...");
 
-	if(tools_filelen(scope_get(SCOPE_ADDR)) > 1){
+	if(tools_filelen(scope_get(SCOPE_ADDR)) > 0){
 		// summaries
 		FILE *src, *dest;
 		src  = scope_get(SCOPE_ADDR);
@@ -485,7 +464,9 @@ void cp_3_buildingGlobalScope(void){
 
 		scope_rmvLastComma(SCOPE_FUNC); // "it" == dest
 		fputc('\n', dest);
-		info_verbose(VM_NORMAL, "Merge finished");
+		info_verbose(VM_NORMAL, "Merge finished.");
+	}else{
+		info_verbose(VM_NORMAL, "None function found for scope: empty reference scope.");
 	}
 
 	// actually, "refe (queue)" is
@@ -502,8 +483,8 @@ void cp_3_buildingGlobalScope(void){
 	info_verbose(VM_START_BUF, "ident", NULL);
 	ident_init();
 
-	if(tools_filelen(scope_get(SCOPE_VAR)) > 1){
-		info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope");
+	if(tools_filelen(scope_get(SCOPE_VAR)) > 0){
+		info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope.");
 		scope_add("local ", SCOPE_VAR);
 		scope_rmvLastComma(SCOPE_VAR);
 	}
@@ -520,8 +501,11 @@ void cp_3_buildingGlobalScope(void){
 	}
 	info_verbose(VM_END_PRO, "collect (2)", NULL);
 
-	scope_rmvLastComma(SCOPE_VAR);
-	fputc('\n', scope_get(SCOPE_VAR));
+	if(tools_filelen(scope_get(SCOPE_VAR)) > 0){
+		scope_rmvLastComma(SCOPE_VAR);
+	}else{
+		info_verbose(VM_NORMAL, "None variable found for scope: empty variable scope.");
+	}
 	
 	info_verbose(VM_END_BUF, "ident", NULL);
 	ident_end(false);
@@ -541,22 +525,22 @@ void cp_x_mergingContentAndPackingLibrary(void){
 
 	// writting in output file
 	info_verbose(VM_NORMAL, "Creating output file...");
-	output = fopen("output.lim", "w");
+	output = fopen(gp_nameDst, "w");
 
 	if(head_printTop(output))
 		info_verbose(VM_NORMAL, "The \"Top Partition\" was printed.");
 
 	info_verbose(VM_NORMAL, "Starting pack...");
-	fputs("local L={}\ndo\n", output);
+	fputs("local L={}\ndo ", output);
 
-	if(tools_filelen(vscope) > 1){
+	if(tools_filelen(vscope) > 0){
 		info_verbose(VM_NORMAL, "Printing variables and table scope...");
 		tools_fcat(vscope, output);
 	}else{
 		info_verbose(VM_NORMAL, "Empty variables scope");
 	}
 
-	if(tools_filelen(fscope) > 1){
+	if(tools_filelen(fscope) > 7){ // `local ,` length
 		info_verbose(VM_NORMAL, "Printing functions references scope...");
 		tools_fcat(fscope, output);
 	}else{

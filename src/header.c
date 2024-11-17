@@ -178,12 +178,12 @@ bool head_checkFuncList(char *word){
 	// to leave this function
 	bool found = false;
 
-	head_initWord();
+	tools_initDinStr(&head.word);
 	fseek(head.list, 0, SEEK_SET);
 
 	while((c = fgetc(head.list)) != EOF){
 		if(c != ' '){
-			head_addWord(c);
+			tools_addDinStr(head.word, c);
 			continue;
 		}
 
@@ -192,27 +192,11 @@ bool head_checkFuncList(char *word){
 			break;
 		}
 
-		head_endWord(true);
+		tools_endDinStr(&head.word, true);
 	}
 
-	head_endWord(false);
+	tools_endDinStr(&head.word, false);
 	return found;
-}
-
-void head_initWord(void){
-	tools_initDinStr(&head.word);
-}
-
-void head_addWord(char c){
-	tools_addDinStr(head.word, c);
-}
-
-char *head_getWord(void){
-	return head.word;
-}
-
-void head_endWord(bool restart){
-	tools_endDinStr(&head.word, restart);
 }
 
 FILE *head_getList(void){
@@ -222,8 +206,6 @@ FILE *head_getList(void){
 void head_end(){
 	if(!g_headfile || head.top == NULL)
 		return;
-
-	fclose(tools_copyFile(head.list, "list.lim"));
 
 	fclose(head.top);
 	head.top = NULL;
@@ -239,5 +221,5 @@ void head_end(){
 	}
 
 	if(head.word != NULL)
-		head_endWord(false);
+		tools_endDinStr(&head.word, false);
 }

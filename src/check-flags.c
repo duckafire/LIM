@@ -73,7 +73,7 @@ void cf_toCompaction(void){ // "destineName_1"
 			if(gp_nameDst != NULL)
 				er_repeatFlag(argv[i], i);
 
-			gp_nameDst = argv[i + 1];
+			cf_setDestineName(argv[i + 1], true);
 
 			argv[i] = NULL;
 			argv[i + 1] = NULL;
@@ -142,6 +142,38 @@ void cf_destineName_2(void){
 		&& gp_nameOrg[len - 1] == 'a')
 			temp[len - 4] = '\0';
 
-		gp_nameDst = temp;
+		cf_setDestineName(temp, false);
 	}
+}
+
+static void cf_setDestineName(char *src, bool withPath){
+	unsigned int len = strlen(src);
+	gp_nameDst = malloc(len + 5);
+
+	if(withPath){
+		strcpy(gp_nameDst, src);
+		strcat(gp_nameDst, ".lim\0");
+		return;
+	}
+
+	// put in current directory
+	unsigned int srcId = 0;
+
+	// ../path/to/origin.lua
+	for(unsigned int i = 0; i <= len; i++)
+		if(src[i] == '/')
+			srcId = i + 1;
+
+	// origin
+	for(unsigned int i = 0; i < len + 5; i++){
+		gp_nameDst[i] = src[ srcId ];
+
+		if(src[ srcId ] == '\0')
+			break;
+
+		srcId++;
+	}
+
+	// origin.lim
+	strcat(gp_nameDst, ".lim\0");
 }
