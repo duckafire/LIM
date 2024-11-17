@@ -81,7 +81,10 @@ void tools_addDimStr(char *buf, char c){
 
 	free(buf);
 	buf = malloc(len + 2);
-	sprintf("%s%c", tmp, c);
+
+	strcpy(buf, tmp);
+	buf[len] = c;
+	buf[len + 1] = '\0';
 
 	free(tmp);
 }

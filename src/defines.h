@@ -52,6 +52,14 @@ enum{
 	TYPE_LOCAL_VAR,   // local <name> (~)
 };
 
+// HEADER
+#define HEADER_BLOCKED   "> Blocked by flag."
+#define HEADER_NOT_FOUND "> File not found."
+#define HEADER_NONE_PART "> None partition was found."
+#define HEADER_ONLY_TOP  "> Only the \"Top Partition\" was found."
+#define HEADER_NO_LIST   "> \"List Partition\" not found."
+#define HEADER_SUCCESS   "> Loaded sucessfully."
+
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
 #define E_MSG_FORMAT_0 "<LIM> %s: \"%s\" (#%d)\n\n"
 #define E_MSG_FORMAT_1 "<LIM> %s: \"%s\"\n\n"
@@ -75,7 +83,7 @@ enum{
 #define F_REPLACE "-r","--replace"
 #define F_LICENSE "-l","--license"
 #define F_RULES   "-R","--rules"
-#define F_NO_HEAD "-nh","--no-header-file"
+#define F_NO_HEAD "-nh","--no-header"
 
 enum{ // Verbose Mode
 	VM_NORMAL,

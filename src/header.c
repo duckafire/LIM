@@ -8,74 +8,164 @@
 static char c;
 static HeaderFile head;
 
-void head_init(void){
+char* head_init(void){
 	if(!g_headfile)
-		return;
+		return HEADER_BLOCKED;
 
+	// open and check if
+	// "head.lim" exist
 	FILE *origin;
 	origin = fopen("header.lim", "r");
 	if(origin == NULL){
 		g_headfile = false;
-		return;
+		return HEADER_NOT_FOUND;
 	}
+
+	// "lastTell": position of the file cursor,
+	// BEFORE "origin" is readed, MORE ONE;
+	// "curTell": position of the file cursor,
+	// AFTER "origin" is readed;
+	// if "curTell > lastTell" meaning that one,
+	// or more, characteres, different of EOF
+	// and '@', was/were readed and printed,
+	// because this, they will be considered a
+	// valid partition.
+	long lastTell, curTell = 1;
 
 	head.top   = NULL;
 	head.scope = NULL;
 	head.list  = NULL;
 
 	head.top = tmpfile();
-	if(head_getFromOrigin(origin, head.top))
-		return;
+	if(head_getFromOrigin(origin, head.top, &lastTell, &curTell)){
+		// <content-top>
+		// [@]
+		if(curTell > lastTell)
+			return HEADER_ONLY_TOP;
+
+		// <NONE>
+		fclose(head.top);
+		head.top = NULL;
+		return HEADER_NONE_PART;
+	}
 	
 	head.scope = tmpfile();
-	if(head_getFromOrigin(origin, head.top))
-		return;
+	if(head_getFromOrigin(origin, head.scope, &lastTell, &curTell)){
+		// <content-top>
+		// <@>
+		// <content-scope>
+		if(curTell > lastTell)
+			return HEADER_NO_LIST;
+
+		// <content-top>
+		// [@]
+		fclose(head.scope);
+		head.scope = NULL;
+		return HEADER_ONLY_TOP;
+	}
 
 	head.list = tmpfile();
-	head_getFromOrigin(origin, head.top);
+	head_getFromOrigin(origin, head.list, &lastTell, &curTell);
 
-	fclose(origin);
+	// <content-top>
+	// <@>
+	// <content-scope>
+	// <@>
+	// <content-list>
+	if(curTell > lastTell)
+		return HEADER_SUCCESS;
+
+	// <content-top>
+	// <@>
+	// <content-scope>
+	// [@]
+	fclose(head.list);
+	head.list = NULL;
+	return HEADER_NO_LIST;
+
+	// BUG: about "header.lim"
+	// if it have: @ [\n]
+	// HEADER_ONLY_TOP will be returned
+	// if it have: @ [\n] @[\n]
+	// HEADER_NO_LIST will be returned
+	// if it have: @ [\n] @ [\n] @ [\n | @] [...]
+	// HEADER_SUCCESS will be returned
 }
 
-static bool head_getFromOrigin(FILE *src, FILE *dest){
-	bool isSpace = false;
+static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell){
+	bool space = false;
+	bool lfeed = true;
 
-	while((c = fgetc(src)) != '@' && c != EOF){
-		if(c == ' '){
-			if(isSpace)
-				continue;
-			else
-				isSpace = true;
-		}else{
-			isSpace = false;
+	// update LAST tell
+	*ltell = *ctell + 1;
+
+	while((c = fgetc(src)) != EOF){
+		// a new partition was found;
+		// they need to be placed
+		// in line start (^@)
+		if(c == '@' && lfeed){
+			*ctell = ftell(src);
+
+			// a line feed is expected after
+			// of '@' (it will be jumped),
+			// but it is not mandatory
+			if(fgetc(src) != '\n')
+				fseek(src, -1, SEEK_CUR);
+
+			return false; // != EOF
 		}
 
-		if(c == '\t' || c == '\n'){
-			if(isSpace)
+		// line feed and tabulation
+		// are not allow
+		lfeed = (c == '\n');
+
+		if(lfeed || c == '\t'){
+			if(space)
 				continue;
 
 			fputc(' ', dest);
+			space = true;
 			continue;
 		}
 
+		// sequences of spaces
+		// are not allow
+		if(c == ' '){
+			if(space)
+				continue;
+			else
+				space = true;
+		}else{
+			space = false;
+		}
+		
+		// print content
 		fputc(c, dest);
 	}
 
-	return (c == EOF);
+	// update CURRENT tell
+	*ctell = ftell(src);
+
+	// c == EOF
+	fclose(src);
+	return true;
 }
 
-void head_printTop(FILE *dest){
+bool head_printTop(FILE *dest){
 	if(!g_headfile || head.top == NULL)
-		return;
+		return false;
 
 	tools_fcat(head.top, dest);
+	fputc('\n', dest);
+	return true;
 }
 
-void head_printScope(FILE *dest){
+bool head_printScope(FILE *dest){
 	if(!g_headfile || head.scope == NULL)
-		return;
+		return false;
 
 	tools_fcat(head.scope, dest);
+	return true;
 }
 
 bool head_checkFuncList(char *word){
@@ -115,13 +205,20 @@ void head_end(){
 	if(!g_headfile)
 		return;
 
-	fclose(head.top);
-	fclose(head.scope);
-	fclose(head.list);
+	if(head.top != NULL){
+		fclose(head.top);
+		head.top = NULL;
+	}
 
-	head.top   = NULL;
-	head.scope = NULL;
-	head.list  = NULL;
+	if(head.scope != NULL){
+		fclose(head.scope);
+		head.scope = NULL;
+	}
+
+	if(head.list != NULL){
+		fclose(head.list);
+		head.list = NULL;
+	}
 
 	if(head.word != NULL)
 		head_endWord(false);

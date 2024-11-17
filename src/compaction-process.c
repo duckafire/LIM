@@ -31,6 +31,10 @@ void cp_0_checkAndOpenFiles(void){
 			er_fileAlreadyExistent(gp_nameDst);
 		}
 	}
+
+	// search and get the "header.lim"
+	info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
+	info_verbose(VM_NORMAL, head_init());
 }
 
 void cp_1_extractionFromOrigin(void){
@@ -496,6 +500,9 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	info_verbose(VM_NORMAL, "Creating output file...");
 	output = fopen("output.lim", "w");
 
+	if(head_printTop(output))
+		info_verbose(VM_NORMAL, "The \"Top Partition\" was printed.");
+
 	info_verbose(VM_NORMAL, "Starting pack...");
 	fputs("local L={}\ndo\n", output);
 
@@ -507,6 +514,9 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	while((c = fgetc(fscope)) != EOF)
 		fputc(c, output);
 
+	if(head_printScope(output))
+		info_verbose(VM_NORMAL, "The \"Scope Partition\" was printed.");
+
 	info_verbose(VM_NORMAL, "Closing pack...");
 	fputs("end\n--local reference=L", output);
 
@@ -514,9 +524,11 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	info_verbose(VM_NORMAL, "Finishing output file...");
 	fclose(output);
 
-	info_verbose(VM_END_BUF, "global", "scope", NULL);
+	info_verbose(VM_END_BUF, "global", "scope", "head", NULL);
 	global_end();
 	scope_end();
+	head_end();
 
 	info_verbose(VM_TITLE, "(alpha) PROCESS FINISHED!");
+	info_verbose(VM_NORMAL, "See: \"./output.lim\"");
 }

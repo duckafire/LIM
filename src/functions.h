@@ -109,12 +109,12 @@ static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
 
 // HEADER
-void head_init(void);
-void head_printTop(FILE *dest);
-void head_printScope(FILE *dest);
+char* head_init(void);
+bool head_printTop(FILE *dest);
+bool head_printScope(FILE *dest);
 bool head_checkFuncList(char *word);
 void head_end(void);
-static bool head_getFromOrigin(FILE *src, FILE *dest);
+static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);
 static void head_initWord(void);
 static void head_addWord(char c);
 static void head_endWord(bool restart);
