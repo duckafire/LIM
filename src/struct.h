@@ -103,6 +103,13 @@ typedef struct RefeTree{
 	RefeNode *courotine;
 }RefeTree;
 
+typedef struct CompactPair{
+	char id;
+	char *nick;
+	char *ident;
+	struct CompactPair *left, *right, *next;
+}CompactPair;
+
 typedef struct{
 	// value of function references (address):
 	// A,B=math.random,tonumber

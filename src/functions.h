@@ -19,6 +19,7 @@ void tools_initDinStr(char **buf);
 void tools_addDinStr(char *buf, char c);
 void tools_endDinStr(char **buf, bool restart);
 long tools_filelen(FILE *file);
+char* tools_allocAndCopy(char *src);
 
 // BUFFERS
 void buffers_atexit(void);
@@ -66,12 +67,18 @@ FILE* scope_get(short bufId);
 void scope_rmvLastComma(short bufId);
 void scope_end(void);
 
-void nick_init(void);
+void nick_init(bool toFuncs);
 static void nick_upChar(long id);
 static void nick_upAll(long last);
 void nick_up(void);
 char *nick_get(void);
 void nick_end(void);
+
+void pair_init(void);
+void pair_add(char id, char *nick, char *ident);
+void pair_end(void);
+static void pair_addNode(CompactPair *node, CompactPair *new);
+static void pair_endNode(CompactPair *node);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);

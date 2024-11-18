@@ -382,10 +382,12 @@ void cp_3_buildingGlobalScope(void){
 	info_verbose(VM_END_BUF, "refe (tree)", NULL);
 	refe_endTree();
 
-	info_verbose(VM_START_BUF, "scope", "nick", NULL);
+	info_verbose(VM_START_BUF, "scope", "nick", "pair", NULL);
 	scope_init();
-	nick_init();
+	nick_init(true);
+	pair_init();
 
+	char pairId = '\0';
 	char *fullContent;
 	char *fullCttBuf;
 	RefeQueue *item;
@@ -399,6 +401,8 @@ void cp_3_buildingGlobalScope(void){
 	// local ident0,ident1,identn=value0,value1,valuen
 	info_verbose(VM_START_PRO, "build", NULL);
 	while((item = refe_getAndRmvQueueItem()) != NULL){
+		pairId = '\0';
+
 		// get full content from queue item
 		fullContent = malloc(sizeof(char) * 2);
 		strcpy(fullContent, "\0\0");
@@ -410,22 +414,26 @@ void cp_3_buildingGlobalScope(void){
 
 			free(fullContent);
 			fullContent = fullCttBuf;
+
+			pairId = item->content[1];
+		}else{
+			pairId = item->content[0];
 		}
 
 		// get (and merge)
-		if(item->content != NULL){
-			fullCttBuf = malloc(strlen(fullContent) + strlen(item->content) + 1);
-			strcpy(fullCttBuf, fullContent);
-			strcat(fullCttBuf, item->content);
+		fullCttBuf = malloc(strlen(fullContent) + strlen(item->content) + 1);
+		strcpy(fullCttBuf, fullContent);
+		strcat(fullCttBuf, item->content);
 
-			free(fullContent);
-			fullContent = fullCttBuf;
-		}
+		free(fullContent);
+		fullContent = fullCttBuf;
 
 		// print content getted from
 		// item in specify buffers
 		scope_add(nick_get(), SCOPE_FUNC);
 		scope_add(fullContent, SCOPE_ADDR);
+
+		pair_add(pairId, nick_get(), fullContent);
 
 		// free dinamic memories
 		if(item->origin != NULL)
@@ -480,8 +488,9 @@ void cp_3_buildingGlobalScope(void){
 	FILE *variables;
 	variables = tools_copyFile((global_get())->var, NULL);
 
-	info_verbose(VM_START_BUF, "ident", NULL);
+	info_verbose(VM_START_BUF, "ident", "nick", NULL);
 	ident_init();
+	nick_init(false);
 
 	if(tools_filelen(scope_get(SCOPE_VAR)) > 0){
 		info_verbose(VM_NORMAL, "Adding \"local\" keyword to variables and tables scope.");
@@ -496,7 +505,10 @@ void cp_3_buildingGlobalScope(void){
 			continue;
 		}
 
+		pair_add(ident_get()[0], nick_get(), ident_get());
+
 		scope_add(ident_get(), SCOPE_VAR);
+		nick_up();
 		ident_end(true);
 	}
 	info_verbose(VM_END_PRO, "collect (2)", NULL);
@@ -507,8 +519,9 @@ void cp_3_buildingGlobalScope(void){
 		info_verbose(VM_NORMAL, "None variable found for scope: empty variable scope.");
 	}
 	
-	info_verbose(VM_END_BUF, "ident", NULL);
+	info_verbose(VM_END_BUF, "ident", "pair", NULL);
 	ident_end(false);
+	pair_end();
 }
 
 void cp_x_mergingContentAndPackingLibrary(void){

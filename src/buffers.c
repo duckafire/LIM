@@ -8,7 +8,8 @@ static char *ident = NULL; // identifier
 static GlobalEnv global;
 static RefeTree refe;
 static LibScope scope;
-static char *nick = NULL; // buffer be like
+static char *nick = NULL, nickFirst, nickLast; // buffer be like
+static CompactPair *pair;
 
 void buffers_atexit(void){
 	if(collect != NULL)
@@ -308,13 +309,10 @@ static RefeNode* refe_createNode(char id, char *content){
 	node->left = NULL;
 	node->right = NULL;
 	node->quantity = 0;
-	node->content = NULL;
+	node->content = tools_allocAndCopy(content);
 
-	if(content != NULL){
-		node->content = malloc(strlen(content) + 1);
-		strcpy(node->content, content);
+	if(node->content != NULL)
 		node->quantity++;
-	}
 
 	return node;
 }
@@ -561,9 +559,18 @@ void scope_end(void){
 
 ////////// NICK //////////
 
-void nick_init(void){
+void nick_init(bool toFuncs){
 	nick = malloc(sizeof(char) * 2);
-	nick[0] = 'A';
+
+	if(toFuncs){
+		nickFirst = 'A';
+		nickLast  = 'Z';
+	}else{
+		nickFirst = 'a';
+		nickLast  = 'z';
+	}
+
+	nick[0] = nickFirst;
 	nick[1] = '\0';
 }
 
@@ -581,8 +588,8 @@ static void nick_upChar(long id){
 
 static void nick_upAll(long last){
 	if(last > -1){
-		if(nick[last] == 'Z'){
-			nick[last] = 'A';
+		if(nick[last] == nickLast){
+			nick[last] = nickFirst;
 			nick_upAll(last - 1);
 			return;
 		}
@@ -597,7 +604,7 @@ static void nick_upAll(long last){
 	last = strlen(nick) + 1;
 	nick = malloc(last);
 	
-	nick[0] = 'A';
+	nick[0] = nickFirst;
 	strcat(nick, buf);
 	free(buf);
 }
@@ -613,4 +620,87 @@ char *nick_get(void){
 void nick_end(void){
 	free(nick);
 	nick = NULL;
+}
+
+
+
+
+////////// PAIR //////////
+
+void pair_init(void){
+	pair = malloc(sizeof(CompactPair));
+	pair->id = '`';
+
+	pair->nick = NULL;
+	pair->ident = NULL;
+	pair->next = NULL;
+
+	// functions
+	pair->left = NULL;
+
+	// variables and tables
+	pair->right = NULL;
+}
+
+void pair_add(char id, char *nick, char *ident){
+	CompactPair *new;
+	new = malloc(sizeof(CompactPair));
+	new->id = id;
+	new->nick = tools_allocAndCopy(nick);
+	new->ident = tools_allocAndCopy(ident);
+	new->left = NULL;
+	new->right = NULL;
+	new->next = NULL;
+
+	pair_addNode(pair, new);
+}
+
+static void pair_addNode(CompactPair *node, CompactPair *new){
+	if(new->id == node->id){
+		if(node->next == NULL){
+			node->next = new;
+			return;
+		}
+
+		pair_addNode(node->next, new);
+		return;
+	}
+
+	if(new->id < node->id){
+		if(node->left == NULL){
+			node->left = new;
+			return;
+		}
+
+		pair_addNode(node->left, new);
+		return;
+	}
+
+	if(node->right == NULL){
+		node->right = new;
+		return;
+	}
+
+	pair_addNode(node->right, new);
+}
+
+void pair_end(void){
+	pair_endNode(pair);
+}
+
+static void pair_endNode(CompactPair *node){
+	if(node == NULL)
+		return;
+
+	pair_endNode(node->left);
+	pair_endNode(node->right);
+	pair_endNode(node->next);
+
+	if(node->nick != NULL)
+		free(node->nick);
+
+	if(node->ident != NULL)
+		free(node->ident);
+
+	free(node);
 }

@@ -106,3 +106,14 @@ long tools_filelen(FILE *file){
 
 	return len;
 }
+
+char* tools_allocAndCopy(char *src){
+	if(src == NULL)
+		return NULL;
+
+	char *dest;
+	dest = malloc(strlen(src) + 1);
+	strcpy(dest, src);
+
+	return dest;
+}
