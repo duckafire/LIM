@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
 	cp_1_extractionFromOrigin();
 	cp_2_separateExtractedContent();
 	cp_3_buildingGlobalScope();
+	cp_4_organizeAndCompact();
 	cp_x_mergingContentAndPackingLibrary();
 
 	return 0;

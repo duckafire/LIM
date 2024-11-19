@@ -37,12 +37,14 @@ void ident_end(short restart);
 void global_init(void);
 void global_newEnv(char *name);
 void global_order(short code);
-void global_getOrder(short *code);
+bool global_getOrder(short *code);
 void global_print(char *word, char *name, short bufId);
 void global_rmvEnv(void);
 GlobalEnv* global_get(void);
+FILE* global_getBuf(short bufId, char *name);
+void global_fseekSetAll(void);
 void global_end(void);
-static FILE* global_getBuf(short bufId, char *name);
+static void global_fseekSetAllLocal(FuncEnv *local);
 
 void refe_init(void);
 void refe_add(char *table, char *func);
@@ -76,9 +78,11 @@ void nick_end(void);
 
 void pair_init(void);
 void pair_add(char id, char *nick, char *ident);
+char* pair_cmpAndGet(char *word);
 void pair_end(void);
 static void pair_addNode(CompactPair *node, CompactPair *new);
 static void pair_endNode(CompactPair *node);
+static char *pair_cmpAndGet_2(CompactPair *item, char *word);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
@@ -96,6 +100,7 @@ void cp_1_extractionFromOrigin(void);
 void cp_2_separateExtractedContent(void);
 void cp_3_buildingGlobalScope(void);
 void cp_x_mergingContentAndPackingLibrary(void);
+void cp_4_organizeAndCompact(void);
 
 // CONTENT-TREATMENT
 void ct_atexit(void);

@@ -519,7 +519,149 @@ void cp_3_buildingGlobalScope(void){
 		info_verbose(VM_NORMAL, "None variable found for scope: empty variable scope.");
 	}
 	
-	info_verbose(VM_END_BUF, "ident", "pair", NULL);
+	info_verbose(VM_END_BUF, "ident", NULL);
+	ident_end(false);
+}
+
+void cp_4_organizeAndCompact(void){
+	FILE *TEMP;
+	TEMP = tmpfile();
+
+	// the word getted from "curBuf"
+	char *word = NULL;
+
+	// sub-buffer, from buffer global, obtained
+	// by index stored in sub-buffer global.order
+	FILE *curBuf;
+
+	// name of "function environments", that store
+	// itself local variables, tables and functions;
+	// NULL is equal "root environment"
+	char *bufName = NULL;
+
+	// index getted from global.order
+	short bufId;
+
+	// index of the current character, from "word",
+	// that will be printted in buffer finalContent
+	// (print "char. by char.")
+	unsigned short wId;
+
+	// current character, obtained from the index
+	// "wId", from "word" (print "char. by char.")
+	char *wChar;
+
+	// "types" that start a function environment,
+	// in root environment
+	short funcTypes[4] = {
+		TYPE_ANONYMOUS,
+		TYPE_LIB_FUNC,
+		TYPE_GLOBAL_FUNC,
+		TYPE_LOCAL_FUNC,
+	};
+
+	// this is used to find function end;
+	// `0` is equal root environment
+	unsigned short codeBlockLayer = 0;
+
+	// specify when put a space character:
+	// if the last character of the current
+	// word is a alpha numeric and the first
+	// character of the next word also is.
+	bool space = false;
+
+	// during the STAGE 1, tables and their
+	// keys are separated, but in STAGE 3,
+	// they are merged, because of this, to
+	// find them in buffer pair, it is
+	// necessary that the "word" store the
+	// table and it key
+	char *fullContent = NULL;
+
+	// temporarily store the pointer of the
+	// "fullContent", for free it after that
+	// the its address, stored in "fullContent",
+	// to be changed
+	char *tempFullCtt;
+
+	global_fseekSetAll();
+
+	ident_init();
+
+	while(global_getOrder(&bufId)){
+		wId = 0;
+		wChar = '\0';
+		word = NULL;
+		bufName = NULL;
+		curBuf = global_getBuf(bufId, bufName);
+
+		while((c = fgetc(curBuf)) != '\n' && c != EOF)
+			ident_add(c);
+
+		// check current environment
+		if(codeBlockLayer == 0)
+			for(short i = 0; i < 4; i++)
+				if(bufId == funcTypes[i]){
+					bufName = tools_rmvParen(word);
+					codeBlockLayer++;
+					break;
+				}
+
+		word = ident_get();
+
+		if(fullContent != NULL){
+			tempFullCtt = fullContent;
+
+			fullContent = malloc(strlen(tempFullCtt) + 1);
+			strcpy(fullContent, tempFullCtt);
+			strcat(fullContent, word);
+
+			// "ident" will be freed in cycle end
+			free(tempFullCtt);
+
+			// "word" will be not used in "free()",
+			// but "fullContent" will be, then the
+			// address of both will be freed
+			word = fullContent;
+
+		}else if(checkLuaTabs(word)){ // && `fullContent == NULL`
+			fullContent = malloc(strlen(word) + 1);
+			strcpy(fullContent, word);
+
+			ident_end(true);
+			continue;
+		}
+
+		// get word obtained from "curBuf"
+		if(bufName == NULL && bufId != TYPE_CONSTANT && bufId != TYPE_ANONYMOUS)
+			word = pair_cmpAndGet(word); // nickName or normal identifier
+
+		// update or lower environment layers
+		if(codeBlockLayer > 0)
+			checkAndUpLayer(word, &codeBlockLayer);
+
+		// print in buffer (finalContent)
+		if(space && (isalnum(word[0]) || word[0] == '_'))
+			fputc(' ', TEMP);
+
+		for(wChar = &word[ wId ]; *wChar != '\0'; wChar = &word[ ++wId ])
+			fputc(*wChar, TEMP);
+
+		wId--;
+		space = false;
+		if(isalnum(word[wId]) || word[wId] == '_')
+			space = true;
+
+		ident_end(true);
+		if(bufName != NULL)
+			free(bufName);
+		if(fullContent != NULL){
+			free(fullContent);
+			fullContent = NULL;
+		}
+	}
+
+	fclose(tools_copyFile(TEMP, "temp.txt"));
 	ident_end(false);
 	pair_end();
 }

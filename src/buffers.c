@@ -121,8 +121,8 @@ void global_order(short code){
 	fwrite(&code, sizeof(short), 1, global.order);
 }
 
-void global_getOrder(short *code){
-	fread(code, sizeof(short), 1, global.order);
+bool global_getOrder(short *code){
+	return (fread(code, sizeof(short), 1, global.order) > 0);
 }
 
 void global_print(char *word, char *name, short bufId){
@@ -165,6 +165,48 @@ GlobalEnv* global_get(void){
 	return &global;
 }
 
+FILE* global_getBuf(short bufId, char *name){
+	// global
+	switch(bufId){
+		case TYPE_CONSTANT:    return global.constants; break;
+		case TYPE_ANONYMOUS:   return global.constants; break;
+		case TYPE_USE_OR_CALL: return global.useOrCall; break;
+		case TYPE_FROM_LUA:    return global.luaFunc;   break;
+		case TYPE_FROM_HEAD:   return global.headFunc;  break;
+		case TYPE_LIB_FUNC:    return global.libFunc;   break;
+		case TYPE_LIB_VAR:     return global.libVar;    break;
+		case TYPE_GLOBAL_FUNC: return global.func;      break;
+		case TYPE_GLOBAL_VAR:  return global.var;       break;
+	}
+
+	// local
+	FuncEnv *f;
+
+	if(global.head == global.tail)
+		f = global.head;
+	else
+		for(f = global.head; strcmp(f->name, name) != 0 && f != NULL; f = f->next);
+
+	switch(bufId){
+		case TYPE_LOCAL_VAR:  return f->var; break;
+		case TYPE_LOCAL_FUNC: return f->func; break;
+	}
+}
+
+void global_fseekSetAll(void){
+	fseek(global.order, 0, SEEK_SET);
+	fseek(global.libVar, 0, SEEK_SET);
+	fseek(global.libFunc, 0, SEEK_SET);
+	fseek(global.var, 0, SEEK_SET);
+	fseek(global.func, 0, SEEK_SET);
+	fseek(global.useOrCall, 0, SEEK_SET);
+	fseek(global.constants, 0, SEEK_SET);
+	fseek(global.luaFunc, 0, SEEK_SET);
+	fseek(global.headFunc, 0, SEEK_SET);
+
+	global_fseekSetAllLocal(global.head);
+}
+
 void global_end(void){
 	while(global.head != NULL)
 		global_rmvEnv();
@@ -193,32 +235,14 @@ void global_end(void){
 	global.tail = NULL;
 }
 
-static FILE* global_getBuf(short bufId, char *name){
-	// global
-	switch(bufId){
-		case TYPE_CONSTANT:    return global.constants; break;
-		case TYPE_ANONYMOUS:   return global.constants; break;
-		case TYPE_USE_OR_CALL: return global.useOrCall; break;
-		case TYPE_FROM_LUA:    return global.luaFunc;   break;
-		case TYPE_FROM_HEAD:   return global.headFunc;  break;
-		case TYPE_LIB_FUNC:    return global.libFunc;   break;
-		case TYPE_LIB_VAR:     return global.libVar;    break;
-		case TYPE_GLOBAL_FUNC: return global.func;      break;
-		case TYPE_GLOBAL_VAR:  return global.var;       break;
-	}
+static void global_fseekSetAllLocal(FuncEnv *local){
+	if(local == NULL)
+		return;
 
-	// local
-	FuncEnv *f;
+	global_fseekSetAllLocal(local->next);
 
-	if(global.head == global.tail)
-		f = global.head;
-	else
-		for(f = global.head; strcmp(f->name, name) != 0 && f != NULL; f = f->next);
-
-	switch(bufId){
-		case TYPE_LOCAL_VAR:  return f->var; break;
-		case TYPE_LOCAL_FUNC: return f->func; break;
-	}
+	fseek(local->func, 0, SEEK_SET);
+	fseek(local->var, 0, SEEK_SET);
 }
 
 
@@ -684,6 +708,20 @@ static void pair_addNode(CompactPair *node, CompactPair *new){
 	pair_addNode(node->right, new);
 }
 
+char* pair_cmpAndGet(char *word){
+	char *identNoParen;
+	identNoParen = tools_rmvParen(word);
+
+	char *toReturn;
+	toReturn = pair_cmpAndGet_2(pair, word);
+
+	free(identNoParen);
+	if(toReturn != NULL)
+		return toReturn;
+
+	return word;
+}
+
 void pair_end(void){
 	pair_endNode(pair);
 }
@@ -703,4 +741,14 @@ static void pair_endNode(CompactPair *node){
 		free(node->ident);
 
 	free(node);
+}
+
+static char *pair_cmpAndGet_2(CompactPair *item, char *word){
+	if(item == NULL)
+		return NULL;
+
+	if(tools_strcmp3(item->ident, word) == 0)
+		return item->nick;
+
+	pair_cmpAndGet_2(item->next, word);
 }
