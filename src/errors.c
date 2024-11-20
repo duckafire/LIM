@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../heads.h"
+#include "heads.h"
 
 void er_repeatFlag(char *arg, short pos){
 	printf(E_MSG_FORMAT_0, E_MSG_1, arg, pos);
@@ -40,4 +40,14 @@ void er_nonExistentFile(char *name){
 void er_fileAlreadyExistent(char *name){
 	printf(E_MSG_FORMAT_1, E_MSG_8, name);
 	exit(8);
+}
+
+void er_invalidSuffixToFlag(char *_r, char *requester, char *expected, char *gived){
+	printf(E_MSG_FORMAT_3, E_MSG_9, requester, expected, gived);
+	exit(9);
+}
+
+void er_invalidArgToHelp(char *arg){
+	printf(E_MSG_FORMAT_1, E_MSG_10, arg);
+	exit(10);
 }

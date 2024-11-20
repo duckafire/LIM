@@ -6,18 +6,22 @@
 #include "heads.h"
 
 static char c;
-static HeaderFile head;
+static FILE *header[3];
+static char *string;
 
-char* head_init(void){
-	if(!g_headfile)
-		return HEADER_BLOCKED;
+char* header_init(void){
+	if(!flags.headfile)
+		return HEADER_BLOCK_NH;
+
+	if(flags.untilStage != 0)
+		return HEADER_BLOCK_US;
 
 	// open and check if
 	// "head.lim" exist
 	FILE *origin;
 	origin = fopen("header.lim", "r");
 	if(origin == NULL){
-		g_headfile = false;
+		flags.headfile = false;
 		return HEADER_NOT_FOUND;
 	}
 
@@ -32,25 +36,25 @@ char* head_init(void){
 	// valid partition.
 	long lastTell, curTell = 1;
 
-	head.top   = NULL;
-	head.scope = NULL;
-	head.list  = NULL;
+	header[HEADER_TOP]   = NULL;
+	header[HEADER_SCOPE] = NULL;
+	header[HEADER_LIST]  = NULL;
 
-	head.top = tmpfile();
-	if(head_getFromOrigin(origin, head.top, &lastTell, &curTell)){
+	header[HEADER_TOP] = tmpfile();
+	if(header_getFromOrigin(origin, header[HEADER_TOP], &lastTell, &curTell)){
 		// <content-top>
 		// [@]
 		if(curTell > lastTell)
 			return HEADER_ONLY_TOP;
 
 		// <NONE>
-		fclose(head.top);
-		head.top = NULL;
+		fclose(header[HEADER_TOP]);
+		header[HEADER_TOP] = NULL;
 		return HEADER_NONE_PART;
 	}
 	
-	head.scope = tmpfile();
-	if(head_getFromOrigin(origin, head.scope, &lastTell, &curTell)){
+	header[HEADER_SCOPE] = tmpfile();
+	if(header_getFromOrigin(origin, header[HEADER_SCOPE], &lastTell, &curTell)){
 		// <content-top>
 		// <@>
 		// <content-scope>
@@ -59,13 +63,13 @@ char* head_init(void){
 
 		// <content-top>
 		// [@]
-		fclose(head.scope);
-		head.scope = NULL;
+		fclose(header[HEADER_SCOPE]);
+		header[HEADER_SCOPE] = NULL;
 		return HEADER_ONLY_TOP;
 	}
 
-	head.list = tmpfile();
-	head_getFromOrigin(origin, head.list, &lastTell, &curTell);
+	header[HEADER_LIST] = tmpfile();
+	header_getFromOrigin(origin, header[HEADER_LIST], &lastTell, &curTell);
 
 	// <content-top>
 	// <@>
@@ -79,8 +83,8 @@ char* head_init(void){
 	// <@>
 	// <content-scope>
 	// [@]
-	fclose(head.list);
-	head.list = NULL;
+	fclose(header[HEADER_LIST]);
+	header[HEADER_LIST] = NULL;
 	return HEADER_NO_LIST;
 
 	// BUG: about "header.lim"
@@ -92,7 +96,7 @@ char* head_init(void){
 	// HEADER_SUCCESS will be returned
 }
 
-static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell){
+static bool header_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell){
 	bool space = false;
 	bool lfeed = true;
 
@@ -151,75 +155,75 @@ static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell){
 	return true;
 }
 
-bool head_printTop(FILE *dest){
-	if(!g_headfile || head.top == NULL)
+bool header_printTop(FILE *dest){
+	if(!flags.headfile || header[HEADER_TOP] == NULL)
 		return false;
 
-	tools_fcat(head.top, dest);
+	t_fcat(header[HEADER_TOP], dest);
 	fputc('\n', dest);
 	return true;
 }
 
-bool head_printScope(FILE *dest){
-	if(!g_headfile || head.scope == NULL)
+bool header_printScope(FILE *dest){
+	if(!flags.headfile || header[HEADER_SCOPE] == NULL)
 		return false;
 
-	tools_fcat(head.scope, dest);
+	t_fcat(header[HEADER_SCOPE], dest);
 	return true;
 }
 
-bool head_checkFuncList(char *word){
-	if(!g_headfile || head.list == NULL)
+bool header_checkFuncList(char *word){
+	if(!flags.headfile || header[HEADER_LIST] == NULL)
 		return false;
 
 	char c;
 
-	// for "end" head.word before
+	// for "end" string before
 	// to leave this function
 	bool found = false;
 
-	tools_initDinStr(&head.word);
-	fseek(head.list, 0, SEEK_SET);
+	mm_stringInit(&string);
+	fseek(header[HEADER_LIST], 0, SEEK_SET);
 
-	while((c = fgetc(head.list)) != EOF){
+	while((c = fgetc(header[HEADER_LIST])) != EOF){
 		if(c != ' '){
-			tools_addDinStr(head.word, c);
+			mm_stringAdd(&string, c);
 			continue;
 		}
 
-		if(strcmp(word, head.word) == 0){
+		if(strcmp(word, string) == 0){
 			found = true;
 			break;
 		}
 
-		tools_endDinStr(&head.word, true);
+		mm_stringEnd(&string, true);
 	}
 
-	tools_endDinStr(&head.word, false);
+	mm_stringEnd(&string, false);
 	return found;
 }
 
-FILE *head_getList(void){
-	return head.list;
+FILE* header_getList(void){
+	return header[HEADER_LIST];
 }
 
-void head_end(){
-	if(!g_headfile || head.top == NULL)
+void header_end(){
+	if(!flags.headfile || header[HEADER_TOP] == NULL)
 		return;
 
-	fclose(head.top);
-	head.top = NULL;
+	fclose(header[HEADER_TOP]);
+	header[HEADER_TOP] = NULL;
 
-	if(head.scope != NULL){
-		fclose(head.scope);
-		head.scope = NULL;
+	if(header[HEADER_SCOPE] != NULL){
+		fclose(header[HEADER_SCOPE]);
+		header[HEADER_SCOPE] = NULL;
 	}
 
-	if(head.list != NULL){
-		fclose(head.list);
-		head.list = NULL;
+	if(header[HEADER_LIST] != NULL){
+		fclose(header[HEADER_LIST]);
+		header[HEADER_LIST] = NULL;
 	}
 
-	if(head.word != NULL)
-		tools_endDinStr(&head.word, false);
+	if(string != NULL)
+		mm_stringEnd(&string, false);
 }

@@ -9,59 +9,41 @@
 static void cleanup(void);
 
 // TOOLS
-bool tools_strcmp2(char *str, char *v0, char *v1);
-bool tools_strcmp3(char *str0, char *str1);
-FILE* tools_copyFile(FILE *org, char *dstName);
-char* tools_rmvParen(char *word);
-unsigned short tools_strlen2(char *word);
-void tools_fcat(FILE *src, FILE *dest);
-void tools_initDinStr(char **buf);
-void tools_addDinStr(char *buf, char c);
-void tools_endDinStr(char **buf, bool restart);
-long tools_filelen(FILE *file);
-char* tools_allocAndCopy(char *src);
+bool t_strcmp2(char *str, char *v0, char *v1);
+bool t_strcmp3(char *str0, char *str1);
+bool t_strcmp4(char *_str0, char *_str1);
+FILE* t_copyFile(FILE *org, char *dstName);
+char* t_rmvParen(char *word);
+unsigned int t_strlen2(char *str);
+void t_fcat(FILE *src, FILE *dest);
+long t_filelen(FILE *file);
+char* t_allocAndCopy(char *src);
+void t_copyAndExportFile(FILE *src);
+void t_buildStringFromFile(FILE *src, char *c, char **string);
+char* t_setAnonyFuncName(unsigned short *index);
 
 // BUFFERS
 void buffers_atexit(void);
 
-void collect_init(void);
-void collect_add(char c);
-FILE* collect_get(void);
-void collect_end(void);
-
-void ident_init(void);
-void ident_add(char c);
-char* ident_get(void);
-void ident_end(short restart);
-
-void global_init(void);
-void global_newEnv(char *name);
-void global_order(short code);
-bool global_getOrder(short *code);
-void global_print(char *word, char *name, short bufId);
-void global_rmvEnv(void);
-GlobalEnv* global_get(void);
-FILE* global_getBuf(short bufId, char *name);
-void global_fseekSetAll(void);
-void global_end(void);
-static void global_fseekSetAllLocal(FuncEnv *local);
+void fromsrc_init(void);
+void fromsrc_newEnv(char *name);
+void fromsrc_order(short code);
+bool fromsrc_getOrder(short *code);
+void fromsrc_print(char *word, char *name, short bufId);
+void fromsrc_rmvEnv(void);
+GlobalEnv* fromsrc_get(void);
+FILE* fromsrc_getBuf(short bufId, char *name);
+void fromsrc_fseekSetAll(void);
+void fromsrc_end(void);
+static void fromsrc_fseekSetAllLocal(FuncEnv *local);
 
 void refe_init(void);
-void refe_add(char *table, char *func);
+void refe_add(char *table, char *_func);
 void refe_treeToQueue(void);
-RefeQueue* refe_getAndRmvQueueItem(void);
+Queue* refe_getAndRmvQueueItem(void);
 void refe_endTree(void);
-static void refe_newNode(RefeNode *node, char id, char *content);
-static void refe_newCell(RefeCell *cell, char *content);
-static RefeNode* refe_createNode(char id, char *content);
-static RefeCell* refe_createCell(char *content);
-static RefeNode* refe_getTableBuf(char *table);
-static void refe_subtreeToQueue(RefeNode *node, char *table);
-static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table);
-static void refe_createQueueItem(char *origin, char *content, unsigned short quantity);
-static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item);
-static void refe_endNode(RefeNode *node);
-static void refe_endCell(RefeCell *cell);
+static BinaryNode* refe_getBuf(char firstChar);
+static void refe_buildQueue(BinaryNode *root, char *origin);
 
 void scope_init(void);
 void scope_add(char *word, short bufId);
@@ -76,18 +58,18 @@ void nick_up(void);
 char *nick_get(void);
 void nick_end(void);
 
-void pair_init(void);
-void pair_add(char id, char *nick, char *ident);
-char* pair_cmpAndGet(char id, char *word);
-void pair_end(void);
-static void pair_addNode(CompactPair *node, CompactPair *new);
-static void pair_endNode(CompactPair *node);
-static char *pair_cmpAndGet_2(CompactPair *item, char id, char *word);
-
-void final_init(void);
-void final_add(char c);
-FILE *final_get(void);
-void final_end(void);
+void pairs_init(void);
+void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident);
+void pairs_updateQuantity(char *string);
+void pairs_updateOrder(void);
+char* pairs_get(bool fromSrcFile, char *string);
+void pairs_printAll(FILE *dest, bool fromSrcFile);
+void pairs_end(void);
+static void pairs_upItemQtt(Queue *item, char *string);
+static void pairs_newOrderQueue(Queue *src, Queue **dest);
+static char* pairs_getNick(Queue *item, char *string);
+static void pairs_printContent(Queue *item, FILE *dest);
+static void pairs_endQueue(Queue *item);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
@@ -101,40 +83,61 @@ static void cf_setDestineName(char *src, bool withPath);
 
 // COMPACTION-PROCESS
 void cp_0_checkAndOpenFiles(void);
-void cp_1_extractionFromOrigin(void);
-void cp_2_separateExtractedContent(void);
-void cp_3_buildingGlobalScope(void);
-void cp_4_organizeAndCompact(void);
+bool cp_1_extractionFromOrigin(void);
+bool cp_2_separateExtractedContent(void);
+bool cp_3_buildingGlobalScope(void);
+static void cp_3_buildingGlobalScope_functions(void);
+static void cp_3_buildingGlobalScope_variablesAndTables(void);
+bool cp_4_organizeAndCompact(void);
 void cp_5_mergingContentAndPackingLibrary(void);
 
 // CONTENT-TREATMENT
 void ct_atexit(void);
 bool ct_getIdentifier(char *c, bool isFirst);
 char ct_clearSpaces(void);
-void ct_saveString(char signal);
-void ct_getSpecial(char c);
+void ct_saveString(FILE *buf, char signal);
+void ct_getSpecial(FILE *buf, char c);
 
-short readPrefix(char *word, short prefix, bool isRootEnv);
-short readCurWord(char *word);
-short setPrefix(char *word, short prefix, bool isRootEnv);
-char* checkAndCreateNewEnv(char *word, short typeCode);
-void checkAndUpLayer(char *word, unsigned short *code);
-bool checkLuaTabs(char *word);
+short ct_readPrefix(char *word, short prefix, bool isRootEnv);
+short ct_readCurWord(char *word);
+short ct_setPrefix(char *word, short prefix, bool isRootEnv);
+char* ct_checkAndCreateNewEnv(char *word, short typeCode);
+void ct_checkAndUpLayer(char *_word, unsigned short *code);
+bool ct_checkLuaTabs(char *word);
+bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex);
 
 static void clearComment(bool isLine);
-static void saveBraces(void);
-static bool saveDoubleSignal(char sig_0, char sig_1);
+static void saveBraces(FILE *buf);
+static bool saveDoubleSignal(FILE *buf, char sig_0, char sig_1);
 static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
 
 // HEADER
-char* head_init(void);
-bool head_printTop(FILE *dest);
-bool head_printScope(FILE *dest);
-bool head_checkFuncList(char *word);
-FILE* head_getList(void);
-void head_end(void);
-static bool head_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);
+char* header_init(void);
+bool header_printTop(FILE *dest);
+bool header_printScope(FILE *dest);
+bool header_checkFuncList(char *word);
+FILE* header_getList(void);
+void header_end(void);
+static bool header_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);
+
+// MEMORY-MANIPULATION
+void mm_stringInit(char **buf);
+void mm_stringAdd(char **buf, char c);
+void mm_stringEnd(char **buf, bool restart);
+
+BinaryNode* mm_treeInit(char id);
+void mm_treeNewNode(BinaryNode *root, char id, char *ctt0, char *ctt1, bool upQtt);
+BinaryNode* mm_tree_GetContent(BinaryNode *root, char id);
+void mm_treeFreeNodeAndQueueItem(BinaryNode *node, Queue *item);
+void mm_treeEnd(BinaryNode **root);
+static BinaryNode* mm_treeCreateNode(char id, char *ctt0, char *ctt1);
+static void mm_treeInsertItem(BinaryNode  *node, BinaryNode *new, bool upQtt, bool toQueue);
+
+void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1);
+static Queue* mm_queueNewItem(unsigned short quantity, char *ctt0, char *ctt1);
+static void mm_queueContentsLength(unsigned int *v0, unsigned int *v1, Queue *i0, Queue *i1);
+static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new);
 
 // PRINT-TEXT/ERRORS (ERror)
 void er_repeatFlag(char *arg, short pos);
@@ -145,16 +148,15 @@ void er_filesNamesOverflow(void);
 void er_nameNotSpecified(void);
 void er_nonExistentFile(char *name);
 void er_fileAlreadyExistent(char *name);
+void er_invalidSuffixToFlag(char *_r, char *requester, char *expected, char *gived);
+void er_invalidArgToHelp(char *arg);
 
 // PRINT-TEXT/INFORMATIONS
 static void message(char n, ...);
 
 void info_welcome(void);
 void info_version(void);
-void info_helpList(void);
-void info_help(char *flag);
+void info_help(char *arg);
 void info_verbose(short mode, ...);
-void info_license(void);
-void info_rules(void);
 
 #endif

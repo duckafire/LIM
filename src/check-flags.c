@@ -17,61 +17,47 @@ void cf_single(void){
 	if(argc == 1)
 		info_welcome();
 
-	if(tools_strcmp2(argv[1], F_VERSION))
+	if(t_strcmp2(argv[1], F_VERSION))
 		info_version();
 
-	if(tools_strcmp2(argv[1], F_H_LIST))
-		info_helpList();
-
-	if(tools_strcmp2(argv[1], F_HELP)){
+	if(t_strcmp2(argv[1], F_HELP)){
 		if(argc == 2)
 			info_help(NULL);
 
 		info_help(argv[2]);
 	}
-
-	if(tools_strcmp2(argv[1], F_LICENSE))
-		info_license();
-
-	if(tools_strcmp2(argv[1], F_RULES))
-		info_rules();
 }
 
 void cf_unexpected(void){
 	// they can be used only like 1th argument
 	char invalid[INFO_FLAGS][2][LARGEST_FLAG] = {
 		{F_VERSION},
-		{F_H_LIST},
 		{F_HELP},
-		{F_LICENSE},
-		{F_RULES},
 	};
 
 	for(short i = 2; i < argc; i++)
 		for(short j = 0; j < ARRAY_LEN(invalid[i]); j++)
-			if(tools_strcmp2(argv[i], invalid[j][0], invalid[j][1]))
+			if(t_strcmp2(argv[i], invalid[j][0], invalid[j][1]))
 				er_unexpectedFlag(argv[i], i);
 }
 
 void cf_toCompaction(void){ // "destineName_1"
-	// action flags
-	
 	for(short i = 1; i < argc; i++){
-		if(tools_strcmp2(argv[i], F_VERBOSE)){
-			if(g_verbose)
+		if(t_strcmp2(argv[i], F_VERBOSE)){
+			if(flags.verbose)
 				er_repeatFlag(argv[i], i);
 
-			g_verbose = true;
+			flags.verbose = true;
 			argv[i] = NULL;
 			continue;
 		}
 
-		if(tools_strcmp2(argv[i], F_NAME)){
+		if(t_strcmp2(argv[i], F_NAME)){
+			if(lim.destineFileName != NULL)
+				er_repeatFlag(argv[i], i);
+
 			if(i + 1 == argc)
 				er_argExpected(F_NAME);
-
-			if(gp_nameDst != NULL)
-				er_repeatFlag(argv[i], i);
 
 			cf_setDestineName(argv[i + 1], true);
 
@@ -80,21 +66,38 @@ void cf_toCompaction(void){ // "destineName_1"
 			continue;
 		}
 		
-		if(tools_strcmp2(argv[i], F_REPLACE)){
-			if(g_replace)
+		if(t_strcmp2(argv[i], F_REPLACE)){
+			if(flags.replace)
 				er_repeatFlag(argv[i], i);
 
-			g_replace = true;
+			flags.replace = true;
 			argv[i] = NULL;
 			continue;
 		}
 
-		if(tools_strcmp2(argv[i], F_NO_HEAD)){
-			if(!g_headfile)
+		if(t_strcmp2(argv[i], F_NO_HEAD)){
+			if(!flags.headfile)
 				er_repeatFlag(argv[i], i);
 
-			g_headfile = false;
+			flags.headfile = false;
 			argv[i] = NULL;
+			continue;
+		}
+
+		if(t_strcmp2(argv[i], F_UNTIL_S)){
+			if(flags.untilStage != 0)
+				er_repeatFlag(argv[i], i);
+
+			if(i + 1 == argc)
+				er_argExpected(F_UNTIL_S);
+
+			if(strlen(argv[i + 1]) > 1 || argv[i + 1][0] < '1' || argv[i + 1][0] > '4')
+				er_invalidSuffixToFlag(F_UNTIL_S, "number (1 - 4)", argv[i + 1]);
+
+			flags.untilStage = (short)(argv[i + 1][0] - '0');
+
+			argv[i] = NULL;
+			argv[i + 1] = NULL;
 			continue;
 		}
 	}
@@ -112,8 +115,8 @@ void cf_invalid(void){
 		if(argv[i][0] == '-' || (argv[i][0] == '-' && argv[i][1] == '-'))
 			er_invalidFlag(argv[i], i);
 
-		if(gp_nameOrg == NULL){
-			gp_nameOrg = argv[i];
+		if(lim.sourceFileName == NULL){
+			lim.sourceFileName = argv[i];
 			continue;
 		}
 
@@ -122,24 +125,24 @@ void cf_invalid(void){
 }
 
 void cf_originName(){
-	if(gp_nameOrg == NULL)
+	if(lim.sourceFileName == NULL)
 		er_nameNotSpecified();
 }
 
 void cf_destineName_2(void){
-	if(gp_nameDst == NULL){
-		short len = strlen(gp_nameOrg);
+	if(lim.destineFileName == NULL){
+		short len = strlen(lim.sourceFileName);
 
 		char *temp;
 		temp = malloc(len);
 		memset(temp, '\0', sizeof(temp));
-		strcpy(temp, gp_nameOrg);
+		strcpy(temp, lim.sourceFileName);
 
 		// remove extension (".lua")
-		if(gp_nameOrg[len - 4] == '.'
-		&& gp_nameOrg[len - 3] == 'l'
-		&& gp_nameOrg[len - 2] == 'u'
-		&& gp_nameOrg[len - 1] == 'a')
+		if(lim.sourceFileName[len - 4] == '.'
+		&& lim.sourceFileName[len - 3] == 'l'
+		&& lim.sourceFileName[len - 2] == 'u'
+		&& lim.sourceFileName[len - 1] == 'a')
 			temp[len - 4] = '\0';
 
 		cf_setDestineName(temp, false);
@@ -148,11 +151,11 @@ void cf_destineName_2(void){
 
 static void cf_setDestineName(char *src, bool withPath){
 	unsigned int len = strlen(src);
-	gp_nameDst = malloc(len + 5);
+	lim.destineFileName = malloc(len + (sizeof(char) * 5));
 
 	if(withPath){
-		strcpy(gp_nameDst, src);
-		strcat(gp_nameDst, ".lim\0");
+		strcpy(lim.destineFileName, src);
+		strcat(lim.destineFileName, ".lim\0");
 		return;
 	}
 
@@ -166,7 +169,7 @@ static void cf_setDestineName(char *src, bool withPath){
 
 	// origin
 	for(unsigned int i = 0; i < len + 5; i++){
-		gp_nameDst[i] = src[ srcId ];
+		lim.destineFileName[i] = src[ srcId ];
 
 		if(src[ srcId ] == '\0')
 			break;
@@ -175,5 +178,5 @@ static void cf_setDestineName(char *src, bool withPath){
 	}
 
 	// origin.lim
-	strcat(gp_nameDst, ".lim\0");
+	strcat(lim.destineFileName, ".lim\0");
 }

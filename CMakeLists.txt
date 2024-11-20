@@ -21,10 +21,11 @@ add_executable(lim
 	${SRC_DIR}/content-treatment.c
 	${SRC_DIR}/main.c
 	${SRC_DIR}/tools.c
-	${SRC_DIR}/print-text/errors.c
-	${SRC_DIR}/print-text/informations.c
+	${SRC_DIR}/errors.c
+	${SRC_DIR}/informations.c
 	${SRC_DIR}/buffers.c
 	${SRC_DIR}/header.c
+	${SRC_DIR}/memory-manipulation.c
 )
 
 # on the contrary of "(lib)c", "(lib)m" is not

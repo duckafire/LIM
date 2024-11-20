@@ -1,21 +1,38 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "heads.h"
 
-bool tools_strcmp2(char *str, char *v0, char *v1){
+bool t_strcmp2(char *str, char *v0, char *v1){
 	if(str == NULL) return false;
 	return (strcmp(str, v0) == 0 || strcmp(str, v1) == 0);
 }
 
-bool tools_strcmp3(char *str0, char *str1){
+bool t_strcmp3(char *str0, char *str1){
+	if(str0 == NULL && str1 == NULL)
+		return true;
+
 	if(str0 == NULL || str1 == NULL)
 		return false;
+	
 	return (strcmp(str0, str1) == 0);
 }
 
-FILE* tools_copyFile(FILE *src, char *destName){
+bool t_strcmp4(char *_str0, char *_str1){
+	char *str0, *str1;
+	bool result;
+
+	str0 = t_rmvParen(_str0);
+	str1 = t_rmvParen(_str1);
+
+	result = (strcmp(str0, str1) == 0);
+
+	free(str0);
+	free(str1);
+	return result;
+}
+
+FILE* t_copyFile(FILE *src, char *destName){
 	char c = 0;
 	FILE *dest;
 
@@ -37,11 +54,15 @@ FILE* tools_copyFile(FILE *src, char *destName){
 	return dest;
 }
 
-char* tools_rmvParen(char *word){
+void t_copyAndExportFile(FILE *src){
+	fclose(t_copyFile(src, lim.destineFileName));
+}
+
+char* t_rmvParen(char *word){
 	unsigned short len = strlen(word);
 
 	char *temp;
-	temp = malloc(len + 1);
+	temp = malloc(len + sizeof(char));
 	strcpy(temp, word);
 
 	if(temp[len - 1] == '(')
@@ -50,14 +71,14 @@ char* tools_rmvParen(char *word){
 	return temp;
 }
 
-unsigned short tools_strlen2(char *str){
+unsigned int t_strlen2(char *str){
 	if(str == NULL)
 		return 0;
 
 	return strlen(str);
 }
 
-void tools_fcat(FILE *src, FILE *dest){
+void t_fcat(FILE *src, FILE *dest){
 	char c;
 
 	fseek(src,  0, SEEK_SET);
@@ -67,37 +88,7 @@ void tools_fcat(FILE *src, FILE *dest){
 		fputc(c, dest);
 }
 
-void tools_initDinStr(char **buf){
-	*buf = malloc(sizeof(char));
-	*buf[0] = '\0';
-}
-
-void tools_addDinStr(char *buf, char c){
-	unsigned short len = strlen(buf);
-
-	char *tmp;
-	tmp = malloc(len + 1);
-	strcpy(tmp, buf);
-
-	free(buf);
-	buf = malloc(len + 2);
-
-	strcpy(buf, tmp);
-	buf[len] = c;
-	buf[len + 1] = '\0';
-
-	free(tmp);
-}
-
-void tools_endDinStr(char **buf, bool restart){
-	free(*buf);
-	*buf = NULL;
-
-	if(restart)
-		tools_initDinStr(buf);
-}
-
-long tools_filelen(FILE *file){
+long t_filelen(FILE *file){
 	long cursor = ftell(file);
 	fseek(file, 0, SEEK_END);
 
@@ -107,13 +98,33 @@ long tools_filelen(FILE *file){
 	return len;
 }
 
-char* tools_allocAndCopy(char *src){
+char* t_allocAndCopy(char *src){
 	if(src == NULL)
 		return NULL;
 
 	char *dest;
-	dest = malloc(strlen(src) + 1);
+	dest = malloc(strlen(src) + sizeof(char));
 	strcpy(dest, src);
+
+	return dest;
+}
+
+void t_buildStringFromFile(FILE *src, char *c, char **string){
+	do{
+		if(*c != '\n'){
+			if(*c != '\0')
+				mm_stringAdd(string, *c);
+		}else{
+			return;
+		}
+	}while((*c = fgetc(src)) != EOF);
+}
+
+char* t_setAnonyFuncName(unsigned short *index){
+	char *dest;
+
+	dest = malloc((sizeof(char) * 5) + INT_LEN(*index++));
+	sprintf(dest, "__f%u_", *index);
 
 	return dest;
 }

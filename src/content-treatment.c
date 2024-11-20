@@ -5,18 +5,16 @@
 #include <ctype.h>
 #include "heads.h"
 
-// to `ct_getSpecial`
-// and its process
+// for `ct_getSpecial` process
 static char _c;
 
-// "checkAndCreateNewEnv"
+// "ct_checkAndCreateNewEnv"
 static char *anonyName = NULL;
 static char *commoName = NULL;
 
 static const char lua_keywords[21][9] = {"do","if","in","or","and","end","for","nil","not","else","then","true","break","false","local","until","while","elseif","repeat","return","function"};
 static const char lua_funcs[23][15] = {"print","tonumber","tostring","ipairs","type","pairs","assert","error","setmetatable","getmetatable","rawset","rawget","rawlen","rawequal","pcall","xpcall","select","next","collectgarbage","require","load","dofile","loadfile"};
 
-static const char lua_tabs[9][10] = {"courotine","debug","io","math","os","package","string","table", "utf8"};
 
 void ct_atexit(void){
 	free(anonyName);
@@ -28,21 +26,16 @@ void ct_atexit(void){
 ////////// STAGE 1 //////////
 
 bool ct_getIdentifier(char *c, bool isFirst){
+	// if a space chain was found after identifier,
+	// they are summaried to one
 	if(*c == ' '){
-		// to search the special character
-		// more closeness
 		*c = ct_clearSpaces();
 		
 		// space between different words
 		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c)){
-			fseek(gf_origin, -1, SEEK_CUR);
+			fseek(lim.sourceFile, -1, SEEK_CUR);
 			return false;
 		}
-	}
-
-	if(*c == '(' && checkLuaKeywords(ident_get(), true)){
-		fseek(gf_origin, -1, SEEK_CUR);
-		return false;
 	}
 
 	// ([a-zA-Z] or '_') or (!isF and ([0-9] or '.' or '(' or ':'))
@@ -51,164 +44,209 @@ bool ct_getIdentifier(char *c, bool isFirst){
 
 char ct_clearSpaces(void){
 	char c;
-	while((FGETC == ' ' || c == '\t')  && c != EOF);
+	while(((c = fgetc(lim.sourceFile)) == ' ' || c == '\t')  && c != EOF);
 	return c;
 }
 
-void ct_saveString(char signal){
-	bool invBar = false; // '\'
+void ct_saveString(FILE *buf, char signal){
+	short invBar = 2; // '\'
 	char c = signal;
 
 	do{
 		if(c != '\n' && c != '\t')
-			collect_add(c);
+			fputc(c, buf);
 
-		if(invBar)
-			invBar = false;
+		// check inverted bar:
+		// this annul the possible next
+		// single/double quotation mark
+		if(invBar > 0)
+			invBar--;
 		else if(c == '\\')
-			invBar = true;
+			invBar = 2;
 
-	}while((c = fgetc(gf_origin)) != EOF && c != signal);
+	}while((c = fgetc(lim.sourceFile)) != EOF && (c != signal || invBar == 1));
 
-	collect_add(c);
-	collect_add('\n');
+	// the quotation mark that
+	// break the loop
+	fputc(signal, buf);
 }
 
-void ct_getSpecial(char c){
+void ct_getSpecial(FILE *buf, char c){
 	// COMMENTARIES
 	// line
 	if(c == '-'){
-		if(fgetc(gf_origin) == '-'){
+		if(fgetc(lim.sourceFile) == '-'){
 		
 			// block
-			if(fgetc(gf_origin) == '['){
-				if(fgetc(gf_origin) == '['){
+			if(fgetc(lim.sourceFile) == '['){
+				if(fgetc(lim.sourceFile) == '['){
 					clearComment(false);
 					return;
 				}
-				fseek(gf_origin, -1, SEEK_CUR);
+				fseek(lim.sourceFile, -1, SEEK_CUR);
 			}
 
-			fseek(gf_origin, -1, SEEK_CUR);
+			fseek(lim.sourceFile, -1, SEEK_CUR);
 			clearComment(true);
 			return;
 		}
-		fseek(gf_origin, -1, SEEK_CUR);
+		fseek(lim.sourceFile, -1, SEEK_CUR);
 	}
 
 	// STRINGS
 	_c = c;
 	if(c == '\'' || c == '"'){
-		ct_saveString(c);
+		ct_saveString(buf, c);
+		fputc('\n', buf);
 		return;
 	}
 
-	// table BRACES
+	// TABLE ENVIRONMENT
 	if(c == '{'){
-		saveBraces();
+		saveBraces(buf);
 		return;
 	}
 
 	// DOUBLE SIGNAL
-	if(saveDoubleSignal('=', '=')) return;
-	if(saveDoubleSignal('/', '/')) return;
-	if(saveDoubleSignal('.', '.')) return;
-	if(saveDoubleSignal('>', '=')) return;
-	if(saveDoubleSignal('<', '=')) return;
+	if(saveDoubleSignal(buf, '=', '=')) return;
+	if(saveDoubleSignal(buf, '/', '/')) return;
+	if(saveDoubleSignal(buf, '.', '.')) return;
+	if(saveDoubleSignal(buf, '>', '=')) return;
+	if(saveDoubleSignal(buf, '<', '=')) return;
 
-	// OTHER
-	collect_add(c);
-	collect_add('\n');
+	// SPECIAL CHARACTERS
+	fputc(c, buf);
+	fputc('\n', buf);
 }
 
 static void clearComment(bool isLine){
 	if(isLine){
-		fseek(gf_origin, -2, SEEK_CUR); // remove '--'
+		fseek(lim.sourceFile, -2, SEEK_CUR); // remove `--` until '\n'
 		
-		while((_c = fgetc(gf_origin)) != EOF && _c != '\n');
+		while((_c = fgetc(lim.sourceFile)) != EOF && _c != '\n');
 		return;
 	}
 
-	fseek(gf_origin, -4, SEEK_CUR); // remove '--[['
+	fseek(lim.sourceFile, -4, SEEK_CUR); // remove `--[[` until `]]`
 
-	while((_c = fgetc(gf_origin)) != EOF)
+	while((_c = fgetc(lim.sourceFile)) != EOF)
 		if(_c == ']')
-			if(fgetc(gf_origin) == ']')
+			if(fgetc(lim.sourceFile) == ']')
 				break;
 }
 
-static void saveBraces(void){
-	unsigned int qtt = 1;
-
-	char before = '{';
-	char after;
-
+static void saveBraces(FILE *buf){
+	unsigned long qtt = 1;
 	bool cond0, cond1;
 
-	while(qtt > 0 && _c != EOF){
-		after = fgetc(gf_origin);
-		fseek(gf_origin, -1, SEEK_CUR);
 
-		if(isgraph(_c))
-			collect_add(_c);
+	char before = '{';
+	char current = _c;
+	char after;
+
+	while(qtt > 0 && current != EOF){
+		after = fgetc(lim.sourceFile);
+		fseek(lim.sourceFile, -1, SEEK_CUR);
+
+		if(isgraph(current) &&  current != '\'' && current != '"')
+			fputc(current, buf);
 		
-		cond0 = (_c == '\n' && isalnum(before) && !isalnum(after));
-		cond1 = ((_c == ' ' || _c == '\t') && isalnum(after) && isalnum(before));
+		cond0 = (isalnum(before) &&            current == '\n'          && !isalnum(after));
+		cond1 = (isalnum(before) && (current == ' ' || current == '\t') &&  isalnum(after));
 		
 		if(cond0 || cond1)
-			collect_add(' ');
+			fputc(' ', buf);
 
-		before = _c;
+		before = current;
+		current = fgetc(lim.sourceFile);
 
-		_c = fgetc(gf_origin);
-
-		if(_c == '{')
+		if(current == '{')
 			qtt++;
-		else if(_c == '}')
+		else if(current == '}')
 			qtt--;
-		else if(_c == '\'' || _c == '"');
-			//ct_saveString(_c);
+		else if(current == '\'' || current == '"')
+			ct_saveString(buf, current);
 	}
 
-	collect_add('}');
-	collect_add('\n');
+	fputc('}', buf);
+	fputc('\n', buf);
 }
 
-static bool saveDoubleSignal(char sig_0, char sig_1){
+static bool saveDoubleSignal(FILE *buf, char sig_0, char sig_1){
 	if(_c == sig_0){
-		if(fgetc(gf_origin) == sig_1){
-			collect_add(sig_0);
-			collect_add(sig_1);
-			collect_add('\n');
+		if(fgetc(lim.sourceFile) == sig_1){
+			fputc(sig_0, buf);
+			fputc(sig_1, buf);
+			fputc('\n', buf);
 
 			return true;
 		}
 
-		fseek(gf_origin, -1, SEEK_CUR);
+		fseek(lim.sourceFile, -1, SEEK_CUR);
 	}
 	
 	return false;
+}
+
+bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex){
+	// `return true`: `continue` the loop
+	// `~ false`: continue loop cycle
+
+	if(*c != '0' || *isHex)
+		return false;
+
+	fputc('0', dest);
+	char h = fgetc(src);
+
+	if(h == EOF)
+		return true;
+
+	// check if it is a valid
+	// hexadecimal prefix
+	if(h != 'x'){
+		if(isdigit(h)){
+			*c = h;
+			return false;
+		}
+
+		fputc('\n', dest);
+		fseek(src, -1, SEEK_CUR);
+		return true;
+	}
+
+	*isHex = true;
+	fputc('x', dest);
+
+	// check if the "hexadecimal
+	// content" is valid
+	if(!isxdigit(fgetc(src))){
+		fputc('\n', dest);
+		*isHex = false;
+	}
+
+	fseek(src, -1, SEEK_CUR);
+	return true;
 }
 
 
 
 ////////// STAGE 2 //////////
 
-short readPrefix(char *word, short prefix, bool isRootEnv){
+short ct_readPrefix(char *word, short prefix, bool isRootEnv){
 	if(prefix == PREFIX_LOCAL && strcmp(word, "function") == 0)
 		return TYPE_CONSTANT;
 
 	switch(prefix){
 		case PREFIX_G:          return TYPE_LIB_VAR;
 		case PREFIX_FUNCTION:   return TYPE_LIB_FUNC;
-		case PREFIX_LOCAL_FUNC: return ((isRootEnv) ? TYPE_GLOBAL_FUNC : TYPE_LOCAL_FUNC);
-		case PREFIX_LOCAL:      return ((isRootEnv) ? TYPE_GLOBAL_VAR  : TYPE_LOCAL_VAR);
-		case PREFIX_LUA_TABLE:  return TYPE_FROM_LUA;
+		case PREFIX_LOCAL_FUNC: return ((isRootEnv) ? TYPE_GLOBAL_FUNC : TYPE_LOCAL_FUNC_0);
+		case PREFIX_LOCAL:      return ((isRootEnv) ? TYPE_GLOBAL_VAR  : TYPE_LOCAL_VAR_1);
+		case PREFIX_LUA_TABLE:  return ((word[0] == '.') ? TYPE_FROM_LUA : TYPE_NONE);
 		default: return TYPE_NONE;
 	}
 }
 
-short readCurWord(char *word){
+short ct_readCurWord(char *word){
 	if(isalpha(word[0]) || word[0] == '_'){
 		// metamethods
 		if(word[1] == '_')
@@ -222,10 +260,10 @@ short readCurWord(char *word){
 		if(checkLuaKeywords(word, false))
 			return TYPE_CONSTANT;
 
-		if(checkLuaFuncs(word) || checkLuaTabs(word))
+		if(checkLuaFuncs(word) || ct_checkLuaTabs(word))
 			return TYPE_FROM_LUA;
 
-		if(head_checkFuncList(word))
+		if(header_checkFuncList(word))
 			return TYPE_FROM_HEAD;
 
 		// use of variables and tables;
@@ -238,9 +276,9 @@ short readCurWord(char *word){
 	return TYPE_CONSTANT;
 }
 
-short setPrefix(char *word, short prefix, bool isRootEnv){
+short ct_setPrefix(char *word, short prefix, bool isRootEnv){
 	if(strcmp(word, "_G") == 0)
-		return PREFIX_G;
+			return PREFIX_G;
 
 	if(strcmp(word, "local") == 0)
 		return PREFIX_LOCAL;
@@ -251,13 +289,13 @@ short setPrefix(char *word, short prefix, bool isRootEnv){
 		else
 			return PREFIX_FUNCTION;
 	
-	if(checkLuaTabs(word))
+	if(ct_checkLuaTabs(word))
 		return PREFIX_LUA_TABLE;
 
 	return PREFIX_NONE;
 }
 
-char* checkAndCreateNewEnv(char *word, short typeCode){
+char* ct_checkAndCreateNewEnv(char *word, short typeCode){
 	static unsigned short anonyId = 0;
 
 	if(typeCode == TYPE_ANONYMOUS){
@@ -265,19 +303,17 @@ char* checkAndCreateNewEnv(char *word, short typeCode){
 		free(commoName);
 		commoName = NULL;
 
-		anonyName = malloc(2 + INT_LEN(anonyId++));
-
-		sprintf(anonyName, "f%u", anonyId);
+		anonyName = t_setAnonyFuncName(&anonyId);
 
 		return anonyName;
 	}
 
-	if(typeCode == TYPE_LIB_FUNC || typeCode == TYPE_GLOBAL_FUNC || typeCode == TYPE_LOCAL_FUNC){
+	if(typeCode == TYPE_LIB_FUNC || typeCode == TYPE_GLOBAL_FUNC || typeCode == TYPE_LOCAL_FUNC_0){
 		free(anonyName);
 		free(commoName);
 		anonyName = NULL;
 
-		commoName = malloc(strlen(word) + 1);
+		commoName = malloc(strlen(word) + sizeof(char));
 		strcpy(commoName, word);
 
 		return commoName;
@@ -286,16 +322,21 @@ char* checkAndCreateNewEnv(char *word, short typeCode){
 	return NULL;
 }
 
-void checkAndUpLayer(char *word, unsigned short *code){
+void ct_checkAndUpLayer(char *_word, unsigned short *code){
+	char *word;
+	word = t_rmvParen(_word);
+
 	if(strcmp(word, "if") == 0 || strcmp(word, "do") == 0 || strcmp(word, "function") == 0)
 		(*code)++;
 	else if(*code > 0 && strcmp(word, "end") == 0)
 		(*code)--;
+
+	free(word);
 }
 
 static bool checkLuaKeywords(char *word, bool stage1){
 	char *tocmp = word;
-	tocmp = tools_rmvParen(word);
+	tocmp = t_rmvParen(word);
 
 	// with(out) `function`
 	unsigned short max = ((stage1) ? 20 : 21);
@@ -313,7 +354,7 @@ static bool checkLuaKeywords(char *word, bool stage1){
 
 static bool checkLuaFuncs(char *word){
 	char *tocmp = word;
-	tocmp = tools_rmvParen(word);
+	tocmp = t_rmvParen(word);
 
 	for(short i = 0; i < 23; i++){
 		if(strcmp(tocmp, lua_funcs[i]) == 0){
@@ -326,9 +367,9 @@ static bool checkLuaFuncs(char *word){
 	return false;
 }
 
-bool checkLuaTabs(char *word){
+bool ct_checkLuaTabs(char *word){
 	for(short i = 0; i < 9; i++)
-		if(strcmp(word, lua_tabs[i]) == 0)
+		if(strcmp(word, lim.lua_tabs[i]) == 0)
 			return true;
 
 	return false;

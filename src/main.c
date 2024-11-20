@@ -4,20 +4,8 @@
 #include <stdbool.h>
 #include "heads.h"
 
-// TODO -> BIG refactoring:
-// rename variables and functions;
-// remove redundances;
-// optimize process;
-// search bugs and memory leaks;
-
-bool g_verbose = false;
-bool g_replace = false;
-bool g_headfile = true;
-
-char *gp_nameOrg = NULL;
-char *gp_nameDst = NULL;
-
-FILE *gf_origin = NULL;
+FlagsVar flags = {false, false, true, 0};
+LimVal lim = {NULL, NULL, NULL, {"courotine","debug","io","math","os","package","string","table", "utf8"}};
 
 int main(int argc, char *argv[]){
 	atexit(cleanup);
@@ -33,23 +21,23 @@ int main(int argc, char *argv[]){
 
 	// Compaction Process
 	cp_0_checkAndOpenFiles();
-	cp_1_extractionFromOrigin();
-	cp_2_separateExtractedContent();
-	cp_3_buildingGlobalScope();
-	cp_4_organizeAndCompact();
+	if(cp_1_extractionFromOrigin())     return 0;
+	if(cp_2_separateExtractedContent()) return 0;
+	if(cp_3_buildingGlobalScope())      return 0;
+	if(cp_4_organizeAndCompact())       return 0;
 	cp_5_mergingContentAndPackingLibrary();
 
 	return 0;
 }
 
 static void cleanup(void){
-	free(gp_nameDst);
+	free(lim.destineFileName);
 
-	if(gf_origin != NULL)
-		fclose(gf_origin);
+	if(lim.sourceFile != NULL)
+		fclose(lim.sourceFile);
 
 	buffers_atexit();
 	ct_atexit();
-	head_end();
+	header_end();
 }
 

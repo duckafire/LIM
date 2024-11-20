@@ -3,30 +3,27 @@
 #include <string.h>
 #include "heads.h"
 
-static FILE *collect = NULL;
-static char *ident = NULL; // identifier
-static GlobalEnv global;
-static RefeTree refe;
-static LibScope scope;
-static char *nick = NULL, nickFirst, nickLast; // buffer be like
-static CompactPair *pair;
+static GlobalEnv fromsrc;
+static BinaryNode *refe_tree[REFE_TOTAL_BUF];
+static Queue *refe_queue;
+static FILE *scope[3];
+static Queue *pairs[2];
 static FILE *finalContent = NULL;
 
+// this is not a buffer, but there is
+// not other for to put this...
+static char nickFirst, nickLast;
+static char *nick = NULL;
+
 void buffers_atexit(void){
-	if(collect != NULL)
-		collect_end();
+	if(fromsrc.head != NULL)
+		fromsrc_end();
 
-	if(ident != NULL)
-		ident_end(0);
-
-	if(global.head != NULL)
-		global_end();
-
-	if(refe.func != NULL)
+	if(refe_tree[0] != NULL)
 		refe_endTree();
 
-	if(refe.queue != NULL){
-		RefeQueue *i;
+	if(refe_queue != NULL){
+		Queue *i;
 		while((i = refe_getAndRmvQueueItem()) != NULL);
 	}
 
@@ -37,103 +34,54 @@ void buffers_atexit(void){
 
 
 
-////////// COLLECT //////////
-
-void collect_init(void){
-	collect = tmpfile();
-}
-
-void collect_add(char c){
-	fputc(c, collect);
-}
-
-FILE* collect_get(void){
-	return collect;
-}
-
-void collect_end(void){
-	fclose(collect);
-	collect = NULL;
-}
-
-
-
-////////// IDENTIFIER //////////
-
-void ident_init(void){
-	tools_initDinStr(&ident);
-}
-
-void ident_add(char c){
-	tools_addDinStr(ident_get(), c);
-}
-
-char* ident_get(void){
-	return ident;
-}
-
-void ident_end(short restart){
-	tools_endDinStr(&ident, restart);
-}
-
-
-
 ////////// GLOBAL ENVORINMENTS //////////
 
-void global_init(void){
-	// used one time
-	global.order     = tmpfile();
-	global.libVar    = tmpfile();
-	global.libFunc   = tmpfile();
-	global.var       = tmpfile();
-	global.func      = tmpfile();
-	global.useOrCall = tmpfile();
-	global.constants = tmpfile();
-	global.luaFunc   = tmpfile();
-	global.headFunc  = tmpfile();
+void fromsrc_init(void){
+	for(short i = 0; i < FROMSRC_TOTAL_BUF; i++)
+		fromsrc.bufs[i] = tmpfile();
 	
-	global.head = NULL;
-	global.tail = NULL;
+	fromsrc.head = NULL;
+	fromsrc.tail = NULL;
 }
 
-void global_newEnv(char *name){
+void fromsrc_newEnv(char *name){
 	// insert in chain end
 	FuncEnv *new;
 	new = malloc(sizeof(FuncEnv));
 	new->name = malloc(sizeof(name));
-	new->func = tmpfile();
-	new->var  = tmpfile();
+	new->bufs[0] = tmpfile();
+	new->bufs[1] = tmpfile();
 	new->next = NULL;
 
 	// the '(' is included
 	strcpy(new->name, name);
 
-	if(global.head == NULL){
-		global.head = new;
-		global.tail = new;
+	if(fromsrc.head == NULL){
+		fromsrc.head = new;
+		fromsrc.tail = new;
 		return;
 	}
 
-	global.tail->next = new;
-	global.tail = new;
+	fromsrc.tail->next = new;
+	fromsrc.tail = new;
 }
 
-void global_order(short code){
-	fwrite(&code, sizeof(short), 1, global.order);
+void fromsrc_order(short code){
+	fwrite(&code, sizeof(short), 1, fromsrc.bufs[FROMSRC_ORDER]);
 }
 
-bool global_getOrder(short *code){
-	return (fread(code, sizeof(short), 1, global.order) > 0);
+bool fromsrc_getOrder(short *code){
+	return (fread(code, sizeof(short), 1, fromsrc.bufs[FROMSRC_ORDER]) > 0);
 }
 
-void global_print(char *word, char *name, short bufId){
+void fromsrc_print(char *word, char *name, short bufId){
 	// `name == NULL` for print
 	// in a global buffer
 	FILE *buf;
 	unsigned int i = 0;
 	char *c = NULL;
 
-	buf = global_getBuf(bufId, name);
+	buf = fromsrc_getBuf(bufId, name);
 
 	for(c = &word[i]; *c != '\0'; c = &word[++i])
 		fputc(*c, buf);
@@ -141,109 +89,78 @@ void global_print(char *word, char *name, short bufId){
 	fputc('\n', buf);
 }
 
-void global_rmvEnv(void){
+void fromsrc_rmvEnv(void){
 	// remove the last
-	if(global.head == global.tail){
-		free(global.head);
-		global.head = NULL;
-		global.tail = NULL;
+	if(fromsrc.head == fromsrc.tail){
+		free(fromsrc.head);
+		fromsrc.head = NULL;
+		fromsrc.tail = NULL;
 		return;
 	}
 
 	// get element from chain
 	FuncEnv *p;
-	for(p = global.head; p->next->next != NULL; p = p->next);
+	for(p = fromsrc.head; p->next->next != NULL; p = p->next);
 
-	fclose(p->next->func);
-	fclose(p->next->var);
+	fclose(p->next->bufs[0]);
+	fclose(p->next->bufs[1]);
 	free(p->next);
 
 	p->next = NULL;
-	global.tail = p;
+	fromsrc.tail = p;
 }
 
-GlobalEnv* global_get(void){
-	return &global;
+GlobalEnv* fromsrc_get(void){
+	return &fromsrc;
 }
 
-FILE* global_getBuf(short bufId, char *name){
+FILE* fromsrc_getBuf(short bufId, char *name){
 	// global
-	switch(bufId){
-		case TYPE_CONSTANT:    return global.constants; break;
-		case TYPE_ANONYMOUS:   return global.constants; break;
-		case TYPE_USE_OR_CALL: return global.useOrCall; break;
-		case TYPE_FROM_LUA:    return global.luaFunc;   break;
-		case TYPE_FROM_HEAD:   return global.headFunc;  break;
-		case TYPE_LIB_FUNC:    return global.libFunc;   break;
-		case TYPE_LIB_VAR:     return global.libVar;    break;
-		case TYPE_GLOBAL_FUNC: return global.func;      break;
-		case TYPE_GLOBAL_VAR:  return global.var;       break;
-	}
-
+	if(bufId == TYPE_ANONYMOUS)
+		bufId = TYPE_CONSTANT;
+	
+	if(bufId != TYPE_LOCAL_VAR_1 && bufId != TYPE_LOCAL_FUNC_0)
+		return fromsrc.bufs[bufId];
+	
 	// local
 	FuncEnv *f;
 
-	if(global.head == global.tail)
-		f = global.head;
+	if(fromsrc.head == fromsrc.tail)
+		f = fromsrc.head;
 	else
-		for(f = global.head; strcmp(f->name, name) != 0 && f != NULL; f = f->next);
+		for(f = fromsrc.head; f != NULL && !t_strcmp4(f->name, name); f = f->next);
 
-	switch(bufId){
-		case TYPE_LOCAL_VAR:  return f->var; break;
-		case TYPE_LOCAL_FUNC: return f->func; break;
+	return f->bufs[bufId - TYPE_LOCAL_FUNC_0];
+}
+
+void fromsrc_fseekSetAll(void){
+	for(short i = 0; i < FROMSRC_TOTAL_BUF; i++)
+		fseek(fromsrc.bufs[i], 0, SEEK_SET);
+
+	fromsrc_fseekSetAllLocal(fromsrc.head);
+}
+
+void fromsrc_end(void){
+	while(fromsrc.head != NULL)
+		fromsrc_rmvEnv();
+	
+	fromsrc.head = NULL;
+	fromsrc.tail = NULL;
+
+	for(short i = 0; i < FROMSRC_TOTAL_BUF; i++){
+		fclose(fromsrc.bufs[i]);
+		fromsrc.bufs[i] = NULL;
 	}
 }
 
-void global_fseekSetAll(void){
-	fseek(global.order, 0, SEEK_SET);
-	fseek(global.libVar, 0, SEEK_SET);
-	fseek(global.libFunc, 0, SEEK_SET);
-	fseek(global.var, 0, SEEK_SET);
-	fseek(global.func, 0, SEEK_SET);
-	fseek(global.useOrCall, 0, SEEK_SET);
-	fseek(global.constants, 0, SEEK_SET);
-	fseek(global.luaFunc, 0, SEEK_SET);
-	fseek(global.headFunc, 0, SEEK_SET);
-
-	global_fseekSetAllLocal(global.head);
-}
-
-void global_end(void){
-	while(global.head != NULL)
-		global_rmvEnv();
-
-	fclose(global.order);
-	fclose(global.libVar);
-	fclose(global.libFunc);
-	fclose(global.var);
-	fclose(global.func);
-	fclose(global.useOrCall);
-	fclose(global.constants);
-	fclose(global.luaFunc);
-	fclose(global.headFunc);
-
-	global.order     = NULL;
-	global.libVar    = NULL;
-	global.libFunc   = NULL;
-	global.var       = NULL;
-	global.func      = NULL;
-	global.useOrCall = NULL;
-	global.constants = NULL;
-	global.luaFunc   = NULL;
-	global.headFunc  = NULL;
-	
-	global.head = NULL;
-	global.tail = NULL;
-}
-
-static void global_fseekSetAllLocal(FuncEnv *local){
+static void fromsrc_fseekSetAllLocal(FuncEnv *local){
 	if(local == NULL)
 		return;
 
-	global_fseekSetAllLocal(local->next);
+	fromsrc_fseekSetAllLocal(local->next);
 
-	fseek(local->func, 0, SEEK_SET);
-	fseek(local->var, 0, SEEK_SET);
+	fseek(local->bufs[0], 0, SEEK_SET);
+	fseek(local->bufs[1], 0, SEEK_SET);
 }
 
 
@@ -252,331 +169,114 @@ static void global_fseekSetAllLocal(FuncEnv *local){
 ////////// REFE //////////
 
 void refe_init(void){
-	refe.queue = NULL; // started in "refe_treeToQueue"
-	NEW_REFE_ROOTS(refe.func);
-	NEW_REFE_ROOTS(refe.courotine);
-	NEW_REFE_ROOTS(refe.debug);
-	NEW_REFE_ROOTS(refe.io);
-	NEW_REFE_ROOTS(refe.math);
-	NEW_REFE_ROOTS(refe.os);
-	NEW_REFE_ROOTS(refe.package);
-	NEW_REFE_ROOTS(refe.string);
-	NEW_REFE_ROOTS(refe.table);
-	NEW_REFE_ROOTS(refe.utf8);
+	for(short i = 0; i < REFE_TOTAL_BUF; i++)
+		refe_tree[i] = mm_treeInit('m');
 }
 
-void refe_add(char *table, char *func){
-	char *content; // it will be free in `ends`
-	content = malloc(strlen(func) + 1);
-	strcpy(content, func);
+void refe_add(char *table, char *_func){
+	char *func = NULL;
+	if(_func != NULL)
+		func = t_rmvParen(_func);
 
-	unsigned int last = strlen(content) - 1;
-	if(content[last] == '(')
-		content[last] = '\0';
+	if(table == NULL)
+		mm_treeNewNode(refe_tree[REFE_FUNC], func[0], NULL, func, true);
+	else if(func == NULL)
+		mm_treeNewNode(refe_tree[REFE_FUNC], table[0], table, NULL, true);
+	else
+		mm_treeNewNode(refe_getBuf(table[0]), func[1], NULL, func, true);
 
-	if(table == NULL){
-		refe_newNode(refe.func, content[0], content);
-		return;
-	}
-
-	refe_newNode(refe_getTableBuf(table), content[1], content);
+	free(func);
 }
 
-static void refe_newNode(RefeNode *node, char id, char *content){
-	if(id == node->id){
-		if(tools_strcmp3(node->content, content))
-			node->quantity++;
-		else if(node->next == NULL)
-			node->next = refe_createCell(content);
-		else
-			refe_newCell(node->next, content);
-
-		return;
+static BinaryNode* refe_getBuf(char firstChar){
+	switch(firstChar){
+		case 'c': return refe_tree[1]; // courotine
+		case 'd': return refe_tree[2]; // debug
+		case 'i': return refe_tree[3]; // io
+		case 'm': return refe_tree[4]; // math
+		case 'o': return refe_tree[5]; // os
+		case 'p': return refe_tree[6]; // package
+		case 's': return refe_tree[7]; // string
+		case 't': return refe_tree[8]; // table
+		case 'u': return refe_tree[9]; // utf8
+		default: refe_tree[0]; // func
 	}
-
-	if(id < node->id){
-		if(node->left == NULL){
-			node->left = refe_createNode(id, content);
-			return;
-		}
-
-		refe_newNode(node->left, id, content);
-		return;
-	}
-
-	if(node->right == NULL){
-		node->right = refe_createNode(id, content);
-		return;
-	}
-
-	refe_newNode(node->right, id, content);
-}
-
-static void refe_newCell(RefeCell *cell, char *content){
-	if(tools_strcmp3(cell->content, content)){
-		cell->quantity++;
-		return;
-	}
-	
-	if(cell->next == NULL){
-		cell = refe_createCell(content);
-		return;
-	}
-
-	refe_newCell(cell->next, content);
-}
-
-static RefeNode* refe_createNode(char id, char *content){
-	RefeNode *node;
-	node = malloc(sizeof(RefeNode));
-	node->id = id;
-	node->next = NULL;
-	node->left = NULL;
-	node->right = NULL;
-	node->quantity = 0;
-	node->content = tools_allocAndCopy(content);
-
-	if(node->content != NULL)
-		node->quantity++;
-
-	return node;
-}
-
-static RefeCell* refe_createCell(char *content){
-	RefeCell *cell;
-
-	cell = malloc(sizeof(RefeCell));
-	cell->quantity = 0;
-	cell->content = content;
-	cell->next = NULL;
-
-	return cell;
-}
-
-static RefeNode* refe_getTableBuf(char *table){
-	if(table == NULL) return refe.func;
-	if(strcmp(table, "math")      == 0) return refe.math;
-	if(strcmp(table, "string")    == 0) return refe.string;
-	if(strcmp(table, "table")     == 0) return refe.table;
-	if(strcmp(table, "debug")     == 0) return refe.debug;
-	if(strcmp(table, "package")   == 0) return refe.package;
-	if(strcmp(table, "utf8")      == 0) return refe.utf8;
-	if(strcmp(table, "io")        == 0) return refe.io;
-	if(strcmp(table, "os")        == 0) return refe.os;
-	if(strcmp(table, "courotine") == 0) return refe.courotine;
 }
 
 void refe_treeToQueue(void){
-	refe_subtreeToQueue(refe.func,      NULL);
-	refe_subtreeToQueue(refe.courotine, "courotine");
-	refe_subtreeToQueue(refe.debug,     "debug");
-	refe_subtreeToQueue(refe.io,        "io");
-	refe_subtreeToQueue(refe.math,      "math");
-	refe_subtreeToQueue(refe.os,        "os");
-	refe_subtreeToQueue(refe.package,   "package");
-	refe_subtreeToQueue(refe.string,    "string");
-	refe_subtreeToQueue(refe.table,     "table");
-	refe_subtreeToQueue(refe.utf8,      "utf8");
+	for(short i = 0; i < REFE_TOTAL_BUF; i++){
+		REFE3_TOQUEUE(left);
+		REFE3_TOQUEUE(right);
+		REFE3_TOQUEUE(next);
+	}
 }
 
-RefeQueue* refe_getAndRmvQueueItem(void){
+static void refe_buildQueue(BinaryNode *root, char *origin){
+	if(root == NULL)
+		return;
+
+	refe_buildQueue(root->left,  origin);
+	refe_buildQueue(root->right, origin);
+	refe_buildQueue(root->next,  origin);
+
+	if(root->content[1] == NULL) // only "table"
+		mm_queueInsertItem(&refe_queue, root->quantity, root->content[0], NULL);
+	else
+		mm_queueInsertItem(&refe_queue, root->quantity, origin, root->content[1]);
+}
+
+Queue* refe_getAndRmvQueueItem(void){
 	// after the use, the pointer
 	// returned need to be freed
-	RefeQueue *itemRemoved;
+	Queue *toRemove;
 
-	itemRemoved = refe.queue;
+	toRemove = refe_queue;
 
-	if(refe.queue != NULL)
-		refe.queue = refe.queue->next;
+	if(refe_queue != NULL)
+		refe_queue = refe_queue->next;
 
-	return itemRemoved;
-}
-
-static void refe_subtreeToQueue(RefeNode *node, char *table){
-	if(node == NULL)
-		return;
-
-	refe_subtreeToQueue(node->left, table);
-	refe_subtreeToQueue(node->right, table);
-	refe_subtreeQueueToMainQueue(node->next, table);
-	
-	if(node->content == NULL)
-		return;
-
-	char *content = NULL;
-
-	content = malloc(strlen(node->content) + 1);
-	strcpy(content, node->content);
-	node->content = NULL;
-
-	refe_createQueueItem(table, content, node->quantity);
-}
-
-static void refe_subtreeQueueToMainQueue(RefeCell *cell, char *table){
-	if(cell == NULL)
-		return;
-
-	refe_subtreeQueueToMainQueue(cell->next, table);
-
-	char *content = NULL;
-
-	content = malloc(strlen(cell->content) + 1);
-	strcpy(content, cell->content);
-	cell->content = NULL;
-
-	refe_createQueueItem(table, content, cell->quantity);
-}
-
-static void refe_createQueueItem(char *origin, char *content, unsigned short quantity){
-	RefeQueue *item;
-	item = malloc(sizeof(RefeQueue));
-
-	if(origin != NULL){
-		item->origin = malloc(strlen(origin) + 1);
-		strcpy(item->origin, origin);
-	}else{
-		item->origin = NULL;
-	}
-
-	item->content = content;
-	item->quantity = quantity;
-
-	if(refe.queue == NULL){
-		refe.queue = item;
-		return;
-	}
-
-	if(refe.queue->quantity < item->quantity){
-		item->next = refe.queue;
-		refe.queue = item;
-		return;
-	}
-
-	refe_insertQueueItem(refe.queue, item);
-}
-
-static void refe_insertQueueItem(RefeQueue *cursor, RefeQueue *item){
-	if(cursor->next == NULL){
-		cursor->next = item;
-		return;
-	}
-
-	if(cursor->next->quantity == item->quantity){
-		unsigned int cursorLen = tools_strlen2(cursor->next->content) + tools_strlen2(item->origin);
-		unsigned int itemLen = tools_strlen2(cursor->next->content) + tools_strlen2(item->origin);
-
-		if(cursorLen < itemLen){
-			cursor->next = item;
-			return;
-		}
-
-		refe_insertQueueItem(cursor->next, item);
-		return;
-	}
-
-	if(cursor->next->quantity < item->quantity){
-		RefeQueue *buf;
-		buf = cursor->next;
-
-		cursor->next = item;
-		item->next = buf;
-		return;
-	}
-
-	refe_insertQueueItem(cursor->next, item);
+	return toRemove;
 }
 
 void refe_endTree(void){
-	refe_endNode(refe.func);
-	refe_endNode(refe.math);
-	refe_endNode(refe.string);
-	refe_endNode(refe.table);
-	refe_endNode(refe.debug);
-	refe_endNode(refe.package);
-	refe_endNode(refe.utf8);
-	refe_endNode(refe.io);
-	refe_endNode(refe.os);
-	refe_endNode(refe.courotine);
-
-	refe.func = NULL;
-	refe.math = NULL;
-	refe.string = NULL;
-	refe.table = NULL;
-	refe.debug = NULL;
-	refe.package = NULL;
-	refe.utf8 = NULL;
-	refe.io = NULL;
-	refe.os = NULL;
-	refe.courotine = NULL;
+	for(short i = 0; i < REFE_TOTAL_BUF; i++){
+		mm_treeEnd(&(refe_tree[i]));
+		refe_tree[i] = NULL;
+	}
 }
-
-static void refe_endNode(RefeNode *node){
-	if(node == NULL)
-		return;
-
-	refe_endNode(node->left);
-	refe_endNode(node->right);
-	refe_endCell(node->next);
-
-	if(node->content != NULL)
-		free(node->content);
-	free(node);
-}
-
-static void refe_endCell(RefeCell *cell){
-	if(cell == NULL)
-		return;
-
-	refe_endCell(cell->next);
-
-	if(cell->content != NULL)
-		free(cell->content);
-	free(cell);
-}
-
 
 
 
 ////////// SCOPE //////////
 
 void scope_init(void){
-	scope.addr = tmpfile();
-	scope.func = tmpfile();
-	scope.var  = tmpfile();
+	for(short i = 0; i < SCOPE_TOTAL_BUF; i++)
+		scope[i] = tmpfile();
 }
 
 void scope_add(char *word, short bufId){
-	FILE *buf;
-	buf = scope_get(bufId);
-
 	unsigned short i = 0;
 	char *c = NULL;
-	for(c = &word[i]; *c != '\0'; c = &word[++i])
-		fputc(*c, buf);
 
-	fputc(',', buf);
+	for(c = &word[i]; *c != '\0'; c = &word[++i])
+		fputc(*c, scope[bufId]);
+
+	fputc(',', scope[bufId]);
 }
 
-FILE* scope_get(short bufId){
-	switch(bufId){
-		case SCOPE_ADDR: return scope.addr;
-		case SCOPE_FUNC: return scope.func;
-		case SCOPE_VAR:  return scope.var;
-	}
+FILE *scope_get(short bufId){
+	return scope[bufId];
 }
 
 void scope_rmvLastComma(short bufId){
-	fseek(scope_get(bufId), -1, SEEK_CUR);
+	fseek(scope[bufId], -1, SEEK_CUR);
 }
 
 void scope_end(void){
-	fclose(scope.addr);
-	fclose(scope.func);
-	fclose(scope.var);
-
-	scope.addr = NULL;
-	scope.func = NULL;
-	scope.var  = NULL;
+	for(short i = 0; i < SCOPE_TOTAL_BUF; i++){
+		fclose(scope[i]);
+		scope[i] = NULL;
+	}
 }
 
 
@@ -652,129 +352,93 @@ void nick_end(void){
 
 ////////// PAIR //////////
 
-void pair_init(void){
-	pair = malloc(sizeof(CompactPair));
-	pair->id = '`';
-
-	pair->nick = NULL;
-	pair->ident = NULL;
-	pair->next = NULL;
-
-	// functions
-	pair->left = NULL;
-
-	// variables and tables
-	pair->right = NULL;
+void pairs_init(void){
+	// "pairs" don't need to be initiate;
+	// this function is only a convention
 }
 
-void pair_add(char id, char *nick, char *ident){
-	CompactPair *new;
-	new = malloc(sizeof(CompactPair));
-	new->id = id;
-	new->nick = tools_allocAndCopy(nick);
-	new->ident = tools_allocAndCopy(ident);
-	new->left = NULL;
-	new->right = NULL;
-	new->next = NULL;
-
-	pair_addNode(pair, new);
+void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
+	// 0 (A-Z): functions from Lua and from "header.lim"
+	// 1 (a-z): variables, tables and functions declared with `local`, in root env.
+	mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident);
 }
 
-static void pair_addNode(CompactPair *node, CompactPair *new){
-	if(new->id == node->id){
-		if(node->next == NULL){
-			node->next = new;
-			return;
-		}
-
-		pair_addNode(node->next, new);
-		return;
-	}
-
-	if(new->id < node->id){
-		if(node->left == NULL){
-			node->left = new;
-			return;
-		}
-
-		pair_addNode(node->left, new);
-		return;
-	}
-
-	if(node->right == NULL){
-		node->right = new;
-		return;
-	}
-
-	pair_addNode(node->right, new);
+void pairs_updateQuantity(char *string){
+	// only to "variables and tables"
+	pairs_upItemQtt(pairs[1], string);
 }
 
-char* pair_cmpAndGet(char id, char *word){
-	char *identNoParen;
-	identNoParen = tools_rmvParen(word);
-
-	char *toReturn;
-	toReturn = pair_cmpAndGet_2(pair, id, identNoParen);
-
-	free(identNoParen);
-	if(toReturn != NULL)
-		return toReturn;
-
-	return word;
-}
-
-void pair_end(void){
-	pair_endNode(pair);
-}
-
-static void pair_endNode(CompactPair *node){
-	if(node == NULL)
-		return;
-
-	pair_endNode(node->left);
-	pair_endNode(node->right);
-	pair_endNode(node->next);
-
-	if(node->nick != NULL)
-		free(node->nick);
-
-	if(node->ident != NULL)
-		free(node->ident);
-
-	free(node);
-}
-
-static char *pair_cmpAndGet_2(CompactPair *item, char id, char *word){
+static void pairs_upItemQtt(Queue *item, char *string){
 	if(item == NULL)
-		return NULL;
+		return;
 
-	if(id == item->id){
-		if(strcmp(item->ident, word) == 0)
-			return item->nick;
-
-		return pair_cmpAndGet_2(item->next, id, word);
+	if(t_strcmp3(item->content[1], string)){
+		(item->quantity)++;
+		return;
 	}
 
-	if(id < item->id)
-		return pair_cmpAndGet_2(item->left, id, word);
-
-	if(id > item->id)
-		return pair_cmpAndGet_2(item->right, id, word);
+	pairs_upItemQtt(item->next, string);
 }
 
-void final_init(void){
-	finalContent = tmpfile();
+void pairs_updateOrder(void){
+	Queue *newPairs = NULL;
+
+	pairs_newOrderQueue(pairs[1], &newPairs);
+
+	pairs[1] = newPairs;
 }
 
-void final_add(char c){
-	fputc(c, finalContent);
+static void pairs_newOrderQueue(Queue *src, Queue **dest){
+	if(src == NULL)
+		return;
+
+	pairs_newOrderQueue(src->next, dest);
+
+	mm_queueInsertItem(dest, src->quantity, src->content[0], src->content[1]);
+	mm_treeFreeNodeAndQueueItem(NULL, src);
 }
 
-FILE* final_get(void){
-	return finalContent;
+char* pairs_get(bool fromSrcFile, char *string){
+	return t_allocAndCopy( pairs_getNick(pairs[ fromSrcFile ], string) );
 }
 
-void final_end(void){
-	fclose(finalContent);
-	finalContent = NULL;
+static char* pairs_getNick(Queue *item, char *string){
+	if(item == NULL)
+		return "NULL"; // "gambiarra" to """fix""" a BUG
+
+	if(strcmp(item->content[1], string) == 0)
+		return item->content[0];
+
+	return pairs_getNick(item->next, string);
+}
+
+void pairs_printAll(FILE *dest, bool fromSrcFile){
+	pairs_printContent(pairs[ fromSrcFile ], dest);
+}
+
+static void pairs_printContent(Queue *item, FILE *dest){
+	if(item == NULL)
+		return;
+
+	fprintf(dest, "%d\t\t%s\t\t%s\n", item->quantity + 1, item->content[0], item->content[1]);
+
+	pairs_printContent(item->next, dest);
+}
+
+void pairs_end(void){
+	pairs_endQueue(pairs[0]);
+	pairs_endQueue(pairs[1]);
+}
+
+static void pairs_endQueue(Queue *item){
+	if(item == NULL)
+		return;
+
+	pairs_endQueue(item->next);
+
+	for(short i = 0; i < 2; i++)
+		if(item->content[i] != NULL)
+			free(item->content[i]);
+
+	free(item);
 }
