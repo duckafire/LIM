@@ -10,6 +10,7 @@ static RefeTree refe;
 static LibScope scope;
 static char *nick = NULL, nickFirst, nickLast; // buffer be like
 static CompactPair *pair;
+static FILE *finalContent = NULL;
 
 void buffers_atexit(void){
 	if(collect != NULL)
@@ -708,12 +709,12 @@ static void pair_addNode(CompactPair *node, CompactPair *new){
 	pair_addNode(node->right, new);
 }
 
-char* pair_cmpAndGet(char *word){
+char* pair_cmpAndGet(char id, char *word){
 	char *identNoParen;
 	identNoParen = tools_rmvParen(word);
 
 	char *toReturn;
-	toReturn = pair_cmpAndGet_2(pair, word);
+	toReturn = pair_cmpAndGet_2(pair, id, identNoParen);
 
 	free(identNoParen);
 	if(toReturn != NULL)
@@ -743,12 +744,37 @@ static void pair_endNode(CompactPair *node){
 	free(node);
 }
 
-static char *pair_cmpAndGet_2(CompactPair *item, char *word){
+static char *pair_cmpAndGet_2(CompactPair *item, char id, char *word){
 	if(item == NULL)
 		return NULL;
 
-	if(tools_strcmp3(item->ident, word) == 0)
-		return item->nick;
+	if(id == item->id){
+		if(strcmp(item->ident, word) == 0)
+			return item->nick;
 
-	pair_cmpAndGet_2(item->next, word);
+		return pair_cmpAndGet_2(item->next, id, word);
+	}
+
+	if(id < item->id)
+		return pair_cmpAndGet_2(item->left, id, word);
+
+	if(id > item->id)
+		return pair_cmpAndGet_2(item->right, id, word);
+}
+
+void final_init(void){
+	finalContent = tmpfile();
+}
+
+void final_add(char c){
+	fputc(c, finalContent);
+}
+
+FILE* final_get(void){
+	return finalContent;
+}
+
+void final_end(void){
+	fclose(finalContent);
+	finalContent = NULL;
 }

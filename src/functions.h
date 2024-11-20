@@ -78,11 +78,16 @@ void nick_end(void);
 
 void pair_init(void);
 void pair_add(char id, char *nick, char *ident);
-char* pair_cmpAndGet(char *word);
+char* pair_cmpAndGet(char id, char *word);
 void pair_end(void);
 static void pair_addNode(CompactPair *node, CompactPair *new);
 static void pair_endNode(CompactPair *node);
-static char *pair_cmpAndGet_2(CompactPair *item, char *word);
+static char *pair_cmpAndGet_2(CompactPair *item, char id, char *word);
+
+void final_init(void);
+void final_add(char c);
+FILE *final_get(void);
+void final_end(void);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);
@@ -99,8 +104,8 @@ void cp_0_checkAndOpenFiles(void);
 void cp_1_extractionFromOrigin(void);
 void cp_2_separateExtractedContent(void);
 void cp_3_buildingGlobalScope(void);
-void cp_x_mergingContentAndPackingLibrary(void);
 void cp_4_organizeAndCompact(void);
+void cp_5_mergingContentAndPackingLibrary(void);
 
 // CONTENT-TREATMENT
 void ct_atexit(void);

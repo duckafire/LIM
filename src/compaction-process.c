@@ -348,15 +348,17 @@ void cp_3_buildingGlobalScope(void){
 			if(table != NULL){
 				refe_add(table, word);
 				free(table);
+				free(word);
 				table = NULL;
+				word = NULL;
 				continue;
 			}
 
 			// function no prefixed by a table
 			// (tonumber, next, select, ...)
 			refe_add(NULL, word);
-			//free(word);
-			//word = NULL;
+			free(word);
+			word = NULL;
 		}
 
 		if(word != NULL){
@@ -524,11 +526,13 @@ void cp_3_buildingGlobalScope(void){
 }
 
 void cp_4_organizeAndCompact(void){
-	FILE *TEMP;
-	TEMP = tmpfile();
+	info_verbose(VM_TITLE, "STAGE 4: organize and compact identifiers");
 
 	// the word getted from "curBuf"
 	char *word = NULL;
+
+	// index used to navigate in "pair tree"
+	char wordId;
 
 	// sub-buffer, from buffer global, obtained
 	// by index stored in sub-buffer global.order
@@ -584,15 +588,24 @@ void cp_4_organizeAndCompact(void){
 	// to be changed
 	char *tempFullCtt;
 
+	// used to open parenthesis after write a
+	// function, because them lose their first
+	// parenthesis during compaction process
+	bool isFunc = false;
+
 	global_fseekSetAll();
 
+	info_verbose(VM_START_BUF, "ident", "final", NULL);
 	ident_init();
+	final_init();
 
+	info_verbose(VM_START_PRO, "compact");
 	while(global_getOrder(&bufId)){
 		wId = 0;
 		wChar = '\0';
 		word = NULL;
 		bufName = NULL;
+		isFunc = false;
 		curBuf = global_getBuf(bufId, bufName);
 
 		while((c = fgetc(curBuf)) != '\n' && c != EOF)
@@ -616,6 +629,9 @@ void cp_4_organizeAndCompact(void){
 			strcpy(fullContent, tempFullCtt);
 			strcat(fullContent, word);
 
+			// function from table: math .[ r ]andom
+			wordId = word[1];
+
 			// "ident" will be freed in cycle end
 			free(tempFullCtt);
 
@@ -633,8 +649,20 @@ void cp_4_organizeAndCompact(void){
 		}
 
 		// get word obtained from "curBuf"
-		if(bufName == NULL && bufId != TYPE_CONSTANT && bufId != TYPE_ANONYMOUS)
-			word = pair_cmpAndGet(word); // nickName or normal identifier
+		if(bufName == NULL && bufId != TYPE_CONSTANT && bufId != TYPE_ANONYMOUS){
+			if(word[ strlen(word) - 1 ] == '(')
+				isFunc = true;
+			
+			// "free" function: [ s ]etmetatable
+			if(wordId == '\0')
+				wordId = word[0];
+
+			word = pair_cmpAndGet(wordId, word); // nickName or normal identifier
+		}
+
+		// if it will be "reseted" before, all
+		// word will be consider "free functions"
+		wordId = '\0';
 
 		// update or lower environment layers
 		if(codeBlockLayer > 0)
@@ -642,10 +670,13 @@ void cp_4_organizeAndCompact(void){
 
 		// print in buffer (finalContent)
 		if(space && (isalnum(word[0]) || word[0] == '_'))
-			fputc(' ', TEMP);
+			final_add(' ');
 
 		for(wChar = &word[ wId ]; *wChar != '\0'; wChar = &word[ ++wId ])
-			fputc(*wChar, TEMP);
+			final_add(*wChar);
+
+		if(isFunc)
+			final_add('(');
 
 		wId--;
 		space = false;
@@ -660,14 +691,15 @@ void cp_4_organizeAndCompact(void){
 			fullContent = NULL;
 		}
 	}
+	info_verbose(VM_END_PRO, "compact");
 
-	fclose(tools_copyFile(TEMP, "temp.txt"));
+	info_verbose(VM_START_BUF, "ident", "pair", NULL);
 	ident_end(false);
 	pair_end();
 }
 
-void cp_x_mergingContentAndPackingLibrary(void){
-	info_verbose(VM_TITLE, "STAGE X (final): merge all content and pack library");
+void cp_5_mergingContentAndPackingLibrary(void){
+	info_verbose(VM_TITLE, "STAGE 5 (final): merge all content and pack library");
 	
 	// getting content from buffers
 	info_verbose(VM_NORMAL, "Getting content from buffers...");
@@ -705,6 +737,9 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	if(head_printScope(output))
 		info_verbose(VM_NORMAL, "The \"Scope Partition\" was printed.");
 
+	info_verbose(VM_NORMAL, "Printing compacted content...");
+	tools_fcat(final_get(), output);
+
 	info_verbose(VM_NORMAL, "Closing pack...");
 	fputs("end\n--local reference=L", output);
 
@@ -712,10 +747,11 @@ void cp_x_mergingContentAndPackingLibrary(void){
 	info_verbose(VM_NORMAL, "Finishing output file...");
 	fclose(output);
 
-	info_verbose(VM_END_BUF, "global", "scope", "head", NULL);
+	info_verbose(VM_END_BUF, "global", "scope", "head", "final", NULL);
 	global_end();
 	scope_end();
 	head_end();
+	final_end();
 
 	info_verbose(VM_TITLE, "(alpha) PROCESS FINISHED!");
 	info_verbose(VM_NORMAL, "See: \"./output.lim\"");

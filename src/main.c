@@ -4,6 +4,12 @@
 #include <stdbool.h>
 #include "heads.h"
 
+// TODO -> BIG refactoring:
+// rename variables and functions;
+// remove redundances;
+// optimize process;
+// search bugs and memory leaks;
+
 bool g_verbose = false;
 bool g_replace = false;
 bool g_headfile = true;
@@ -31,7 +37,7 @@ int main(int argc, char *argv[]){
 	cp_2_separateExtractedContent();
 	cp_3_buildingGlobalScope();
 	cp_4_organizeAndCompact();
-	cp_x_mergingContentAndPackingLibrary();
+	cp_5_mergingContentAndPackingLibrary();
 
 	return 0;
 }
