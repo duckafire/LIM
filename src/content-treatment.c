@@ -107,13 +107,6 @@ void ct_getSpecial(FILE *buf, char c){
 		return;
 	}
 
-	// DOUBLE SIGNAL
-	if(saveDoubleSignal(buf, '=', '=')) return;
-	if(saveDoubleSignal(buf, '/', '/')) return;
-	if(saveDoubleSignal(buf, '.', '.')) return;
-	if(saveDoubleSignal(buf, '>', '=')) return;
-	if(saveDoubleSignal(buf, '<', '=')) return;
-
 	// SPECIAL CHARACTERS
 	fputc(c, buf);
 	fputc('\n', buf);
@@ -170,22 +163,6 @@ static void saveBraces(FILE *buf){
 
 	fputc('}', buf);
 	fputc('\n', buf);
-}
-
-static bool saveDoubleSignal(FILE *buf, char sig_0, char sig_1){
-	if(_c == sig_0){
-		if(fgetc(lim.sourceFile) == sig_1){
-			fputc(sig_0, buf);
-			fputc(sig_1, buf);
-			fputc('\n', buf);
-
-			return true;
-		}
-
-		fseek(lim.sourceFile, -1, SEEK_CUR);
-	}
-	
-	return false;
 }
 
 bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex){

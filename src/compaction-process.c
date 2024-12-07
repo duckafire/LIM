@@ -28,12 +28,8 @@ void cp_0_checkAndOpenFiles(void){
 	if(lim.sourceFile == NULL)
 		er_nonExistentFile(lim.sourceFileName);
 
-
 	// OUTPUT FILE (library)
-	if(flags.replace){
-
-	}else{
-
+	if(!flags.replace){
 		FILE *dst;
 		dst = fopen(lim.destineFileName, "r");
 
@@ -42,9 +38,6 @@ void cp_0_checkAndOpenFiles(void){
 			er_fileAlreadyExistent(lim.destineFileName);
 		}
 	}
-
-	
-	// search and get the "header.lim"
 }
 
 // get all content from source file; discarte
@@ -66,10 +59,8 @@ bool cp_1_extractionFromOrigin(void){
 	// block `isFloat`
 	bool isHex = false;
 
-
 	extrCttBuf = tmpfile();
 
-	
 	while((c = fgetc(lim.sourceFile)) != EOF){
 		// clear "null caracteres", without
 		// `continue` cycle: They are:
@@ -145,12 +136,9 @@ bool cp_1_extractionFromOrigin(void){
 		ct_getSpecial(extrCttBuf, c);
 		isHex = false;
 	}
-	
-
 
 	fclose(lim.sourceFile);
 	lim.sourceFile = NULL;
-
 
 	if(flags.untilStage == 1){
 		t_copyAndExportFile(extrCttBuf);
@@ -313,8 +301,6 @@ bool cp_2_separateExtractedContent(void){
 // --until-stage: variables, tables and functions with they
 // nicknames and quantity of use in code.
 bool cp_3_buildingGlobalScope(void){
-	// REFERENCE SCOPE
-
 	cp_3_buildingGlobalScope_functions();
 	cp_3_buildingGlobalScope_variablesAndTables();
 
@@ -516,8 +502,14 @@ static void cp_3_buildingGlobalScope_functions(void){
 	// in "root environment"
 	FILE *functions;
 
+	// "l" + `nick_get`
+	char *localnick;
+
 	functions = fromsrc_getBuf(TYPE_GLOBAL_FUNC, NULL);
 	fseek(functions, 0, SEEK_SET);
+
+	nick_end();
+	nick_init(false);
 
 	mm_stringInit(&string);
 	mm_stringInit(&bufName);
@@ -533,10 +525,16 @@ static void cp_3_buildingGlobalScope_functions(void){
 			while((c = fgetc(fenv)) != EOF){
 				t_buildStringFromFile(fenv, &c, &string);
 
-				pairs_add(true, 0, nick_get(), string);
+				localnick = malloc(strlen(nick_get()) + (sizeof(char) * 2));
+				strcpy(localnick, "l");
+				strcat(localnick, nick_get());
+
+				scope_localAdd(bufName, localnick);
+				pairs_add(true, 0, localnick, string);
 
 				mm_stringEnd(&string, true);
 				nick_up();
+				free(localnick);
 			}
 		}
 
@@ -548,6 +546,7 @@ static void cp_3_buildingGlobalScope_functions(void){
 	// merge functions values (addre)
 	// with their references (func)
 	if(t_filelen(scope_get(SCOPE_ADDR)) > 0){
+		scope_localEnd();
 		// summaries
 		FILE *src, *dest;
 		src  = scope_get(SCOPE_ADDR);
@@ -638,223 +637,5 @@ static void cp_3_buildingGlobalScope_variablesAndTables(void){
 	mm_stringEnd(&string, false);
 }
 
-// BUG: from here, all is broked, but not crash :)
-bool cp_4_organizeAndCompact(void){
-	// index to difference the names of
-	// different anonymous functions
-	unsigned short anonyId = 0;
-
-	// sub-buffer, from buffer global, obtained
-	// by index stored in sub-buffer fromsrc.order
-	FILE *curBuf;
-
-	// name of "function environments", that store
-	// itself local variables, tables and functions;
-	// NULL is equal "root environment"
-	char *bufName = NULL;
-
-	// index getted from fromsrc.order
-	short bufId;
-
-	unsigned int last;
-
-	// this is used to find function end;
-	// `0` is equal root environment
-	unsigned short codeBlockLayer = 0;
-
-	// specify when put a space character:
-	// if the last character of the current
-	// word is a alpha numeric and the first
-	// character of the next word also is.
-	bool space = false;
-
-	// during the STAGE 1, tables and their
-	// keys are separated, but in STAGE 3,
-	// they are merged, because of this, to
-	// find them in buffer pairs, it is
-	// necessary that the "string" store the
-	// table and it key
-	char *fullContent = NULL;
-
-	// temporarily store the pointer of the
-	// "fullContent", for free it after that
-	// the its address, stored in "fullContent",
-	// to be changed
-	char *tempFullCtt;
-
-	short i;
-
-	bool isFuncFromPairs;
-
-	// "types" that start a function environment,
-	// in root environment
-	const short funcTypesMax = 4;
-	short funcTypes[ funcTypesMax ];
-	funcTypes[0] = TYPE_LIB_FUNC;
-	funcTypes[1] = TYPE_GLOBAL_FUNC;
-	funcTypes[2] = TYPE_LOCAL_FUNC_0;
-	funcTypes[3] = TYPE_CONSTANT; // anonymous
-
-	fromsrc_fseekSetAll();
-
-	mm_stringInit(&string);
-	finalCtt = tmpfile();
-
-	while(fromsrc_getOrder(&bufId)){
-		c = '\0';
-		isFuncFromPairs = false;
-		curBuf = fromsrc_getBuf(bufId, bufName);
-
-		t_buildStringFromFile(curBuf, &c, &string);
-
-		// check current environment
-		if(codeBlockLayer == 0){
-
-			for(i = 0; i < funcTypesMax; i++){
-				if(bufId == funcTypes[i]){
-					if(bufId != TYPE_CONSTANT)
-						bufName = t_rmvParen(string);
-
-					else if(bufId == TYPE_CONSTANT && strcmp(string, "function(") == 0)
-						bufName = t_setAnonyFuncName(&anonyId);
-
-					else
-						continue;
-
-					codeBlockLayer++;
-					break;
-				}
-			}
-
-		}
-
-		// check string content (is it a Lua tables?)
-		if(fullContent != NULL){
-			if(string[0] != '.'){
-				fprintf(finalCtt, fullContent);
-				free(fullContent);
-				fullContent = NULL;
-			}else{
-				tempFullCtt = fullContent;
-
-				fullContent = malloc(strlen(tempFullCtt) + 1);
-				strcpy(fullContent, tempFullCtt);
-				strcat(fullContent, string);
-
-				// "ident" will be freed in cycle end
-				free(tempFullCtt);
-
-				// "string" will be not used in "free()",
-				// but "fullContent" will be, then the
-				// address of both will be freed
-				mm_stringEnd(&string, true);
-
-				string = malloc(strlen(fullContent) + sizeof(char));
-				strcpy(string, fullContent);
-
-				free(fullContent);
-				fullContent = NULL;
-			}
-
-		}else if(ct_checkLuaTabs(string)){ // && `fullContent == NULL`
-			fullContent = malloc(strlen(string) + 1);
-			strcpy(fullContent, string);
-
-			mm_stringEnd(&string, true);
-			continue;
-		}
-
-		// get word obtained from "curBuf"
-		if(bufId != TYPE_CONSTANT && bufId != TYPE_ANONYMOUS){
-			string = pairs_get((codeBlockLayer > 0), string); // nickname or identifier
-
-			for(i = 0; i < funcTypesMax; i++)
-				if(bufId == funcTypes[i])
-					isFuncFromPairs = true;
-		}
-
-		// update or lower environment layers
-		if(codeBlockLayer > 0)
-			ct_checkAndUpLayer(string, &codeBlockLayer);
-
-		if(codeBlockLayer == 0 && bufName != NULL){
-			free(bufName);
-			bufName = NULL;
-		}
-
-		// print in buffer; add spaces, when necessary
-		if(space && (isalnum(string[0]) || string[0] == '_'))
-			fputc(' ', finalCtt);
-
-		if(bufId == TYPE_LIB_FUNC || bufId == TYPE_LIB_VAR){
-			fputc('L', finalCtt);
-			if(bufId == TYPE_LIB_FUNC)
-				fputc('.', finalCtt);
-		}
-
-		fprintf(finalCtt, "%s", string);
-
-		// functions are stored without parenthesis
-		if(isFuncFromPairs)
-			fputc('(', finalCtt);
-
-		last = strlen(string) - 1;
-		space = false;
-		if(isalnum(string[last]) || string[last] == '_')
-			space = true;
-
-		mm_stringEnd(&string, true);
-	}
-
-	mm_stringEnd(&string, false);
-	pairs_end();
-
-	if(flags.untilStage == 4){
-		t_copyAndExportFile(finalCtt);
-		return true;
-	}
-	
-	fclose(finalCtt);
-	return false;
-}
-
-void cp_5_mergingContentAndPackingLibrary(void){
-	// getting content from buffers
-	FILE *fscope, *vscope, *output;
-	fscope = scope_get(SCOPE_FUNC);
-	vscope = scope_get(SCOPE_VAR);
-
-	fseek(fscope, 0, SEEK_SET);
-	fseek(vscope, 0, SEEK_SET);
-
-	// writting in output file
-	output = fopen(lim.destineFileName, "w");
-
-	if(header_printTop(output))
-
-	fputs("local L={}\ndo ", output);
-
-	if(t_filelen(vscope) > 0){
-		t_fcat(vscope, output);
-	}else{
-	}
-
-	if(t_filelen(fscope) > 7){ // `local ,` length
-		t_fcat(fscope, output);
-	}else{
-	}
-
-	if(header_printScope(output))
-
-	t_fcat(finalCtt, output);
-
-	fputs("end\n--local reference=L", output);
-
-	// finishing
-	fclose(output);
-	fclose(finalCtt);
-
-	fromsrc_end();
-	scope_end();
-	header_end();
-}
+bool cp_4_organizeAndCompact(void){}
+void cp_5_mergingContentAndPackingLibrary(void){}
