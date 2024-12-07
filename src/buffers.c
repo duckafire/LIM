@@ -7,12 +7,13 @@ static GlobalEnv fromsrc;
 static BinaryNode *refe_tree[REFE_TOTAL_BUF];
 static Queue *refe_queue;
 static FILE *scope[3];
+static FuncEnv *lscope = NULL;
 static Queue *pairs[2];
 static FILE *finalContent = NULL;
 
 // this is not a buffer, but there is
 // not other for to put this...
-static char nickFirst, nickLast;
+static char nickFirst, nickLast, nickReser;
 static char *nick = NULL;
 
 void buffers_atexit(void){
@@ -249,19 +250,14 @@ void refe_endTree(void){
 
 ////////// SCOPE //////////
 
+/* TODO
 void scope_init(void){
 	for(short i = 0; i < SCOPE_TOTAL_BUF; i++)
 		scope[i] = tmpfile();
 }
 
 void scope_add(char *word, short bufId){
-	unsigned short i = 0;
-	char *c = NULL;
-
-	for(c = &word[i]; *c != '\0'; c = &word[++i])
-		fputc(*c, scope[bufId]);
-
-	fputc(',', scope[bufId]);
+	fprintf(scope[bufId], "%s,", word);
 }
 
 FILE *scope_get(short bufId){
@@ -279,6 +275,64 @@ void scope_end(void){
 	}
 }
 
+void scope_localAdd(char *name, char *word){
+	if(lscope == NULL){
+		lscope = scope_createLocal(name);
+		return;
+	}
+
+	FuncEnv *p;
+	p = scope_localGet(name);
+
+	if(p->next == NULL){
+		p->next = scope_createLocal(name);
+		p = p->next;
+	}
+
+	fprintf(p->bufs[SCOPE_LOCAL_FUNC_VAR], "%s,", word);
+}
+
+FuncEnv* scope_localGet(char *name){
+	FuncEnv *p;
+
+	for(p = lscope; p->next != NULL && strcmp(name, p->name) == 0; p = p->next);
+
+	return p;
+}
+
+void scope_localRmvLastComma(char *name){
+	FuncEnv *p;
+	p = scope_localGet(name);
+
+	fseek(p->bufs[SCOPE_LOCAL_FUNC_VAR], -1, SEEK_CUR);
+}
+
+static FuncEnv* scope_createLocal(char *name){
+	FuncEnv *new;
+
+	new = malloc(sizeof(FuncEnv));
+	new->name = t_allocAndCopy(name);
+	new->bufs[SCOPE_LOCAL_FUNC_VAR] = tmpfile();
+	new->next = NULL;
+
+	return new;
+}
+
+void scope_localEnd(void){
+	scope_endItems(lscope);
+}
+
+void scope_endItems(FuncEnv *item){
+	if(item == NULL)
+		return;
+
+	scope_endItems(item->next);
+
+	t_copyFile(item->bufs[SCOPE_LOCAL_FUNC_VAR], item->name);
+	fclose(item->bufs[SCOPE_LOCAL_FUNC_VAR]);
+	free(item);
+}
+*/
 
 
 
@@ -290,9 +344,11 @@ void nick_init(bool toFuncs){
 	if(toFuncs){
 		nickFirst = 'A';
 		nickLast  = 'Z';
+		nickReser = 'K';
 	}else{
 		nickFirst = 'a';
 		nickLast  = 'z';
+		nickReser = 'l';
 	}
 
 	nick[0] = nickFirst;
@@ -300,14 +356,20 @@ void nick_init(bool toFuncs){
 }
 
 static void nick_upChar(long id){
+	// '_' == 'L'/'l';
+	// '_' -> 'M'/'m'
 	if(nick[id] == '_'){
-		nick[id] = 'M';
+		nick[id] = nickReser + 1;
 		return;
 	}
 
-	nick[id] += 1;
+	// 'a' -> 'b'; 'b' -> 'c'; ...
+	nick[id]++;
 
-	if(nick[id] == 'L')
+	// jump 'L' and 'l' (reservated):
+	// 'L': library tables
+	// 'l': local variables/table/function
+	if(nick[id] == nickReser)
 		nick[id] = '_';
 }
 

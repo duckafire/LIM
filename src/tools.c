@@ -109,7 +109,7 @@ char* t_allocAndCopy(char *src){
 	return dest;
 }
 
-void t_buildStringFromFile(FILE *src, char *c, char **string){
+void t_getStringFromFile(FILE *src, char *c, char **string){
 	do{
 		if(*c != '\n'){
 			if(*c != '\0')
@@ -123,8 +123,9 @@ void t_buildStringFromFile(FILE *src, char *c, char **string){
 char* t_setAnonyFuncName(unsigned short *index){
 	char *dest;
 
-	dest = malloc((sizeof(char) * 5) + INT_LEN(*index++));
+	dest = malloc((sizeof(char) * 5) + INT_LEN(*index));
 	sprintf(dest, "__f%u_", *index);
+	(*index)++;
 
 	return dest;
 }

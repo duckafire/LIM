@@ -5,13 +5,9 @@
 #include <ctype.h>
 #include "heads.h"
 
-// for `ct_getSpecial` process
 static char _c;
-
-// "ct_checkAndCreateNewEnv"
 static char *anonyName = NULL;
 static char *commoName = NULL;
-
 static const char lua_keywords[21][9] = {"do","if","in","or","and","end","for","nil","not","else","then","true","break","false","local","until","while","elseif","repeat","return","function"};
 static const char lua_funcs[23][15] = {"print","tonumber","tostring","ipairs","type","pairs","assert","error","setmetatable","getmetatable","rawset","rawget","rawlen","rawequal","pcall","xpcall","select","next","collectgarbage","require","load","dofile","loadfile"};
 
@@ -25,53 +21,7 @@ void ct_atexit(void){
 
 ////////// STAGE 1 //////////
 
-bool ct_getIdentifier(char *c, bool isFirst){
-	// if a space chain was found after identifier,
-	// they are summaried to one
-	if(*c == ' '){
-		*c = ct_clearSpaces();
-		
-		// space between different words
-		if(isalpha(*c) != 0 || *c == '_' || isdigit(*c)){
-			fseek(lim.sourceFile, -1, SEEK_CUR);
-			return false;
-		}
-	}
-
-	// ([a-zA-Z] or '_') or (!isF and ([0-9] or '.' or '(' or ':'))
-	return (isalpha(*c) != 0 || *c == '_' || (!isFirst && (isdigit(*c) || *c == '.' || *c == '(' || *c == ':')));
-}
-
-char ct_clearSpaces(void){
-	char c;
-	while(((c = fgetc(lim.sourceFile)) == ' ' || c == '\t')  && c != EOF);
-	return c;
-}
-
-void ct_saveString(FILE *buf, char signal){
-	short invBar = 2; // '\'
-	char c = signal;
-
-	do{
-		if(c != '\n' && c != '\t')
-			fputc(c, buf);
-
-		// check inverted bar:
-		// this annul the possible next
-		// single/double quotation mark
-		if(invBar > 0)
-			invBar--;
-		else if(c == '\\')
-			invBar = 2;
-
-	}while((c = fgetc(lim.sourceFile)) != EOF && (c != signal || invBar == 1));
-
-	// the quotation mark that
-	// break the loop
-	fputc(signal, buf);
-}
-
-void ct_getSpecial(FILE *buf, char c){
+void ct_specialCharTreatment(FILE *buf, char c){
 	// COMMENTARIES
 	// line
 	if(c == '-'){
@@ -96,7 +46,7 @@ void ct_getSpecial(FILE *buf, char c){
 	// STRINGS
 	_c = c;
 	if(c == '\'' || c == '"'){
-		ct_saveString(buf, c);
+		saveString(buf, c);
 		fputc('\n', buf);
 		return;
 	}
@@ -110,6 +60,29 @@ void ct_getSpecial(FILE *buf, char c){
 	// SPECIAL CHARACTERS
 	fputc(c, buf);
 	fputc('\n', buf);
+}
+
+static void saveString(FILE *buf, char signal){
+	short invBar = 2; // '\'
+	char c = signal;
+
+	do{
+		if(c != '\n' && c != '\t')
+			fputc(c, buf);
+
+		// check inverted bar:
+		// this annul the possible next
+		// single/double quotation mark
+		if(invBar > 0)
+			invBar--;
+		else if(c == '\\')
+			invBar = 2;
+
+	}while((c = fgetc(lim.sourceFile)) != EOF && (c != signal || invBar == 1));
+
+	// the quotation mark that
+	// break the loop
+	fputc(signal, buf);
 }
 
 static void clearComment(bool isLine){
@@ -158,51 +131,11 @@ static void saveBraces(FILE *buf){
 		else if(current == '}')
 			qtt--;
 		else if(current == '\'' || current == '"')
-			ct_saveString(buf, current);
+			saveString(buf, current);
 	}
 
 	fputc('}', buf);
 	fputc('\n', buf);
-}
-
-bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex){
-	// `return true`: `continue` the loop
-	// `~ false`: continue loop cycle
-
-	if(*c != '0' || *isHex)
-		return false;
-
-	fputc('0', dest);
-	char h = fgetc(src);
-
-	if(h == EOF)
-		return true;
-
-	// check if it is a valid
-	// hexadecimal prefix
-	if(h != 'x'){
-		if(isdigit(h)){
-			*c = h;
-			return false;
-		}
-
-		fputc('\n', dest);
-		fseek(src, -1, SEEK_CUR);
-		return true;
-	}
-
-	*isHex = true;
-	fputc('x', dest);
-
-	// check if the "hexadecimal
-	// content" is valid
-	if(!isxdigit(fgetc(src))){
-		fputc('\n', dest);
-		*isHex = false;
-	}
-
-	fseek(src, -1, SEEK_CUR);
-	return true;
 }
 
 
@@ -212,6 +145,9 @@ bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex){
 short ct_readPrefix(char *word, short prefix, bool isRootEnv){
 	if(prefix == PREFIX_LOCAL && strcmp(word, "function") == 0)
 		return TYPE_CONSTANT;
+
+	if(prefix == PREFIX_FUNCTION && strcmp(word, "(") == 0)
+		return TYPE_ANONYMOUS;
 
 	switch(prefix){
 		case PREFIX_G:          return TYPE_LIB_VAR;
@@ -228,10 +164,6 @@ short ct_readCurWord(char *word){
 		// metamethods
 		if(word[1] == '_')
 			return TYPE_CONSTANT;
-
-		// anonymous function
-		if(strcmp(word, "function(") == 0)
-			return TYPE_ANONYMOUS;
 
 		// from lua
 		if(checkLuaKeywords(word, false))
@@ -272,15 +204,13 @@ short ct_setPrefix(char *word, short prefix, bool isRootEnv){
 	return PREFIX_NONE;
 }
 
-char* ct_checkAndCreateNewEnv(char *word, short typeCode){
-	static unsigned short anonyId = 0;
-
+char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId){
 	if(typeCode == TYPE_ANONYMOUS){
 		free(anonyName);
 		free(commoName);
 		commoName = NULL;
 
-		anonyName = t_setAnonyFuncName(&anonyId);
+		anonyName = t_setAnonyFuncName(anonyId);
 
 		return anonyName;
 	}

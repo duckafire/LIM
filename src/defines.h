@@ -18,6 +18,7 @@ enum{
 	SCOPE_ADDR,
 	SCOPE_FUNC,
 	SCOPE_VAR,
+	SCOPE_LOCAL_FUNC_VAR = 0,
 };
 
 enum{
@@ -32,8 +33,7 @@ enum{
 #define INFO_FLAGS 2
 
 // COMPACTION PROCESS
-#define TOKEN_TABLE_KEY '@'
-#define TOKEN_FUNC_NAME '$'
+#define SEPARATOR(f) fputc('\n',f)
 
 // CONTENT-TREATMENT
 
@@ -120,12 +120,12 @@ enum{
 
 enum{ // Verbose Mode
 	VM_NORMAL,
-	VM_TITLE,
+	VM_STAGE,
 	VM_BREAK,
-	VM_START_PRO,
-	VM_END_PRO,
-	VM_START_BUF,
-	VM_END_BUF,
+	VM_PROCESS,
+	VM_FREE,
+	VM_BUFFER_INIT,
+	VM_BUFFER_END,
 };
 
 #endif

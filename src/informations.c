@@ -201,54 +201,37 @@ void info_help(char *arg){
 void info_verbose(short mode, ...){
 	if(!flags.verbose) return;
 
-	char *cur;        // #4
-	char content[16]; // #3 & #4
-	va_list text;     // #2, #3 & #4
-
+	va_list text;
 	va_start(text, mode);
 
-	// #1: [LIM] Program break; stopped in Stage ~
-	if(mode == VM_BREAK){
-		printf("\n[LIM] Program break; stopped in Stage %s.\n", va_arg(text, char*));
+	if(mode == VM_NORMAL)
+		printf("[LIM] %s\n", va_arg(text, char*));
 
-		va_end(text);
-		return;
-	}
+	else if(mode == VM_STAGE)
+		printf("\n[LIM] STAGE %d started: %s\n", va_arg(text, int), va_arg(text, char*));
 
-	// #2: [LIM] ~
-	if(mode == VM_NORMAL || mode == VM_TITLE){
-		char lf = (mode == VM_TITLE) ? '\n' : '\0';
+	else if(mode == VM_BREAK)
+		printf("\n[LIM] Program break; stopped in Stage %d.\n", va_arg(text, int));
 
-		printf("%c[LIM] %s\n", lf, va_arg(text, char*));
-		va_end(text);
-		return;
-	}
-	
-	// #3: [LIM] Read and ~ process started/finished.
-	if(mode == VM_START_PRO || mode == VM_END_PRO){
-		if(mode == VM_START_PRO)
-			strcpy(content, "started.\0");
+	else if(mode == VM_PROCESS)
+		printf("[LIM] Process of read and %s started.\n", va_arg(text, char*));
+
+	else if(mode == VM_FREE)
+		printf("[LIM] Freeing allocated memory(ies).\n");
+
+	else{
+		char *cur;
+
+		if(mode == VM_BUFFER_INIT)
+			printf("[LIM] Starting buffer:");
 		else
-			strcpy(content, "finished.\0");
+			printf("[LIM] Finishing buffer:");
 
-		printf("[LIM] Read and %s process %s", va_arg(text, char*), content);
+		while((cur = va_arg(text, char*)) != NULL)
+			printf(" \"%s\";", cur);
 
-		putchar('\n');
-		va_end(text);
-		return;
+		puts("...\n");
 	}
 
-	// #4: [LIM] Starting/Ending buffer: "~0"; "~n";
-	if(mode == VM_START_BUF)
-		strcpy(content, "Starting\0");
-	else
-		strcpy(content, "Ending\0");
-
-	printf("[LIM] %s buffer:", content);
-
-	while((cur = va_arg(text, char*)) != NULL)
-		printf(" \"%s\";", cur);
-
-	putchar('\n');
 	va_end(text);
 }

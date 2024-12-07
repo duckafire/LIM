@@ -38,6 +38,6 @@ static void cleanup(void){
 
 	buffers_atexit();
 	ct_atexit();
-	header_end();
+	//header_end();
 }
 

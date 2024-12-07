@@ -19,7 +19,7 @@ void t_fcat(FILE *src, FILE *dest);
 long t_filelen(FILE *file);
 char* t_allocAndCopy(char *src);
 void t_copyAndExportFile(FILE *src);
-void t_buildStringFromFile(FILE *src, char *c, char **string);
+void t_getStringFromFile(FILE *src, char *c, char **string);
 char* t_setAnonyFuncName(unsigned short *index);
 
 // BUFFERS
@@ -50,6 +50,13 @@ void scope_add(char *word, short bufId);
 FILE* scope_get(short bufId);
 void scope_rmvLastComma(short bufId);
 void scope_end(void);
+
+void scope_localAdd(char *name, char *word);
+FuncEnv* scope_localGet(char *name);
+void scope_localRmvLastComma(char *name);
+static FuncEnv* scope_createLocal(char *name);
+void scope_localEnd(void);
+void scope_endItems(FuncEnv *item);
 
 void nick_init(bool toFuncs);
 static void nick_upChar(long id);
@@ -95,20 +102,18 @@ void cp_5_mergingContentAndPackingLibrary(void);
 void ct_atexit(void);
 bool ct_getIdentifier(char *c, bool isFirst);
 char ct_clearSpaces(void);
-void ct_saveString(FILE *buf, char signal);
-void ct_getSpecial(FILE *buf, char c);
+void ct_specialCharTreatment(FILE *buf, char c);
 
 short ct_readPrefix(char *word, short prefix, bool isRootEnv);
 short ct_readCurWord(char *word);
 short ct_setPrefix(char *word, short prefix, bool isRootEnv);
-char* ct_checkAndCreateNewEnv(char *word, short typeCode);
+char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId);
 void ct_checkAndUpLayer(char *_word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);
-bool ct_hexTest(FILE *src, FILE  *dest, char *c, bool *isHex);
 
 static void clearComment(bool isLine);
+static void saveString(FILE *buf, char signal);
 static void saveBraces(FILE *buf);
-static bool saveDoubleSignal(FILE *buf, char sig_0, char sig_1);
 static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
 
@@ -158,5 +163,11 @@ void info_welcome(void);
 void info_version(void);
 void info_help(char *arg);
 void info_verbose(short mode, ...);
+
+// STAGE-RESULT
+bool stageProduct_extractionFromOrigin(short id, FILE *extrCttBuf);
+bool stageProduct_separateExtractedContent(short id);
+bool stageProduct_buildingGlobalScope(short id);
+bool stageProduct_organizeAndCompact(short id);
 
 #endif

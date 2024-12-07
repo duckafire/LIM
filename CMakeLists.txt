@@ -26,6 +26,7 @@ add_executable(lim
 	${SRC_DIR}/buffers.c
 	${SRC_DIR}/header.c
 	${SRC_DIR}/memory-manipulation.c
+	${SRC_DIR}/stage-product.c
 )
 
 # on the contrary of "(lib)c", "(lib)m" is not
