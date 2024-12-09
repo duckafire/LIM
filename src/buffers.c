@@ -16,23 +16,6 @@ static FILE *finalContent = NULL;
 static char nickFirst, nickLast, nickReser;
 static char *nick = NULL;
 
-void buffers_atexit(void){
-	if(fromsrc.head != NULL)
-		fromsrc_end();
-
-	if(refe_tree[0] != NULL)
-		refe_endTree();
-
-	if(refe_queue != NULL){
-		Queue *i;
-		while((i = refe_getAndRmvQueueItem()) != NULL);
-	}
-
-	if(nick != NULL)
-		nick_end();
-}
-
-
 
 
 ////////// GLOBAL ENVORINMENTS //////////

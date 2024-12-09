@@ -20,9 +20,9 @@ int main(int argc, char *argv[]){
 	cf_destineName_2();
 
 	// Compaction Process
-	//cp_0_checkAndOpenFiles();
-	//if(cp_1_extractionFromOrigin())     return 0;
-	//if(cp_2_separateExtractedContent()) return 0;
+	cp_0_checkAndOpenFiles();
+	if(cp_1_extractionFromOrigin())     return 0;
+	if(cp_2_separateExtractedContent()) return 0;
 	//if(cp_3_buildingGlobalScope())      return 0;
 	//if(cp_4_organizeAndCompact())       return 0;
 	cp_5_mergingContentAndPackingLibrary();
@@ -32,12 +32,6 @@ int main(int argc, char *argv[]){
 
 static void cleanup(void){
 	free(lim.destineFileName);
-
-	if(lim.sourceFile != NULL)
-		fclose(lim.sourceFile);
-
-	buffers_atexit();
 	ct_atexit();
-	//header_end();
 }
 

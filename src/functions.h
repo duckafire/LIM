@@ -23,7 +23,6 @@ void t_getStringFromFile(FILE *src, char *c, char **string);
 char* t_setAnonyFuncName(unsigned short *index);
 
 // BUFFERS
-void buffers_atexit(void);
 
 void fromsrc_init(void);
 void fromsrc_newEnv(char *name);
