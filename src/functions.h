@@ -38,24 +38,22 @@ static void fromsrc_fseekSetAllLocal(FuncEnv *local);
 
 void refe_init(void);
 void refe_add(char *table, char *_func);
-void refe_treeToQueue(void);
 Queue* refe_getAndRmvQueueItem(void);
-void refe_endTree(void);
+void refe_initQueueAndEndTree(void);
 static BinaryNode* refe_getBuf(char firstChar);
 static void refe_buildQueue(BinaryNode *root, char *origin);
 
 void scope_init(void);
 void scope_add(char *word, short bufId);
 FILE* scope_get(short bufId);
-void scope_rmvLastComma(short bufId);
 void scope_end(void);
 
-void scope_localAdd(char *name, char *word);
-FuncEnv* scope_localGet(char *name);
-void scope_localRmvLastComma(char *name);
-static FuncEnv* scope_createLocal(char *name);
-void scope_localEnd(void);
-void scope_endItems(FuncEnv *item);
+//void scope_localAdd(char *name, char *word);
+//FuncEnv* scope_localGet(char *name);
+//void scope_localRmvLastComma(char *name);
+//static FuncEnv* scope_createLocal(char *name);
+//void scope_localEnd(void);
+//void scope_endItems(FuncEnv *item);
 
 void nick_init(bool toFuncs);
 static void nick_upChar(long id);
@@ -64,7 +62,6 @@ void nick_up(void);
 char *nick_get(void);
 void nick_end(void);
 
-void pairs_init(void);
 void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident);
 void pairs_updateQuantity(char *string);
 void pairs_updateOrder(void);
@@ -91,9 +88,7 @@ static void cf_setDestineName(char *src, bool withPath);
 void cp_0_checkAndOpenFiles(void);
 bool cp_1_extractionFromOrigin(void);
 bool cp_2_separateExtractedContent(void);
-bool cp_3_buildingGlobalScope(void);
-static void cp_3_buildingGlobalScope_functions(void);
-static void cp_3_buildingGlobalScope_variablesAndTables(void);
+bool cp_3_buildingIdentifiersScope(void);
 bool cp_4_organizeAndCompact(void);
 void cp_5_mergingContentAndPackingLibrary(void);
 
@@ -165,7 +160,7 @@ void info_verbose(short mode, ...);
 // STAGE-RESULT
 bool stageProduct_extractionFromOrigin(short id, FILE *extrCttBuf);
 bool stageProduct_separateExtractedContent(short id);
-bool stageProduct_buildingGlobalScope(short id);
+bool stageProduct_buildingIdentifiersScope(short id);
 bool stageProduct_organizeAndCompact(short id);
 
 #endif

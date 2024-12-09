@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
 	cp_0_checkAndOpenFiles();
 	if(cp_1_extractionFromOrigin())     return 0;
 	if(cp_2_separateExtractedContent()) return 0;
-	//if(cp_3_buildingGlobalScope())      return 0;
+	if(cp_3_buildingIdentifiersScope()) return 0;
 	//if(cp_4_organizeAndCompact())       return 0;
 	cp_5_mergingContentAndPackingLibrary();
 

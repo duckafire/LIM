@@ -187,11 +187,16 @@ static BinaryNode* refe_getBuf(char firstChar){
 	}
 }
 
-void refe_treeToQueue(void){
+void refe_initQueueAndEndTree(void){
 	for(short i = 0; i < REFE_TOTAL_BUF; i++){
 		REFE3_TOQUEUE(left);
 		REFE3_TOQUEUE(right);
 		REFE3_TOQUEUE(next);
+	}
+
+	for(short i = 0; i < REFE_TOTAL_BUF; i++){
+		mm_treeEnd(&(refe_tree[i]));
+		refe_tree[i] = NULL;
 	}
 }
 
@@ -210,8 +215,7 @@ static void refe_buildQueue(BinaryNode *root, char *origin){
 }
 
 Queue* refe_getAndRmvQueueItem(void){
-	// after the use, the pointer
-	// returned need to be freed
+	// the value returned need to be freed
 	Queue *toRemove;
 
 	toRemove = refe_queue;
@@ -222,18 +226,10 @@ Queue* refe_getAndRmvQueueItem(void){
 	return toRemove;
 }
 
-void refe_endTree(void){
-	for(short i = 0; i < REFE_TOTAL_BUF; i++){
-		mm_treeEnd(&(refe_tree[i]));
-		refe_tree[i] = NULL;
-	}
-}
-
 
 
 ////////// SCOPE //////////
 
-/* TODO
 void scope_init(void){
 	for(short i = 0; i < SCOPE_TOTAL_BUF; i++)
 		scope[i] = tmpfile();
@@ -247,10 +243,6 @@ FILE *scope_get(short bufId){
 	return scope[bufId];
 }
 
-void scope_rmvLastComma(short bufId){
-	fseek(scope[bufId], -1, SEEK_CUR);
-}
-
 void scope_end(void){
 	for(short i = 0; i < SCOPE_TOTAL_BUF; i++){
 		fclose(scope[i]);
@@ -258,6 +250,7 @@ void scope_end(void){
 	}
 }
 
+/* TODO
 void scope_localAdd(char *name, char *word){
 	if(lscope == NULL){
 		lscope = scope_createLocal(name);
@@ -397,10 +390,8 @@ void nick_end(void){
 
 ////////// PAIR //////////
 
-void pairs_init(void){
-	// "pairs" don't need to be initiate;
-	// this function is only a convention
-}
+// this is only a convention
+// #define pairs_init
 
 void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
 	// 0 (A-Z): functions from Lua and from "header.lim"
@@ -409,7 +400,6 @@ void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *iden
 }
 
 void pairs_updateQuantity(char *string){
-	// only to "variables and tables"
 	pairs_upItemQtt(pairs[1], string);
 }
 

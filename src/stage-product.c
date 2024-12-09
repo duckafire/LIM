@@ -68,13 +68,24 @@ bool stageProduct_separateExtractedContent(short id){
 	return true;
 }
 
-bool stageProduct_buildingGlobalScope(short id){
-	if(flags.untilStage == id)
+bool stageProduct_buildingIdentifiersScope(short id){
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, 3);
+
+	scope_end();
+	nick_end();
+	pairs_end();
+
+	return true;
+}
+
+bool stageProduct_organizeAndCompact(short id){
+	if(flags.untilStage != id)
 		return false;
 
 	// wip
 
 	return true;
 }
-
-bool stageProduct_organizeAndCompact(short id){}
