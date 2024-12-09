@@ -70,7 +70,6 @@ enum{
 
 // HEADER
 #define HEADER_BLOCK_NH  "> Blocked by flag: (-nh) --no-header"
-#define HEADER_BLOCK_US  "> Blocked by flag: (-us) --until-stage"
 #define HEADER_NOT_FOUND "> File not found."
 #define HEADER_NONE_PART "> None partition was found."
 #define HEADER_ONLY_TOP  "> Only the \"Top Partition\" was found."

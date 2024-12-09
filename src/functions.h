@@ -119,12 +119,11 @@ static bool checkLuaFuncs(char *word);
 
 // HEADER
 char* header_init(void);
-bool header_printTop(FILE *dest);
-bool header_printScope(FILE *dest);
+bool header_printBuf(FILE *dest, short buf);
 bool header_checkFuncList(char *word);
-FILE* header_getList(void);
+FILE* header_getFuncList(void);
 void header_end(void);
-static bool header_getFromOrigin(FILE *src, FILE *dest, long *ltell, long *ctell);
+static bool header_getFromOrigin(FILE *src, short buf, long *ltell, long *ctell);
 
 // MEMORY-MANIPULATION
 void mm_stringInit(char **buf);

@@ -35,19 +35,10 @@ void cp_0_checkAndOpenFiles(void){
 			er_fileAlreadyExistent(lim.destineFileName);
 		}
 	}
-
-
-	// header.lim
-	//info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
-	//info_verbose(VM_NORMAL, head_init());
 }
 
 bool cp_1_extractionFromOrigin(void){
 	info_verbose(VM_STAGE, 1, "extract content from source file.");
-
-
-	// ==1: valid
-	short isFloat = 0;
 
 
 	info_verbose(VM_BUFFER_INIT, "extrCttBuf", NULL);
@@ -85,23 +76,16 @@ bool cp_1_extractionFromOrigin(void){
 		}
 
 
-		// all that start with a number is a number: 1xyz, 0xgh, ...
+		// all that start with a number is a number: 1xyz, 0.lua, ...
 		if(isdigit(c)){
 			do{
 				fputc(c, extrCttBuf);
 				c = fgetc(lim.sourceFile);
-
-				if(c == '.' && isFloat == 0)
-					isFloat = 1;
-				else if(isFloat == 1)
-					isFloat = -1;
-
-			}while(c != EOF && (isalnum(c) || isFloat == 1 || c == '_'));
+			}while(c != EOF && (isalnum(c) || c == '.' || c == '_'));
 
 			if(c == EOF)
 				break;
 
-			isFloat = 0;
 			fseek(lim.sourceFile, -1, SEEK_CUR);
 			SEPARATOR(extrCttBuf);
 			continue;
@@ -515,5 +499,12 @@ static void cp_3_buildingGlobalScope_variablesAndTables(void){
 	mm_stringEnd(&string, false);
 }
 */
+
 bool cp_4_organizeAndCompact(void){}
-void cp_5_mergingContentAndPackingLibrary(void){}
+void cp_5_mergingContentAndPackingLibrary(void){
+	// header.lim
+	info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
+	info_verbose(VM_NORMAL, header_init());
+
+	header_end();
+}
