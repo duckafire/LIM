@@ -17,8 +17,9 @@ void cp_0_checkAndOpenFiles(void){
 	info_verbose(VM_NORMAL, "Checking source code file...");
 	lim.sourceFile = fopen(lim.sourceFileName, "r");
 
-	if(lim.sourceFile == NULL)
+	if(lim.sourceFile == NULL){
 		er_nonExistentFile(lim.sourceFileName);
+	}
 
 
 	if(flags.replace){
@@ -181,9 +182,6 @@ bool cp_3_buildingIdentifiersScope(void){
 	info_verbose(VM_STAGE, 3, "build identifiers scope");
 
 	
-	// "string" length
-	unsigned short len;
-
 	// math/string/table==treaty like "word"
 	char *table = NULL;
 
@@ -218,9 +216,7 @@ bool cp_3_buildingIdentifiersScope(void){
 					free(table);
 				}
 
-				len = strlen(string);
-				table = malloc(len + sizeof(char));
-				
+				table = t_allocAndCopy(string);
 				strcpy(table, string);
 				mm_stringEnd(&string, true);
 				continue;
@@ -257,13 +253,14 @@ bool cp_3_buildingIdentifiersScope(void){
 
 	Queue *item;
 
+	unsigned short len;
+
 	char *content[2], *fullContent, *firstToCopy;
 
 
 	scope_init();
 	nick_init(true);
 	pairs_init;
-	START_SCOPE(SCOPE_FUNC);
 
 
 	while((item = refe_getAndRmvQueueItem()) != NULL){
@@ -286,7 +283,7 @@ bool cp_3_buildingIdentifiersScope(void){
 		if(firstToCopy != content[1] && content[1] != NULL)
 			strcat(fullContent, content[1]);
 
-		scope_add(nick_get(), SCOPE_FUNC);
+		scope_add(nick_get(),  SCOPE_BASE);
 		scope_add(fullContent, SCOPE_FUNC_BUF);
 		pairs_add(false, item->quantity, nick_get(), fullContent);
 
@@ -295,16 +292,20 @@ bool cp_3_buildingIdentifiersScope(void){
 		free(item);
 	}
 
-	MERGE_AND_END_REFE_SCOPES;
-	scope_end();
+
+	SCOPE_MERGE_BASE_WITH_BUF;
 	nick_end();
-	pairs_end();
 
 
 	return stageProduct_buildingIdentifiersScope(3);
 }
 
-bool cp_4_organizeAndCompact(void){return false;}
+bool cp_4_organizeAndCompact(void){
+	scope_end();
+	pairs_end();
+
+	return false;
+}
 
 void cp_5_mergingContentAndPackingLibrary(void){
 	// header.lim

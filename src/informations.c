@@ -192,8 +192,9 @@ void info_help(char *arg){
 			" ",
 			"Specific that the compaction process must run until a specific stage.",
 		NULL);
-	else
+	else{
 		er_invalidArgToHelp(arg);
+	}
 
 	exit(0);
 }

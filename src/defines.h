@@ -11,34 +11,22 @@
 #define FROMSRC_TOTAL_BUF 9
 #define FROMSRC_ORDER 0
 #define REFE_FUNC 0
-#define SCOPE_TOTAL_BUF 3
+#define SCOPE_TOTAL_BUF 2
 #define REFE3_TOQUEUE(k) refe_buildQueue(refe_tree[i]->k, ((i == 0) ? NULL : lim.lua_tabs[i - 1]))
 #define pairs_init
 
-#define START_SCOPE(i)               \
-	fprintf(scope_get(i), "local "); \
-	END_SCOPE(i, 0)
+#define SCOPE_BASE_REPLACE_LAST_COMMA(c)        \
+	fseek(scope_get(SCOPE_BASE), -1, SEEK_CUR); \
+	fputc(c, scope_get(SCOPE_BASE))
 
-#define END_SCOPE(i, isScopeFunc)          \
-	fseek(scope_get(i), -1, SEEK_CUR);     \
-	if(isScopeFunc)                        \
-		fputc('=', scope_get(SCOPE_FUNC)); \
-	else                                   \
-		fputc(' ', scope_get(i));
-
-#define MERGE_AND_END_REFE_SCOPES                             \
-	END_SCOPE(SCOPE_FUNC, 1);                                 \
-	END_SCOPE(SCOPE_FUNC_BUF, 0);                             \
-	t_fcat(scope_get(SCOPE_FUNC_BUF), scope_get(SCOPE_FUNC)); \
-	fclose(scope_get(SCOPE_FUNC_BUF))
-
-#define END_VAR_SCOPE \
-	END_SCOPE(SCOPE_VAR)
+#define SCOPE_MERGE_BASE_WITH_BUF                             \
+	SCOPE_BASE_REPLACE_LAST_COMMA('=');                       \
+	t_fcat(scope_get(SCOPE_BASE), scope_get(SCOPE_FUNC_BUF)); \
+	SCOPE_BASE_REPLACE_LAST_COMMA(' ')
 
 enum{
 	SCOPE_FUNC_BUF, // original identifier of functions
-	SCOPE_FUNC,     // functions nickname
-	SCOPE_VAR,      // variables and tables nickname
+	SCOPE_BASE,     // nicknames
 };
 
 enum{

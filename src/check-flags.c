@@ -37,15 +37,17 @@ void cf_unexpected(void){
 
 	for(short i = 2; i < argc; i++)
 		for(short j = 0; j < ARRAY_LEN(invalid[i]); j++)
-			if(t_strcmp2(argv[i], invalid[j][0], invalid[j][1]))
+			if(t_strcmp2(argv[i], invalid[j][0], invalid[j][1])){
 				er_unexpectedFlag(argv[i], i);
+			}
 }
 
 void cf_toCompaction(void){ // "destineName_1"
 	for(short i = 1; i < argc; i++){
 		if(t_strcmp2(argv[i], F_VERBOSE)){
-			if(flags.verbose)
+			if(flags.verbose){
 				er_repeatFlag(argv[i], i);
+			}
 
 			flags.verbose = true;
 			argv[i] = NULL;
@@ -53,11 +55,13 @@ void cf_toCompaction(void){ // "destineName_1"
 		}
 
 		if(t_strcmp2(argv[i], F_NAME)){
-			if(lim.destineFileName != NULL)
+			if(lim.destineFileName != NULL){
 				er_repeatFlag(argv[i], i);
+			}
 
-			if(i + 1 == argc)
+			if(i + 1 == argc){
 				er_argExpected( t_getLongFlag(F_NAME) );
+			}
 
 			cf_setDestineName(argv[i + 1], true);
 
@@ -67,8 +71,9 @@ void cf_toCompaction(void){ // "destineName_1"
 		}
 		
 		if(t_strcmp2(argv[i], F_REPLACE)){
-			if(flags.replace)
+			if(flags.replace){
 				er_repeatFlag(argv[i], i);
+			}
 
 			flags.replace = true;
 			argv[i] = NULL;
@@ -76,8 +81,9 @@ void cf_toCompaction(void){ // "destineName_1"
 		}
 
 		if(t_strcmp2(argv[i], F_NO_HEAD)){
-			if(!flags.headfile)
+			if(!flags.headfile){
 				er_repeatFlag(argv[i], i);
+			}
 
 			flags.headfile = false;
 			argv[i] = NULL;
@@ -85,14 +91,17 @@ void cf_toCompaction(void){ // "destineName_1"
 		}
 
 		if(t_strcmp2(argv[i], F_UNTIL_S)){
-			if(flags.untilStage != 0)
+			if(flags.untilStage != 0){
 				er_repeatFlag(argv[i], i);
+			}
 
-			if(i + 1 == argc)
+			if(i + 1 == argc){
 				er_argExpected( t_getLongFlag(F_UNTIL_S) );
+			}
 
-			if(strlen(argv[i + 1]) > 1 || argv[i + 1][0] < '1' || argv[i + 1][0] > '4')
+			if(strlen(argv[i + 1]) > 1 || argv[i + 1][0] < '1' || argv[i + 1][0] > '4'){
 				er_invalidSuffixToFlag( t_getLongFlag(F_UNTIL_S) , "number (1 - 4)", argv[i + 1]);
+			}
 
 			flags.untilStage = (short)(argv[i + 1][0] - '0');
 
@@ -112,8 +121,9 @@ void cf_invalid(void){
 		if(argv[i] == NULL)
 			continue;
 
-		if(argv[i][0] == '-' || (argv[i][0] == '-' && argv[i][1] == '-'))
+		if(argv[i][0] == '-' || (argv[i][0] == '-' && argv[i][1] == '-')){
 			er_invalidFlag(argv[i], i);
+		}
 
 		if(lim.sourceFileName == NULL){
 			lim.sourceFileName = argv[i];
@@ -125,8 +135,9 @@ void cf_invalid(void){
 }
 
 void cf_originName(){
-	if(lim.sourceFileName == NULL)
+	if(lim.sourceFileName == NULL){
 		er_nameNotSpecified;
+	}
 }
 
 void cf_destineName_2(void){

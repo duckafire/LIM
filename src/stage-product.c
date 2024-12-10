@@ -74,8 +74,17 @@ bool stageProduct_buildingIdentifiersScope(short id){
 
 	info_verbose(VM_BREAK, 3);
 
+
+	toexport = tmpfile();
+
+	fprintf(toexport, "@ IDENTIFIER SCOPE OF THE \"%s\"\n\n", lim.sourceFileName);
+	t_fcat(toexport, scope_get(SCOPE_BASE));
+
+	t_copyAndExportFile(toexport);
+	fclose(toexport);
+
+
 	scope_end();
-	nick_end();
 	pairs_end();
 
 	return true;

@@ -6,7 +6,7 @@
 static GlobalEnv fromsrc;
 static BinaryNode *refe_tree[REFE_TOTAL_BUF];
 static Queue *refe_queue;
-static FILE *scope[3];
+static FILE *scope[2];
 static FuncEnv *lscope = NULL;
 static Queue *pairs[2];
 static FILE *finalContent = NULL;
@@ -164,8 +164,6 @@ void refe_add(char *table, char *func){
 		mm_treeNewNode(refe_tree[REFE_FUNC], table[0], table, NULL, true);
 	else
 		mm_treeNewNode(refe_getBuf(table[0]), func[1], NULL, func, true);
-
-	free(func);
 }
 
 static BinaryNode* refe_getBuf(char firstChar){
@@ -229,6 +227,8 @@ Queue* refe_getAndRmvQueueItem(void){
 void scope_init(void){
 	for(short i = 0; i < SCOPE_TOTAL_BUF; i++)
 		scope[i] = tmpfile();
+
+	fputs("local ", scope[SCOPE_BASE]);
 }
 
 void scope_add(char *word, short bufId){
