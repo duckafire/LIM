@@ -203,9 +203,9 @@ static void refe_buildQueue(BinaryNode *root, char *origin){
 	refe_buildQueue(root->next,  origin);
 
 	if(root->content[1] == NULL) // only "table"
-		mm_queueInsertItem(&refe_queue, root->quantity, root->content[0], NULL);
+		mm_queueInsertItem(&refe_queue, root->quantity, root->content[0], NULL, true);
 	else
-		mm_queueInsertItem(&refe_queue, root->quantity, origin, root->content[1]);
+		mm_queueInsertItem(&refe_queue, root->quantity, origin, root->content[1], true);
 }
 
 Queue* refe_getAndRmvQueueItem(void){
@@ -316,7 +316,7 @@ void nick_init(bool toFuncs){
 	if(toFuncs){
 		nickFirst = 'A';
 		nickLast  = 'Z';
-		nickReser = 'K';
+		nickReser = 'L';
 	}else{
 		nickFirst = 'a';
 		nickLast  = 'z';
@@ -328,21 +328,15 @@ void nick_init(bool toFuncs){
 }
 
 static void nick_upChar(long id){
-	// '_' == 'L'/'l';
-	// '_' -> 'M'/'m'
-	if(nick[id] == '_'){
-		nick[id] = nickReser + 1;
-		return;
-	}
-
 	// 'a' -> 'b'; 'b' -> 'c'; ...
 	nick[id]++;
 
-	// jump 'L' and 'l' (reservated):
+	// identifier prefixes
 	// 'L': library tables
 	// 'l': local variables/table/function
+	// '_': functions parameters
 	if(nick[id] == nickReser)
-		nick[id] = '_';
+		nick[id]++;
 }
 
 static void nick_upAll(long last){
@@ -392,7 +386,7 @@ void nick_end(void){
 void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
 	// 0 (A-Z): functions from Lua and from "header.lim"
 	// 1 (a-z): variables, tables and functions declared with `local`, in root env.
-	mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident);
+	mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident, false);
 }
 
 void pairs_updateQuantity(char *string){
@@ -425,35 +419,12 @@ static void pairs_newOrderQueue(Queue *src, Queue **dest){
 
 	pairs_newOrderQueue(src->next, dest);
 
-	mm_queueInsertItem(dest, src->quantity, src->content[0], src->content[1]);
+	mm_queueInsertItem(dest, src->quantity, src->content[0], src->content[1], true);
 	mm_treeFreeNodeAndQueueItem(NULL, src);
 }
 
-char* pairs_get(bool fromSrcFile, char *string){
-	return t_allocAndCopy( pairs_getNick(pairs[ fromSrcFile ], string) );
-}
-
-static char* pairs_getNick(Queue *item, char *string){
-	if(item == NULL)
-		return "NULL"; // "gambiarra" to """fix""" a BUG
-
-	if(strcmp(item->content[1], string) == 0)
-		return item->content[0];
-
-	return pairs_getNick(item->next, string);
-}
-
-void pairs_printAll(FILE *dest, bool fromSrcFile){
-	pairs_printContent(pairs[ fromSrcFile ], dest);
-}
-
-static void pairs_printContent(Queue *item, FILE *dest){
-	if(item == NULL)
-		return;
-
-	fprintf(dest, "%d\t\t%s\t\t%s\n", item->quantity + 1, item->content[0], item->content[1]);
-
-	pairs_printContent(item->next, dest);
+Queue* pairs_get(bool fromSrcFile){
+	return pairs[ fromSrcFile ];
 }
 
 void pairs_end(void){

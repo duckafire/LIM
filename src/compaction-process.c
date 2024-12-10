@@ -181,6 +181,8 @@ bool cp_2_separateExtractedContent(void){
 bool cp_3_buildingIdentifiersScope(void){
 	info_verbose(VM_STAGE, 3, "build identifiers scope");
 
+
+	// FUNCTIONS AND TABLES FROM LUA AND HEADER
 	
 	// math/string/table==treaty like "word"
 	char *table = NULL;
@@ -196,6 +198,8 @@ bool cp_3_buildingIdentifiersScope(void){
 	refe_init();
 
 
+	// build binary tree with functions, from Lua
+	// and header file, that were used in source file
 	for(short funcListId = 0; funcListId < 2; funcListId++){
 		// only #1 can be NULL
 		if(funcList[ funcListId ] == NULL)
@@ -263,6 +267,7 @@ bool cp_3_buildingIdentifiersScope(void){
 	pairs_init;
 
 
+	// add queue content to scope
 	while((item = refe_getAndRmvQueueItem()) != NULL){
 		len = 0;
 
@@ -289,13 +294,55 @@ bool cp_3_buildingIdentifiersScope(void){
 
 		nick_up();
 		free(fullContent);
-		free(item);
+		mm_treeFreeNodeAndQueueItem(NULL, item);
 	}
 
 
-	SCOPE_MERGE_BASE_WITH_BUF;
+	//SCOPE_MERGE_BASE_WITH_BUF;
 	nick_end();
 
+
+
+
+	// VARIABLES AND TABLES FROM SOURCE FILE
+
+	FILE *tmp;
+	tmp = (fromsrc_get())->bufs[TYPE_GLOBAL_VAR];
+
+
+	mm_stringInit(&string);
+	nick_init(false);
+
+
+	// get "private global" variables and tables
+	// identifier and ordenate to build them scope
+	for(short mode = 0; mode < 2; mode++){
+		fseek(tmp, 0, SEEK_SET);
+
+		while((c = fgetc(tmp)) != EOF){
+			t_getStringFromFile(tmp, &c, &string);
+
+			if(mode == 0){
+				pairs_add(true, 0, nick_get(), string);
+				nick_up();
+			}else{
+				pairs_updateQuantity(string);
+			}
+
+			mm_stringEnd(&string, true);
+		}
+	}
+
+	// build them scope
+	for(item = pairs_get(true); item != NULL; item = item->next)
+		scope_add(item->content[0], SCOPE_BASE);
+
+
+	SCOPE_MERGE_BASE_WITH_BUF;
+	pairs_updateOrder();
+
+	mm_stringEnd(&string, false);
+	nick_end();
 
 	return stageProduct_buildingIdentifiersScope(3);
 }

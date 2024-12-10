@@ -64,13 +64,10 @@ void nick_end(void);
 void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident);
 void pairs_updateQuantity(char *string);
 void pairs_updateOrder(void);
-char* pairs_get(bool fromSrcFile, char *string);
-void pairs_printAll(FILE *dest, bool fromSrcFile);
+Queue* pairs_get(bool fromSrcFile);
 void pairs_end(void);
 static void pairs_upItemQtt(Queue *item, char *string);
 static void pairs_newOrderQueue(Queue *src, Queue **dest);
-static char* pairs_getNick(Queue *item, char *string);
-static void pairs_printContent(Queue *item, FILE *dest);
 static void pairs_endQueue(Queue *item);
 
 // CHECK-FLAGS
@@ -131,10 +128,10 @@ void mm_treeEnd(BinaryNode **root);
 static BinaryNode* mm_treeCreateNode(char id, char *ctt0, char *ctt1);
 static void mm_treeInsertItem(BinaryNode  *node, BinaryNode *new, bool upQtt, bool toQueue);
 
-void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1);
+void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1, bool upQtt);
 static Queue* mm_queueNewItem(unsigned short quantity, char *ctt0, char *ctt1);
 static void mm_queueContentsLength(unsigned int *v0, unsigned int *v1, Queue *i0, Queue *i1);
-static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new);
+static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt);
 
 // PRINT-TEXT/ERRORS (ERror)
 // its function are macros, they
