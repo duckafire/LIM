@@ -82,11 +82,12 @@ static void cf_setDestineName(char *src, bool withPath);
 
 // COMPACTION-PROCESS
 void cp_0_checkAndOpenFiles(void);
-bool cp_1_extractionFromOrigin(void);
-bool cp_2_separateExtractedContent(void);
-bool cp_3_buildingIdentifiersScope(void);
-bool cp_4_organizeAndCompact(void);
-void cp_5_mergingContentAndPackingLibrary(void);
+bool cp_1_extractSourceContent(void);
+bool cp_2_separateExtractContent(void);
+bool cp_3_buildRootScope(void);
+bool cp_4_buildFunctionsScope(void);
+bool cp_5_organizeAndCompact(void);
+void cp_6_mergeContentAndPackLib(void);
 
 // CONTENT-TREATMENT
 void ct_atexit(void);
@@ -146,9 +147,10 @@ void info_help(char *arg);
 void info_verbose(short mode, ...);
 
 // STAGE-RESULT
-bool stageProduct_extractionFromOrigin(short id, FILE *extrCttBuf);
-bool stageProduct_separateExtractedContent(short id);
-bool stageProduct_buildingIdentifiersScope(short id);
-bool stageProduct_organizeAndCompact(short id);
+bool sp_extractSourceContent(short id, FILE *extrCttBuf);
+bool sp_separateExtractContent(short id);
+bool sp_buildRootScope(short id);
+bool sp_buildFunctionsScope(short id);
+bool sp_organizeAndCompact(short id);
 
 #endif

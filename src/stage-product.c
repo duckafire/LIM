@@ -3,22 +3,16 @@
 
 static FILE *toexport;
 
-bool stageProduct_extractionFromOrigin(short id, FILE *extrCttBuf){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, 1);
+bool sp_extractSourceContent(short id, FILE *extrCttBuf){
+	SP_BASE(1);
 
 	t_copyAndExportFile(extrCttBuf);
 	
 	return true;
 }
 
-bool stageProduct_separateExtractedContent(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, 2);
+bool sp_separateExtractContent(short id){
+	SP_BASE(2);
 
 
 	const char* const titles[] = {
@@ -68,11 +62,8 @@ bool stageProduct_separateExtractedContent(short id){
 	return true;
 }
 
-bool stageProduct_buildingIdentifiersScope(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, 3);
+bool sp_buildRootScope(short id){
+	SP_BASE(3);
 
 
 	toexport = tmpfile();
@@ -90,9 +81,14 @@ bool stageProduct_buildingIdentifiersScope(short id){
 	return true;
 }
 
-bool stageProduct_organizeAndCompact(short id){
-	if(flags.untilStage != id)
-		return false;
+bool sp_buildFunctionsScope(short id){
+	SP_BASE(4);
+
+	return true;
+}
+
+bool sp_organizeAndCompact(short id){
+	SP_BASE(5);
 
 	// wip
 

@@ -38,7 +38,7 @@ void cp_0_checkAndOpenFiles(void){
 	}
 }
 
-bool cp_1_extractionFromOrigin(void){
+bool cp_1_extractSourceContent(void){
 	info_verbose(VM_STAGE, 1, "extract content from source file.");
 
 
@@ -102,10 +102,10 @@ bool cp_1_extractionFromOrigin(void){
 	lim.sourceFile = NULL;
 
 	
-	return stageProduct_extractionFromOrigin(1, extrCttBuf);
+	return sp_extractSourceContent(1, extrCttBuf);
 }
 
-bool cp_2_separateExtractedContent(void){
+bool cp_2_separateExtractContent(void){
 	info_verbose(VM_STAGE, 2, "separate extracted content.");
 
 
@@ -175,10 +175,10 @@ bool cp_2_separateExtractedContent(void){
 	fclose(extrCttBuf);
 
 
-	return stageProduct_separateExtractedContent(2);
+	return sp_separateExtractContent(2);
 }
 
-bool cp_3_buildingIdentifiersScope(void){
+bool cp_3_buildRootScope(void){
 	info_verbose(VM_STAGE, 3, "build identifiers scope");
 
 
@@ -344,17 +344,21 @@ bool cp_3_buildingIdentifiersScope(void){
 	mm_stringEnd(&string, false);
 	nick_end();
 
-	return stageProduct_buildingIdentifiersScope(3);
+	return sp_buildRootScope(3);
 }
 
-bool cp_4_organizeAndCompact(void){
+bool cp_4_buildFunctionsScope(void){
 	scope_end();
 	pairs_end();
 
 	return false;
 }
 
-void cp_5_mergingContentAndPackingLibrary(void){
+bool cp_5_organizeAndCompact(void){
+	return false;
+}
+
+void cp_6_mergeContentAndPackLib(void){
 	// header.lim
 	info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
 	info_verbose(VM_NORMAL, header_init());

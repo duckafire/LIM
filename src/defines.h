@@ -92,6 +92,13 @@ enum{
 
 // MEMORY-MANIPULATION
 
+// STAGE-PRODUCT
+#define SP_BASE(id)             \
+	if(flags.untilStage != id)  \
+		return false;           \
+	info_verbose(VM_BREAK, id)
+
+
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
 
 // PRINT-TEXT/INFORMATIONS

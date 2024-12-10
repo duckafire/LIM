@@ -21,12 +21,13 @@ int main(int argc, char *argv[]){
 
 	// Compaction Process
 	cp_0_checkAndOpenFiles();
-	if(cp_1_extractionFromOrigin())     return 0;
-	if(cp_2_separateExtractedContent()) return 0;
-	if(cp_3_buildingIdentifiersScope()) return 0;
-	if(cp_4_organizeAndCompact())       return 0;
-	cp_5_mergingContentAndPackingLibrary();
-
+	if(cp_1_extractSourceContent())   return 0;
+	if(cp_2_separateExtractContent()) return 0;
+	if(cp_3_buildRootScope())         return 0;
+	if(cp_4_buildFunctionsScope())    return 0;
+	if(cp_5_organizeAndCompact())     return 0;
+	cp_6_mergeContentAndPackLib();
+	
 	return 0;
 }
 
