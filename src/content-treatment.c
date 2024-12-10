@@ -229,48 +229,29 @@ char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId){
 	return NULL;
 }
 
-void ct_checkAndUpLayer(char *_word, unsigned short *code){
-	char *word;
-	word = t_rmvParen(_word);
-
+void ct_checkAndUpLayer(char *word, unsigned short *code){
 	if(strcmp(word, "if") == 0 || strcmp(word, "do") == 0 || strcmp(word, "function") == 0)
 		(*code)++;
 	else if(*code > 0 && strcmp(word, "end") == 0)
 		(*code)--;
-
-	free(word);
 }
 
 static bool checkLuaKeywords(char *word, bool stage1){
-	char *tocmp = word;
-	tocmp = t_rmvParen(word);
-
 	// with(out) `function`
 	unsigned short max = ((stage1) ? 20 : 21);
 
-	for(short i = 0; i < max; i++){
-		if(strcmp(tocmp, lua_keywords[i]) == 0){
-			free(tocmp);
+	for(short i = 0; i < max; i++)
+		if(strcmp(word, lua_keywords[i]) == 0)
 			return true;
-		}
-	}
 
-	free(tocmp);
 	return false;
 }
 
 static bool checkLuaFuncs(char *word){
-	char *tocmp = word;
-	tocmp = t_rmvParen(word);
-
-	for(short i = 0; i < 23; i++){
-		if(strcmp(tocmp, lua_funcs[i]) == 0){
-			free(tocmp);
+	for(short i = 0; i < 23; i++)
+		if(strcmp(word, lua_funcs[i]) == 0)
 			return true;
-		}
-	}
 
-	free(tocmp);
 	return false;
 }
 

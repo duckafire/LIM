@@ -21,7 +21,6 @@ add_executable(lim
 	${SRC_DIR}/content-treatment.c
 	${SRC_DIR}/main.c
 	${SRC_DIR}/tools.c
-	${SRC_DIR}/errors.c
 	${SRC_DIR}/informations.c
 	${SRC_DIR}/buffers.c
 	${SRC_DIR}/header.c

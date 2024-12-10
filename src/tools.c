@@ -18,20 +18,6 @@ bool t_strcmp3(char *str0, char *str1){
 	return (strcmp(str0, str1) == 0);
 }
 
-bool t_strcmp4(char *_str0, char *_str1){
-	char *str0, *str1;
-	bool result;
-
-	str0 = t_rmvParen(_str0);
-	str1 = t_rmvParen(_str1);
-
-	result = (strcmp(str0, str1) == 0);
-
-	free(str0);
-	free(str1);
-	return result;
-}
-
 FILE* t_copyFile(FILE *src, char *destName){
 	char c = 0;
 	FILE *dest;
@@ -58,19 +44,6 @@ void t_copyAndExportFile(FILE *src){
 	fclose(t_copyFile(src, lim.destineFileName));
 }
 
-char* t_rmvParen(char *word){
-	unsigned short len = strlen(word);
-
-	char *temp;
-	temp = malloc(len + sizeof(char));
-	strcpy(temp, word);
-
-	if(temp[len - 1] == '(')
-		temp[len - 1] = '\0';
-
-	return temp;
-}
-
 unsigned int t_strlen2(char *str){
 	if(str == NULL)
 		return 0;
@@ -78,7 +51,7 @@ unsigned int t_strlen2(char *str){
 	return strlen(str);
 }
 
-void t_fcat(FILE *src, FILE *dest){
+void t_fcat(FILE *dest, FILE *src){
 	char c;
 
 	fseek(src,  0, SEEK_SET);
@@ -128,4 +101,8 @@ char* t_setAnonyFuncName(unsigned short *index){
 	(*index)++;
 
 	return dest;
+}
+
+char* t_getLongFlag(char *f, char *flag){
+	return flag;
 }

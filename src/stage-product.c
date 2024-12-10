@@ -45,7 +45,7 @@ bool stageProduct_separateExtractedContent(short id){
 	// root env. (jump "order file")
 	for(short i = 1; i < FROMSRC_TOTAL_BUF; i++){
 		fprintf(toexport, "@ %s\n", titles[i - 1]);
-		t_fcat(from->bufs[i], toexport);
+		t_fcat(toexport, from->bufs[i]);
 
 		fprintf(toexport, "\n\n");
 	}
@@ -55,10 +55,10 @@ bool stageProduct_separateExtractedContent(short id){
 
 	for(i = from->head; i != NULL; i = i->next){
 		fprintf(toexport, "@ FROM FUNCTION: %s\n- FUNCTIONS\n", i->name);
-		t_fcat(i->bufs[0], toexport);
+		t_fcat(toexport, i->bufs[0]);
 		
 		fprintf(toexport, "\n- VARIABLES AND TABLES\n");
-		t_fcat(i->bufs[1], toexport);
+		t_fcat(toexport, i->bufs[1]);
 		
 		fprintf(toexport, "\n\n");
 	}

@@ -112,7 +112,7 @@ FILE* fromsrc_getBuf(short bufId, char *name){
 	if(fromsrc.head == fromsrc.tail)
 		f = fromsrc.head;
 	else
-		for(f = fromsrc.head; f != NULL && !t_strcmp4(f->name, name); f = f->next);
+		for(f = fromsrc.head; f != NULL && strcmp(f->name, name) != 0; f = f->next);
 
 	return f->bufs[bufId - TYPE_LOCAL_FUNC_0];
 }
@@ -157,11 +157,7 @@ void refe_init(void){
 		refe_tree[i] = mm_treeInit('m');
 }
 
-void refe_add(char *table, char *_func){
-	char *func = NULL;
-	if(_func != NULL)
-		func = t_rmvParen(_func);
-
+void refe_add(char *table, char *func){
 	if(table == NULL)
 		mm_treeNewNode(refe_tree[REFE_FUNC], func[0], NULL, func, true);
 	else if(func == NULL)

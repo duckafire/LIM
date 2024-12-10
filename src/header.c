@@ -128,7 +128,7 @@ bool header_printBuf(FILE *dest, short buf){
 	if(!flags.headfile || header[buf] == NULL)
 		return false;
 
-	t_fcat(header[buf], dest);
+	t_fcat(dest, header[buf]);
 	return true;
 }
 

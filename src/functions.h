@@ -11,16 +11,15 @@ static void cleanup(void);
 // TOOLS
 bool t_strcmp2(char *str, char *v0, char *v1);
 bool t_strcmp3(char *str0, char *str1);
-bool t_strcmp4(char *_str0, char *_str1);
 FILE* t_copyFile(FILE *org, char *dstName);
-char* t_rmvParen(char *word);
 unsigned int t_strlen2(char *str);
-void t_fcat(FILE *src, FILE *dest);
+void t_fcat(FILE *dest, FILE *src);
 long t_filelen(FILE *file);
 char* t_allocAndCopy(char *src);
 void t_copyAndExportFile(FILE *src);
 void t_getStringFromFile(FILE *src, char *c, char **string);
 char* t_setAnonyFuncName(unsigned short *index);
+char* t_getLongFlag(char *f, char *flag);
 
 // BUFFERS
 
@@ -37,7 +36,7 @@ void fromsrc_end(void);
 static void fromsrc_fseekSetAllLocal(FuncEnv *local);
 
 void refe_init(void);
-void refe_add(char *table, char *_func);
+void refe_add(char *table, char *func);
 Queue* refe_getAndRmvQueueItem(void);
 void refe_initQueueAndEndTree(void);
 static BinaryNode* refe_getBuf(char firstChar);
@@ -102,7 +101,7 @@ short ct_readPrefix(char *word, short prefix, bool isRootEnv);
 short ct_readCurWord(char *word);
 short ct_setPrefix(char *word, short prefix, bool isRootEnv);
 char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId);
-void ct_checkAndUpLayer(char *_word, unsigned short *code);
+void ct_checkAndUpLayer(char *word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);
 
 static void clearComment(bool isLine);
@@ -138,16 +137,8 @@ static void mm_queueContentsLength(unsigned int *v0, unsigned int *v1, Queue *i0
 static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new);
 
 // PRINT-TEXT/ERRORS (ERror)
-void er_repeatFlag(char *arg, short pos);
-void er_unexpectedFlag(char *arg, short pos);
-void er_argExpected(char *_r, char *requester);
-void er_invalidFlag(char *arg, short pos);
-void er_filesNamesOverflow(void);
-void er_nameNotSpecified(void);
-void er_nonExistentFile(char *name);
-void er_fileAlreadyExistent(char *name);
-void er_invalidSuffixToFlag(char *_r, char *requester, char *expected, char *gived);
-void er_invalidArgToHelp(char *arg);
+// its function are macros, they
+// are writed in "print-text/errors.c"
 
 // PRINT-TEXT/INFORMATIONS
 static void message(char n, ...);
