@@ -13,8 +13,9 @@ static FILE *finalContent = NULL;
 
 // this is not a buffer, but there is
 // not other for to put this...
-static char nickFirst, nickLast, nickReser;
-static char *nick = NULL;
+static char nickFirst, nickLast;
+static char *nick = NULL, *nickPrefixed = NULL;
+static const char nickPrefixOptions[5] = {'\0', 'G', 'L', '\0', 'P'};
 
 
 
@@ -307,27 +308,17 @@ void nick_init(bool toFuncs){
 	if(toFuncs){
 		nickFirst = 'A';
 		nickLast  = 'Z';
-		nickReser = 'L';
 	}else{
 		nickFirst = 'a';
 		nickLast  = 'z';
-		nickReser = 'l';
 	}
 
 	nick[0] = nickFirst;
 	nick[1] = '\0';
 }
 
-static void nick_upChar(long id){
-	// 'a' -> 'b'; 'b' -> 'c'; ...
-	nick[id]++;
-
-	// identifier prefixes
-	// 'L': library tables
-	// 'l': local variables/table/function
-	// '_': functions parameters
-	if(nick[id] == nickReser)
-		nick[id]++;
+void nick_up(void){
+	nick_upAll( strlen(nick) - 1 );
 }
 
 static void nick_upAll(long last){
@@ -338,7 +329,7 @@ static void nick_upAll(long last){
 			return;
 		}
 
-		nick_upChar(last);
+		nick[last]++;
 		return;
 	}
 
@@ -353,17 +344,24 @@ static void nick_upAll(long last){
 	free(buf);
 }
 
-void nick_up(void){
-	nick_upAll( strlen(nick) - 1 );
-}
+char *nick_get(short mode){
+	free(nickPrefixed);
+	nickPrefixed = malloc(strlen(nick) + sizeof(char) * 2);
 
-char *nick_get(void){
-	return nick;
+	nickPrefixed[0] = nickPrefixOptions[ mode ];
+	nickPrefixed[1] = '\0';
+
+	strcat(nickPrefixed, nick);
+
+	return nickPrefixed;
 }
 
 void nick_end(void){
 	free(nick);
 	nick = NULL;
+
+	free(nickPrefixed);
+	nickPrefixed = NULL;
 }
 
 
@@ -374,10 +372,10 @@ void nick_end(void){
 // this is only a convention
 // #define pairs_init
 
-void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
+bool pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
 	// 0 (A-Z): functions from Lua and from "header.lim"
 	// 1 (a-z): variables, tables and functions declared with `local`, in root env.
-	mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident, false);
+	return mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident, false);
 }
 
 void pairs_updateQuantity(char *string){

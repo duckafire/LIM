@@ -260,6 +260,7 @@ bool cp_3_buildRootScope(void){
 	unsigned short len;
 
 	char *content[2], *fullContent, *firstToCopy;
+	char *nickPrefixed;
 
 
 	scope_init();
@@ -288,9 +289,11 @@ bool cp_3_buildRootScope(void){
 		if(firstToCopy != content[1] && content[1] != NULL)
 			strcat(fullContent, content[1]);
 
-		scope_add(nick_get(),  SCOPE_BASE);
+		nickPrefixed = nick_get(NICK_TO_LUA_HEAD_FUNC);
+
+		scope_add(nickPrefixed, SCOPE_BASE);
 		scope_add(fullContent, SCOPE_FUNC_BUF);
-		pairs_add(false, item->quantity, nick_get(), fullContent);
+		pairs_add(false, item->quantity, nickPrefixed, fullContent);
 
 		nick_up();
 		free(fullContent);
@@ -322,12 +325,11 @@ bool cp_3_buildRootScope(void){
 		while((c = fgetc(tmp)) != EOF){
 			t_getStringFromFile(tmp, &c, &string);
 
-			if(mode == 0){
-				pairs_add(true, 0, nick_get(), string);
-				nick_up();
-			}else{
+			if(mode == 0)
+				if(pairs_add(true, 0, nick_get(NICK_TO_GLOBAL_IDENT), string))
+					nick_up();
+			else
 				pairs_updateQuantity(string);
-			}
 
 			mm_stringEnd(&string, true);
 		}

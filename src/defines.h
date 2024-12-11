@@ -35,6 +35,14 @@ enum{
 	CTT_FUNC,
 };
 
+enum{
+	NICK_TO_LUA_HEAD_FUNC,// none is added
+	NICK_TO_GLOBAL_IDENT, // add 'G': Ga, Gb, ...
+	NICK_TO_LOCAL_IDENT,  // add 'L': La, Lb, ...
+	NICK_TO_PARAMETER,    // none is added
+	NICK_TO_ALIGN_PARAM,  // add 'P': Pa, Pb, ...
+};
+
 // CHECK-FLAGS
 // the bigger size between all flags
 #define LARGEST_FLAG 12

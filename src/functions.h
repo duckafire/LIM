@@ -55,13 +55,12 @@ void scope_end(void);
 //void scope_endItems(FuncEnv *item);
 
 void nick_init(bool toFuncs);
-static void nick_upChar(long id);
 static void nick_upAll(long last);
 void nick_up(void);
-char *nick_get(void);
+char *nick_get(short mode);
 void nick_end(void);
 
-void pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident);
+bool pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident);
 void pairs_updateQuantity(char *string);
 void pairs_updateOrder(void);
 Queue* pairs_get(bool fromSrcFile);
@@ -129,10 +128,10 @@ void mm_treeEnd(BinaryNode **root);
 static BinaryNode* mm_treeCreateNode(char id, char *ctt0, char *ctt1);
 static void mm_treeInsertItem(BinaryNode  *node, BinaryNode *new, bool upQtt, bool toQueue);
 
-void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1, bool upQtt);
+bool mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1, bool upQtt);
 static Queue* mm_queueNewItem(unsigned short quantity, char *ctt0, char *ctt1);
 static void mm_queueContentsLength(unsigned int *v0, unsigned int *v1, Queue *i0, Queue *i1);
-static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt);
+static bool mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt);
 
 // PRINT-TEXT/ERRORS (ERror)
 // its function are macros, they

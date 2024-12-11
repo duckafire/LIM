@@ -142,27 +142,26 @@ void mm_treeFreeNodeAndQueueItem(BinaryNode *node, Queue *item){
 }
 
 
-void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1, bool upQtt){
+bool mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char *ctt1, bool upQtt){
 	Queue *new;
 	new = mm_queueNewItem(quantity, ctt0, ctt1);
 
 	if(*head == NULL){
 		*head = new;
-		return;
+		return true;
 	}
 
 	if(t_strcmp3(new->content[1], (*head)->content[1])){
 		if(upQtt)
 			((*head)->quantity)++;
+
 		mm_treeFreeNodeAndQueueItem(NULL, new);
-		return;
+		return false;
 	}
 		
 	if(new->quantity == (*head)->quantity){
-		if(!upQtt){
-			mm_queueInsertInBody(*head, (*head)->next, new, upQtt);
-			return;
-		}
+		if(!upQtt)
+			return mm_queueInsertInBody(*head, (*head)->next, new, upQtt);
 
 		unsigned int newLen, headLen;
 		mm_queueContentsLength(&newLen, &headLen, new, *head);
@@ -170,17 +169,17 @@ void mm_queueInsertItem(Queue **head, unsigned short quantity, char *ctt0, char 
 		if(newLen >= headLen){
 			new->next = *head;
 			*head = new;
-			return;
+			return true;
 		}
 	}
 	
 	if(new->quantity > (*head)->quantity){
 		new->next = *head;
 		*head = new;
-		return;
+		return true;
 	}
 
-	mm_queueInsertInBody(*head, (*head)->next, new, upQtt);
+	return mm_queueInsertInBody(*head, (*head)->next, new, upQtt);
 }
 
 static Queue* mm_queueNewItem(unsigned short quantity, char *ctt0, char *ctt1){
@@ -200,23 +199,23 @@ static void mm_queueContentsLength(unsigned int *v0, unsigned int *v1, Queue *i0
 	*v1 = t_strlen2(i1->content[0]) + t_strlen2(i1->content[1]);
 }
 
-static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt){
+static bool mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt){
 	if(son == NULL){
 		mom->next = new;
-		return;
+		return true;
 	}
 
 	if(t_strcmp3(new->content[1], son->content[1])){
 		if(upQtt)
 			(son->quantity)++;
+
 		mm_treeFreeNodeAndQueueItem(NULL, new);
-		return;
+		return false;
 	}
 
 	if(new->quantity == son->quantity){
 		if(!upQtt){
-			mm_queueInsertInBody(son, son->next, new, upQtt);
-			return;
+			return mm_queueInsertInBody(son, son->next, new, upQtt);
 		}
 		
 		unsigned int newLen, sonLen;
@@ -225,18 +224,17 @@ static void mm_queueInsertInBody(Queue *mom, Queue *son, Queue *new, bool upQtt)
 		if(newLen >= sonLen){
 			new->next = son;
 			mom->next = new;
-			return;
+			return true;
 		}
 
-		mm_queueInsertInBody(son, son->next, new, upQtt);
-		return;
+		return mm_queueInsertInBody(son, son->next, new, upQtt);
 	}
 
 	if(new->quantity > son->quantity){
 		new->next = son;
 		mom->next = new;
-		return;
+		return true;
 	}
 
-	mm_queueInsertInBody(son, son->next, new, upQtt);
+	return mm_queueInsertInBody(son, son->next, new, upQtt);
 }
