@@ -33,9 +33,10 @@ void fromsrc_newEnv(char *name){
 	FuncEnv *new;
 	new = malloc(sizeof(FuncEnv));
 	new->name = malloc(sizeof(name));
-	new->bufs[0] = tmpfile();
-	new->bufs[1] = tmpfile();
 	new->next = NULL;
+
+	for(short i = 0; i < FUNC_ENV_TOTAL_BUF; i++)
+		new->bufs[i] = tmpfile();
 
 	// the '(' is included
 	strcpy(new->name, name);
@@ -59,18 +60,8 @@ bool fromsrc_getOrder(short *code){
 }
 
 void fromsrc_print(char *word, char *name, short bufId){
-	// `name == NULL` for print
-	// in a global buffer
-	FILE *buf;
-	unsigned int i = 0;
-	char *c = NULL;
-
-	buf = fromsrc_getBuf(bufId, name);
-
-	for(c = &word[i]; *c != '\0'; c = &word[++i])
-		fputc(*c, buf);
-
-	fputc('\n', buf);
+	// `name == NULL` for write in a global buffer
+	fprintf( fromsrc_getBuf(bufId, name), "%s\n", word);
 }
 
 void fromsrc_rmvEnv(void){
@@ -100,10 +91,10 @@ GlobalEnv* fromsrc_get(void){
 
 FILE* fromsrc_getBuf(short bufId, char *name){
 	// global
-	if(bufId == TYPE_ANONYMOUS)
+	if(IS_BUF_TYPE_FALSE_CONST(bufId))
 		bufId = TYPE_CONSTANT;
 	
-	if(bufId != TYPE_LOCAL_VAR_1 && bufId != TYPE_LOCAL_FUNC_0)
+	if(IS_LIB_OR_GLOBAL_TYPE(bufId))
 		return fromsrc.bufs[bufId];
 	
 	// local
@@ -114,7 +105,7 @@ FILE* fromsrc_getBuf(short bufId, char *name){
 	else
 		for(f = fromsrc.head; f != NULL && strcmp(f->name, name) != 0; f = f->next);
 
-	return f->bufs[bufId - TYPE_LOCAL_FUNC_0];
+	return f->bufs[ ADJ_LOCAL_TYPE(bufId) ];
 }
 
 void fromsrc_fseekSetAll(void){

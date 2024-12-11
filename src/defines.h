@@ -9,6 +9,7 @@
 // BUFFERS
 #define REFE_TOTAL_BUF 10
 #define FROMSRC_TOTAL_BUF 9
+#define FUNC_ENV_TOTAL_BUF 4
 #define FROMSRC_ORDER 0
 #define REFE_FUNC 0
 #define SCOPE_TOTAL_BUF 2
@@ -47,6 +48,24 @@ enum{
 
 // it don't work correct if `n < 2`
 #define INT_LEN(n) ((n<2)?1:((int)((ceil(log10(n)))*sizeof(char))))
+#define IS_FUNC_TYPE(t) (     \
+	t == TYPE_LIB_FUNC     || \
+	t == TYPE_GLOBAL_FUNC  || \
+	t == TYPE_LOCAL_FUNC_0 || \
+	t == TYPE_ANONYMOUS       \
+)
+#define IS_BUF_TYPE_FALSE_CONST(b) ( \
+	b == TYPE_ANONYMOUS   || \
+	b == TYPE_PARAM_CONST || \
+	b == TYPE_PARAM_END      \
+)
+#define ADJ_LOCAL_TYPE(t) (t - TYPE_LOCAL_FUNC_0)
+#define IS_LIB_OR_GLOBAL_TYPE(t) ( \
+	t != TYPE_LOCAL_FUNC_0  && \
+	t != TYPE_LOCAL_VAR_1   && \
+	t != TYPE_LOCAL_PSELF_2 && \
+	t != TYPE_LOCAL_PALIG_3    \
+)
 
 enum{
 	PREFIX_NONE = -1,
@@ -54,14 +73,15 @@ enum{
 	PREFIX_FUNCTION,   // function
 	PREFIX_LOCAL,      // local
 	PREFIX_LOCAL_FUNC, // local function
-	PREFIX_LUA_TABLE   // table, math, ...
+	PREFIX_LUA_TABLE,  // table, math, ...
+	PREFIX_PARAMETER,  // [`function` | func. ident.] <(>
 };
 
 enum{
 	// GlobalEnv
 	TYPE_NONE = -1,   // this is not a array slot
 	// ORDER (= 0) is not used in "type system"
-	TYPE_LIB_FUNC = 1,// functio <name>
+	TYPE_LIB_FUNC = 1,// function <name>
 	TYPE_LIB_VAR,     // _G.<name>
 	TYPE_GLOBAL_FUNC, // local function (root env)
 	TYPE_GLOBAL_VAR,  // loca <name> (~)
@@ -69,11 +89,16 @@ enum{
 	TYPE_CONSTANT,    // repeat, table, and
 	TYPE_FROM_LUA,    // math, pairs, .random, ...
 	TYPE_FROM_HEAD,   // function from "List Partition", from "header.lim"
+	// both are converted to TYPE_CONSTANT
 	TYPE_ANONYMOUS,   // function() end (it will be converted to TYPE_CONSTANT)
+	TYPE_PARAM_CONST, // ',' or ')'
+	TYPE_PARAM_END,   // ')'
 	// FuncEnv; the number in last
 	// specify the index of `bufs`
 	TYPE_LOCAL_FUNC_0,  // local function (func env)
 	TYPE_LOCAL_VAR_1,   // local <name> (~)
+	TYPE_LOCAL_PSELF_2, // itself parameteres:     [(] [par0] [,] [parn] <)>
+	TYPE_LOCAL_PALIG_3, // from aligned functions: ~
 };
 
 // HEADER

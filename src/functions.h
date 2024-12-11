@@ -95,9 +95,9 @@ bool ct_getIdentifier(char *c, bool isFirst);
 char ct_clearSpaces(void);
 void ct_specialCharTreatment(FILE *buf, char c);
 
-short ct_readPrefix(char *word, short prefix, bool isRootEnv);
+short ct_readPrefix(char *word, short prefix, short blockLayer, bool isRootEnv);
 short ct_readCurWord(char *word);
-short ct_setPrefix(char *word, short prefix, bool isRootEnv);
+short ct_setPrefix(char *word, short prefix, short codeType, bool isRootEnv);
 char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId);
 void ct_checkAndUpLayer(char *word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);

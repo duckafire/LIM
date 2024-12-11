@@ -49,10 +49,16 @@ bool sp_separateExtractContent(short id){
 
 	for(i = from->head; i != NULL; i = i->next){
 		fprintf(toexport, "@ FROM FUNCTION: %s\n- FUNCTIONS\n", i->name);
-		t_fcat(toexport, i->bufs[0]);
+		t_fcat(toexport, i->bufs[ ADJ_LOCAL_TYPE( TYPE_LOCAL_FUNC_0 ) ]);
 		
 		fprintf(toexport, "\n- VARIABLES AND TABLES\n");
-		t_fcat(toexport, i->bufs[1]);
+		t_fcat(toexport, i->bufs[ ADJ_LOCAL_TYPE( TYPE_LOCAL_VAR_1 ) ]);
+
+		fprintf(toexport, "\n- ITSELF PARAMETERS\n");
+		t_fcat(toexport, i->bufs[ ADJ_LOCAL_TYPE( TYPE_LOCAL_PSELF_2 ) ]);
+
+		fprintf(toexport, "\n- FROM ALIGNED FUNCTIONS\n");
+		t_fcat(toexport, i->bufs[ ADJ_LOCAL_TYPE( TYPE_LOCAL_PALIG_3 ) ]);
 		
 		fprintf(toexport, "\n\n");
 	}

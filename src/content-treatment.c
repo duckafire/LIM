@@ -142,7 +142,22 @@ static void saveBraces(FILE *buf){
 
 ////////// STAGE 2 //////////
 
-short ct_readPrefix(char *word, short prefix, bool isRootEnv){
+short ct_readPrefix(char *word, short prefix, short blockLayer, bool isRootEnv){
+	if(prefix == PREFIX_PARAMETER){
+		if(t_strcmp2(word, ",", "("))
+			return TYPE_PARAM_CONST;
+
+		// end of function parameters
+		if(strcmp(word, ")") == 0)
+			return TYPE_PARAM_END;
+
+		if(blockLayer == 1) // itself parameters
+			return TYPE_LOCAL_PSELF_2; // lib and global
+
+		// from aligned functions
+		return TYPE_LOCAL_PALIG_3;
+	}
+
 	if(prefix == PREFIX_LOCAL && strcmp(word, "function") == 0)
 		return TYPE_CONSTANT;
 
@@ -161,12 +176,8 @@ short ct_readPrefix(char *word, short prefix, bool isRootEnv){
 
 short ct_readCurWord(char *word){
 	if(isalpha(word[0]) || word[0] == '_'){
-		// metamethods
-		if(word[1] == '_')
-			return TYPE_CONSTANT;
-
-		// from lua
-		if(checkLuaKeywords(word, false))
+		// metamethods; from lua
+		if(word[1] == '_' || checkLuaKeywords(word, false))
 			return TYPE_CONSTANT;
 
 		if(checkLuaFuncs(word) || ct_checkLuaTabs(word))
@@ -185,7 +196,16 @@ short ct_readCurWord(char *word){
 	return TYPE_CONSTANT;
 }
 
-short ct_setPrefix(char *word, short prefix, bool isRootEnv){
+short ct_setPrefix(char *word, short prefix, short codeType, bool isRootEnv){
+	if(codeType == TYPE_PARAM_END)
+		return PREFIX_NONE;
+
+	if(prefix == PREFIX_PARAMETER)
+		return prefix;
+
+	if(IS_FUNC_TYPE(codeType))
+		return PREFIX_PARAMETER;
+
 	if(strcmp(word, "_G") == 0)
 			return PREFIX_G;
 

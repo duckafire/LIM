@@ -132,12 +132,12 @@ bool cp_2_separateExtractContent(void){
 		typeCode = TYPE_NONE;
 		
 		if(prefix != PREFIX_NONE)
-			typeCode = ct_readPrefix(string, prefix, isRootEnv);
+			typeCode = ct_readPrefix(string, prefix, blockLayer, isRootEnv);
 
 		if(typeCode == TYPE_NONE)
 			typeCode = ct_readCurWord(string);
 
-		prefix = ct_setPrefix(string, prefix, isRootEnv);
+		prefix = ct_setPrefix(string, prefix, typeCode, isRootEnv);
 
 		// root environment
 		if(isRootEnv){
