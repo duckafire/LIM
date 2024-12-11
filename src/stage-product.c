@@ -4,7 +4,10 @@
 static FILE *toexport;
 
 bool sp_extractSourceContent(short id, FILE *extrCttBuf){
-	SP_BASE(1);
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, id, "-", NULL);
 
 	t_copyAndExportFile(extrCttBuf);
 	
@@ -12,7 +15,10 @@ bool sp_extractSourceContent(short id, FILE *extrCttBuf){
 }
 
 bool sp_separateExtractContent(short id){
-	SP_BASE(2);
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, id, "fromsrc", NULL);
 
 
 	const char* const titles[] = {
@@ -68,8 +74,11 @@ bool sp_separateExtractContent(short id){
 	return true;
 }
 
-bool sp_buildRootScope(short id){
-	SP_BASE(3);
+bool sp_globalScopeTo_varFunc(short id){
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, id, "scope", "pairs", NULL);
 
 
 	toexport = tmpfile();
@@ -87,14 +96,22 @@ bool sp_buildRootScope(short id){
 	return true;
 }
 
-bool sp_buildFunctionsScope(short id){
-	SP_BASE(4);
+bool sp_localScopeTo_varFuncGParPar(short id){
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, id, "-", NULL);
+
+	// wip
 
 	return true;
 }
 
 bool sp_organizeAndCompact(short id){
-	SP_BASE(5);
+	if(flags.untilStage != id)
+		return false;
+
+	info_verbose(VM_BREAK, id, "-", NULL);
 
 	// wip
 

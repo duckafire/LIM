@@ -208,13 +208,15 @@ void info_verbose(short mode, ...){
 	if(mode == VM_NORMAL)
 		printf("[LIM] %s\n", va_arg(text, char*));
 
-	else if(mode == VM_STAGE)
-		printf("\n[LIM] STAGE %d started: %s\n", va_arg(text, int), va_arg(text, char*));
+	else if(mode == VM_STAGE){
+		int d;
+		char *s;
+		d = va_arg(text, int);
+		s = va_arg(text, char*);
 
-	else if(mode == VM_BREAK)
-		printf("\n[LIM] Program break; stopped in Stage %d.\n", va_arg(text, int));
+		printf("\n[LIM] STAGE %d started: %s\n", d, s);
 
-	else if(mode == VM_PROCESS)
+	}else if(mode == VM_PROCESS)
 		printf("[LIM] Process of read and %s started.\n", va_arg(text, char*));
 
 	else if(mode == VM_FREE)
@@ -223,7 +225,9 @@ void info_verbose(short mode, ...){
 	else{
 		char *cur;
 
-		if(mode == VM_BUFFER_INIT)
+		if(mode == VM_BREAK)
+			printf("\n[LIM] Program break; stopped in Stage %d; finishing buffers:", va_arg(text, int));
+		else if(mode == VM_BUFFER_INIT)
 			printf("[LIM] Starting buffer:");
 		else
 			printf("[LIM] Finishing buffer:");
@@ -231,7 +235,7 @@ void info_verbose(short mode, ...){
 		while((cur = va_arg(text, char*)) != NULL)
 			printf(" \"%s\";", cur);
 
-		puts("...\n");
+		puts(" ...");
 	}
 
 	va_end(text);

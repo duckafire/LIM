@@ -60,7 +60,7 @@ bool fromsrc_getOrder(short *code){
 	return (fread(code, sizeof(short), 1, fromsrc.bufs[FROMSRC_ORDER]) > 0);
 }
 
-void fromsrc_print(char *word, char *name, short bufId){
+void fromsrc_write(char *word, char *name, short bufId){
 	// `name == NULL` for write in a global buffer
 	fprintf( fromsrc_getBuf(bufId, name), "%s\n", word);
 }

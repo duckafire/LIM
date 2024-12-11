@@ -27,7 +27,7 @@ void fromsrc_init(void);
 void fromsrc_newEnv(char *name);
 void fromsrc_order(short code);
 bool fromsrc_getOrder(short *code);
-void fromsrc_print(char *word, char *name, short bufId);
+void fromsrc_write(char *word, char *name, short bufId);
 void fromsrc_rmvEnv(void);
 GlobalEnv* fromsrc_get(void);
 FILE* fromsrc_getBuf(short bufId, char *name);
@@ -83,8 +83,8 @@ static void cf_setDestineName(char *src, bool withPath);
 void cp_0_checkAndOpenFiles(void);
 bool cp_1_extractSourceContent(void);
 bool cp_2_separateExtractContent(void);
-bool cp_3_buildRootScope(void);
-bool cp_4_buildFunctionsScope(void);
+bool cp_3_globalScopeTo_varFunc(void);
+bool cp_4_localScopeTo_varFuncGParPar(void);
 bool cp_5_organizeAndCompact(void);
 void cp_6_mergeContentAndPackLib(void);
 
@@ -148,8 +148,8 @@ void info_verbose(short mode, ...);
 // STAGE-RESULT
 bool sp_extractSourceContent(short id, FILE *extrCttBuf);
 bool sp_separateExtractContent(short id);
-bool sp_buildRootScope(short id);
-bool sp_buildFunctionsScope(short id);
+bool sp_globalScopeTo_varFunc(short id);
+bool sp_localScopeTo_varFuncGParPar(short id);
 bool sp_organizeAndCompact(short id);
 
 #endif

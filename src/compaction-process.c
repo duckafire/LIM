@@ -124,7 +124,7 @@ bool cp_2_separateExtractContent(void){
 	fseek(extrCttBuf, 0, SEEK_SET);
 
 
-	info_verbose(VM_STAGE, "separation");
+	info_verbose(VM_PROCESS, "separation");
 	while((c = fgetc(extrCttBuf)) != EOF){
 		t_getStringFromFile(extrCttBuf, &c, &string);
 
@@ -161,7 +161,7 @@ bool cp_2_separateExtractContent(void){
 		}
 
 		fromsrc_order(typeCode);
-		fromsrc_print(string, funcName, typeCode);
+		fromsrc_write(string, funcName, typeCode);
 
 		mm_stringEnd(&string, true);
 	}
@@ -178,8 +178,8 @@ bool cp_2_separateExtractContent(void){
 	return sp_separateExtractContent(2);
 }
 
-bool cp_3_buildRootScope(void){
-	info_verbose(VM_STAGE, 3, "build identifiers scope");
+bool cp_3_globalScopeTo_varFunc(void){
+	info_verbose(VM_STAGE, 3, "build scope to \"private global\" variables, tables and functions");
 
 
 	// FUNCTIONS AND TABLES FROM LUA AND HEADER
@@ -194,12 +194,15 @@ bool cp_3_buildRootScope(void){
 	};
 
 
-	mm_stringInit(&string);
+	info_verbose(VM_BUFFER_INIT, "refe", NULL);
 	refe_init();
+
+	mm_stringInit(&string);
 
 
 	// build binary tree with functions, from Lua
 	// and header file, that were used in source file
+	info_verbose(VM_NORMAL, "Build of binary tree (with \"private global\" functions)");
 	for(short funcListId = 0; funcListId < 2; funcListId++){
 		// only #1 can be NULL
 		if(funcList[ funcListId ] == NULL)
@@ -251,7 +254,10 @@ bool cp_3_buildRootScope(void){
 		}
 	}
 
+	info_verbose(VM_FREE, NULL);
 	mm_stringEnd(&string, false);
+
+	info_verbose(VM_NORMAL, "Converting binary tree to queue...");
 	refe_initQueueAndEndTree();
 
 
@@ -263,12 +269,14 @@ bool cp_3_buildRootScope(void){
 	char *nickPrefixed;
 
 
+	info_verbose(VM_BUFFER_INIT, "scope", "nick", "pairs", NULL);
 	scope_init();
 	nick_init(true);
 	pairs_init;
 
 
 	// add queue content to scope
+	info_verbose(VM_PROCESS, "fragmentation of the reference queue (and build \"private global\" functions scope)");
 	while((item = refe_getAndRmvQueueItem()) != NULL){
 		len = 0;
 
@@ -301,7 +309,7 @@ bool cp_3_buildRootScope(void){
 	}
 
 
-	//SCOPE_MERGE_BASE_WITH_BUF;
+	info_verbose(VM_BUFFER_END, "nick", NULL);
 	nick_end();
 
 
@@ -314,11 +322,14 @@ bool cp_3_buildRootScope(void){
 
 
 	mm_stringInit(&string);
+
+	info_verbose(VM_BUFFER_INIT, "nick", NULL);
 	nick_init(false);
 
 
 	// get "private global" variables and tables
 	// identifier and ordenate to build them scope
+	info_verbose(VM_PROCESS, "get \"private global\" variables and tables");
 	for(short mode = 0; mode < 2; mode++){
 		fseek(tmp, 0, SEEK_SET);
 
@@ -336,20 +347,29 @@ bool cp_3_buildRootScope(void){
 	}
 
 	// build them scope
+	info_verbose(VM_PROCESS, "build of \"private global\" variables and tables scope");
 	for(item = pairs_get(true); item != NULL; item = item->next)
 		scope_add(item->content[0], SCOPE_BASE);
 
 
+	info_verbose(VM_NORMAL, "Merging scope identifier with their values (address)...");
 	SCOPE_MERGE_BASE_WITH_BUF;
+
+	info_verbose(VM_NORMAL, "Updating order of variables and tables pairs...");
 	pairs_updateOrder();
 
+	info_verbose(VM_FREE, NULL);
 	mm_stringEnd(&string, false);
+
+	info_verbose(VM_BUFFER_END, "nick", NULL);
 	nick_end();
 
-	return sp_buildRootScope(3);
+	return sp_globalScopeTo_varFunc(3);
 }
 
-bool cp_4_buildFunctionsScope(void){
+bool cp_4_localScopeTo_varFuncGParPar(void){
+	info_verbose(VM_STAGE, 4, "WiP");
+
 	scope_end();
 	pairs_end();
 
@@ -362,8 +382,8 @@ bool cp_5_organizeAndCompact(void){
 
 void cp_6_mergeContentAndPackLib(void){
 	// header.lim
-	info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
-	info_verbose(VM_NORMAL, header_init());
+	//info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
+	//info_verbose(VM_NORMAL, header_init());
 
-	header_end();
+	//header_end();
 }
