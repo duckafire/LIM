@@ -1,0 +1,10 @@
+	"These bugs are easily avoid and they are caused by "bad practices",
+because of these two fact, they are not priority and because this,
+I will not fix them [for the time being]. But you can try [warn me
+if you get and relate me how you get]!" - DuckAfire
+
+1 - Empty partitions, created with two '@' suffixed, are considered
+	valid (e.g.: in `@@@@`, all partitions are valid).
+
+2 - Library functions declared inside some function will have its
+	parameters gives to your "container".
