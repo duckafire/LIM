@@ -138,11 +138,16 @@ enum{
 		return false;          \
 	info_verbose(VM_BREAK_STAGE, id)
 
-#define NONE_BUFFER_TO_FREE puts("\n");
+#define NONE_BUFFER_TO_FREE if(flags.verbose) puts("\n")
 
-#define EXPORT \
+#define EXP_BUF toexport=tmpfile()
+
+#define EXP_NOW \
 	t_copyAndExportFile(toexport); \
 	fclose(toexport)
+
+#define TOEXP_PRINT(str, ...) fprintf(toexport, str, ##__VA_ARGS__)
+#define TOEXP_FCAT(file) t_fcat(toexport, file)
 
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
 
