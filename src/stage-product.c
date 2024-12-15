@@ -7,6 +7,7 @@ bool sp_extractSourceContent(short id, FILE *extrCttBuf){
 	SP_BASE(id);
 
 	t_copyAndExportFile(extrCttBuf);
+	fclose(extrCttBuf);
 	
 	NONE_BUFFER_TO_FREE;
 	return true;
@@ -64,8 +65,10 @@ bool sp_separateExtractContent(short id){
 		fprintf(toexport, "\n\n");
 	}
 
+	EXPORT;
+
+
 	info_verbose(VM_BREAK_FREE, "fromsrc", NULL);
-	t_copyAndExportFile(toexport);
 	fromsrc_end();
 	return true;
 }
@@ -74,13 +77,23 @@ bool sp_globalScopeTo_varFunc(short id){
 	SP_BASE(id);
 
 
+	Queue *pairs;
+
 	toexport = tmpfile();
 
 	fprintf(toexport, "@ IDENTIFIER SCOPE OF THE \"%s\"\n\n", lim.sourceFileName);
 	t_fcat(toexport, scope_get(SCOPE_BASE));
 
-	t_copyAndExportFile(toexport);
-	fclose(toexport);
+	fprintf(toexport, "\n\n@ VARIABLES, TABLES AND FUNCTIONS NICKNAME\n- FUNCTIONS FROM Lua and \"header.lim\"\n");
+	for(short i = 0; i < 2; i++){
+		for(pairs = pairs_get(i); pairs != NULL; pairs = pairs->next)
+			fprintf(toexport, "%s\t%s\n", pairs->content[0], pairs->content[1]);
+
+		if(i == 0)
+			fprintf(toexport, "\n- \"GLOBAL PROVATE\" VARIABLES, TABLES AND FUNCTIONS\n");
+	}
+
+	EXPORT;
 
 
 	info_verbose(VM_BREAK_FREE, "fromsrc", "scope", "pairs", NULL);
@@ -94,7 +107,31 @@ bool sp_globalScopeTo_varFunc(short id){
 bool sp_localScopeTo_varFuncGParPar(short id){
 	SP_BASE(id);
 
-	// wip
+
+	Queue *pairs;
+	FuncEnv *func;
+
+	toexport = tmpfile();
+
+	fprintf(toexport, "@@ SCOPES AND NICKNAME-IDENT. FROM \"ROOT FUNCTIONS\"\n\n");
+
+	for(func = local_get(); func != NULL; func = func->next){
+		fprintf(toexport, "@ NICKNAMES AND IDENTIFIERS FROM FUNCTION: %s\n", func->name);
+
+		fprintf(toexport, "- SCOPE: \t");
+		if(IS_VALID_SCOPE(func->scope))
+			t_fcat(toexport, func->scope);
+
+		fputc('\n', toexport);
+
+		for(pairs = func->pairs; pairs != NULL; pairs = pairs->next)
+			fprintf(toexport, "%s\t%s\n", pairs->content[0], pairs->content[1]);
+
+		fputs("\n", toexport);
+	}
+
+	EXPORT;
+
 
 	info_verbose(VM_BREAK_FREE, "fromsrc", "scope", "pairs", "local", NULL);
 	fromsrc_end();

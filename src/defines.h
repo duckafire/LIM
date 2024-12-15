@@ -133,6 +133,16 @@ enum{
 // MEMORY-MANIPULATION
 
 // STAGE-PRODUCT
+#define SP_BASE(id)            \
+	if(flags.untilStage != id) \
+		return false;          \
+	info_verbose(VM_BREAK_STAGE, id)
+
+#define NONE_BUFFER_TO_FREE puts("\n");
+
+#define EXPORT \
+	t_copyAndExportFile(toexport); \
+	fclose(toexport)
 
 // PRINT-TEXT/ERRORS (Error MeSsaGe)
 
@@ -151,13 +161,6 @@ enum{
 #define HELP_ARG_HEAD "h", "header"
 #define HELP_ARG_SYNO "s", "synopsis"
 #define HELP_ARG_LISY "ls", "list-syn"
-
-#define SP_BASE(id)            \
-	if(flags.untilStage != id) \
-		return false;          \
-	info_verbose(VM_BREAK_STAGE, id)
-
-#define NONE_BUFFER_TO_FREE puts("\n");
 
 enum{ // Verbose Mode
 	VM_NORMAL,

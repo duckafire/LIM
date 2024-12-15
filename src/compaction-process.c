@@ -432,7 +432,7 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 
 	mm_stringEnd(&string, false);
 
-	return false;
+	return sp_localScopeTo_varFuncGParPar(4);
 }
 
 bool cp_5_organizeAndCompact(void){
