@@ -202,7 +202,7 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 	// build binary tree with functions, from Lua
 	// and header file, that were used in source file
-	info_verbose(VM_NORMAL, "Build of binary tree (with \"private global\" functions)");
+	info_verbose(VM_NORMAL, "Build of binary tree (with \"root functions\")");
 	for(short funcListId = 0; funcListId < 2; funcListId++){
 		// only #1 can be NULL
 		if(funcList[ funcListId ] == NULL)
@@ -276,7 +276,7 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 
 	// add queue content to scope
-	info_verbose(VM_PROCESS, "fragmentation of the reference queue (and build \"private global\" functions scope)");
+	info_verbose(VM_PROCESS, "fragmentation of the reference queue (+default func. scope)");
 	while((item = refe_getAndRmvQueueItem()) != NULL){
 		len = 0;
 
@@ -382,13 +382,14 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 	};
 
 
+	info_verbose(VM_BUFFER_INIT, "local", NULL);
 	local_init();
 	mm_stringInit(&string);
 
 
+	info_verbose(VM_PROCESS, "creation of nicknames to \"root functions\"");
 	for(cur = local_get(); cur != NULL; cur = cur->next){
-
-		// "I WANT that the variables and
+		// "i WANT that the variables and
 		// tables buffer are the FIRST!"
 		// 0(1): functions; 1(0): variables and tables
 		temp = cur->bufs[0];
@@ -429,7 +430,7 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 		local_pairsUpdateOrder(cur);
 	}
 
-
+	info_verbose(VM_FREE, NULL);
 	mm_stringEnd(&string, false);
 
 	return sp_localScopeTo_varFuncGParPar(4);
