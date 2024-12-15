@@ -346,7 +346,11 @@ bool cp_3_globalScopeTo_varFunc(void){
 		}
 	}
 
-	// build them scope
+
+	info_verbose(VM_NORMAL, "Updating order of variables and tables pairs...");
+	pairs_updateOrder();
+
+	// build their scope
 	info_verbose(VM_PROCESS, "build of \"private global\" variables and tables scope");
 	for(item = pairs_get(true); item != NULL; item = item->next)
 		scope_add(item->content[0], SCOPE_BASE);
@@ -354,9 +358,6 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 	info_verbose(VM_NORMAL, "Merging scope identifier with their values (address)...");
 	SCOPE_MERGE_BASE_WITH_BUF;
-
-	info_verbose(VM_NORMAL, "Updating order of variables and tables pairs...");
-	pairs_updateOrder();
 
 	info_verbose(VM_FREE, NULL);
 	mm_stringEnd(&string, false);
@@ -370,13 +371,76 @@ bool cp_3_globalScopeTo_varFunc(void){
 bool cp_4_localScopeTo_varFuncGParPar(void){
 	info_verbose(VM_STAGE, 4, "WiP");
 
-	scope_end();
-	pairs_end();
+
+	FILE *temp;
+	FuncEnv *cur;
+	short nickTypes[4] = {
+		NICK_TO_LOCAL_IDENT, // variables and tables
+		NICK_TO_LOCAL_IDENT, // functions
+		NICK_TO_PARAMETER,   // parameters
+		NICK_TO_ALIGN_PARAM, // parameters of aligned functions
+	};
+
+
+	local_init();
+	mm_stringInit(&string);
+
+
+	for(cur = local_get(); cur != NULL; cur = cur->next){
+
+		// "I WANT that the variables and
+		// tables buffer are the FIRST!"
+		// 0(1): functions; 1(0): variables and tables
+		temp = cur->bufs[0];
+		cur->bufs[0] = cur->bufs[1];
+		cur->bufs[1] = temp;
+
+		for(short i = 0; i < 4; i++){
+
+			// func. "continue" variables nickname sequence
+			if(i != 1)
+				nick_init(false);
+
+			fseek(cur->bufs[i], 0, SEEK_SET);
+
+			while((c = fgetc(cur->bufs[i])) != EOF){
+				t_getStringFromFile(cur->bufs[i], &c, &string);
+
+				if(local_pairsAdd(&(cur->pairs), nick_get(nickTypes[i]), string))
+					nick_up();
+
+				mm_stringEnd(&string, true);
+			}
+
+			// only variables and tables
+			if(i == 0){
+				Queue *item;
+
+				for(item = cur->pairs; item != NULL; item = item->next)
+					local_scopeAdd(cur->scope, item->content[0]);
+
+				local_scopeRmvLastComma(cur);
+			}
+
+			if(i > 0)
+				nick_end();
+		}
+
+		local_pairsUpdateOrder(cur);
+	}
+
+
+	mm_stringEnd(&string, false);
 
 	return false;
 }
 
 bool cp_5_organizeAndCompact(void){
+	fromsrc_end();
+	scope_end();
+	pairs_end();
+	local_end();
+
 	return false;
 }
 

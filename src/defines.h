@@ -25,6 +25,13 @@
 	t_fcat(scope_get(SCOPE_BASE), scope_get(SCOPE_FUNC_BUF)); \
 	SCOPE_BASE_REPLACE_LAST_COMMA(' ')
 
+#define PAIRS_UPDATE_ORDER(src)          \
+	Queue *newPairs = NULL;              \
+	pairs_newOrderQueue(src, &newPairs); \
+	src = newPairs
+
+#define IS_VALID_SCOPE(file) (ftell(file) > 7)
+
 enum{
 	SCOPE_FUNC_BUF, // original identifier of functions
 	SCOPE_BASE,     // nicknames
@@ -145,10 +152,18 @@ enum{
 #define HELP_ARG_SYNO "s", "synopsis"
 #define HELP_ARG_LISY "ls", "list-syn"
 
+#define SP_BASE(id)            \
+	if(flags.untilStage != id) \
+		return false;          \
+	info_verbose(VM_BREAK_STAGE, id)
+
+#define NONE_BUFFER_TO_FREE puts("\n");
+
 enum{ // Verbose Mode
 	VM_NORMAL,
 	VM_STAGE,
-	VM_BREAK,
+	VM_BREAK_STAGE,
+	VM_BREAK_FREE,
 	VM_PROCESS,
 	VM_FREE,
 	VM_BUFFER_INIT,

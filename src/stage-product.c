@@ -4,21 +4,16 @@
 static FILE *toexport;
 
 bool sp_extractSourceContent(short id, FILE *extrCttBuf){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, id, "-", NULL);
+	SP_BASE(id);
 
 	t_copyAndExportFile(extrCttBuf);
 	
+	NONE_BUFFER_TO_FREE;
 	return true;
 }
 
 bool sp_separateExtractContent(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, id, "fromsrc", NULL);
+	SP_BASE(id);
 
 
 	const char* const titles[] = {
@@ -69,16 +64,14 @@ bool sp_separateExtractContent(short id){
 		fprintf(toexport, "\n\n");
 	}
 
+	info_verbose(VM_BREAK_FREE, "fromsrc", NULL);
 	t_copyAndExportFile(toexport);
 	fromsrc_end();
 	return true;
 }
 
 bool sp_globalScopeTo_varFunc(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, id, "scope", "pairs", NULL);
+	SP_BASE(id);
 
 
 	toexport = tmpfile();
@@ -90,6 +83,8 @@ bool sp_globalScopeTo_varFunc(short id){
 	fclose(toexport);
 
 
+	info_verbose(VM_BREAK_FREE, "fromsrc", "scope", "pairs", NULL);
+	fromsrc_end();
 	scope_end();
 	pairs_end();
 
@@ -97,21 +92,21 @@ bool sp_globalScopeTo_varFunc(short id){
 }
 
 bool sp_localScopeTo_varFuncGParPar(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, id, "-", NULL);
+	SP_BASE(id);
 
 	// wip
+
+	info_verbose(VM_BREAK_FREE, "fromsrc", "scope", "pairs", "local", NULL);
+	fromsrc_end();
+	scope_end();
+	pairs_end();
+	local_end();
 
 	return true;
 }
 
 bool sp_organizeAndCompact(short id){
-	if(flags.untilStage != id)
-		return false;
-
-	info_verbose(VM_BREAK, id, "-", NULL);
+	SP_BASE(id);
 
 	// wip
 

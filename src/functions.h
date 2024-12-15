@@ -47,13 +47,6 @@ void scope_add(char *word, short bufId);
 FILE* scope_get(short bufId);
 void scope_end(void);
 
-//void scope_localAdd(char *name, char *word);
-//FuncEnv* scope_localGet(char *name);
-//void scope_localRmvLastComma(char *name);
-//static FuncEnv* scope_createLocal(char *name);
-//void scope_localEnd(void);
-//void scope_endItems(FuncEnv *item);
-
 void nick_init(bool toFuncs);
 static void nick_upAll(long last);
 void nick_up(void);
@@ -68,6 +61,15 @@ void pairs_end(void);
 static void pairs_upItemQtt(Queue *item, char *string);
 static void pairs_newOrderQueue(Queue *src, Queue **dest);
 static void pairs_endQueue(Queue *item);
+
+void local_init(void);
+void local_scopeAdd(FILE *cur, char *word);
+void local_scopeRmvLastComma(FuncEnv *cur);
+bool local_pairsAdd(Queue **pairs, char *nick, char *ident);
+void local_pairsUpdateQuantity(FuncEnv *cur, char *string);
+void local_pairsUpdateOrder(FuncEnv *cur);
+FuncEnv* local_get(void);
+void local_end(void);
 
 // CHECK-FLAGS
 void cf_setArgValues(int c, char *v[]);

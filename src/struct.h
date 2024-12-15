@@ -24,6 +24,19 @@ typedef struct LimVal{
 	char lua_tabs[9][10]; // used in "cont. treat." and "buffers"
 }LimVal;
 
+typedef struct BinaryNode{
+	char id;
+	char *content[2];
+	unsigned short quantity;
+	struct BinaryNode *left, *right, *next;
+}BinaryNode;
+
+typedef struct Queue{
+	char *content[2];
+	unsigned short quantity;
+	struct Queue *next;
+}Queue;
+
 // to functions declared in "root env."
 typedef struct FuncEnv{
 	char *name;
@@ -33,6 +46,9 @@ typedef struct FuncEnv{
 	// 2: itself parameters
 	// 3: parameters from its functions
 	FILE *bufs[FUNC_ENV_TOTAL_BUF];
+
+	FILE *scope;  // variables and functions scope
+	Queue *pairs; // nickname x identifier
 
 	// next function environment
 	struct FuncEnv *next;
@@ -54,19 +70,6 @@ typedef struct{
 	// queue
 	struct FuncEnv *head, *tail;
 }GlobalEnv;
-
-typedef struct BinaryNode{
-	char id;
-	char *content[2];
-	unsigned short quantity;
-	struct BinaryNode *left, *right, *next;
-}BinaryNode;
-
-typedef struct Queue{
-	char *content[2];
-	unsigned short quantity;
-	struct Queue *next;
-}Queue;
 
 extern FlagsVar flags;
 extern LimVal lim;

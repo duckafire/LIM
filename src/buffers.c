@@ -7,9 +7,8 @@ static GlobalEnv fromsrc;
 static BinaryNode *refe_tree[REFE_TOTAL_BUF];
 static Queue *refe_queue;
 static FILE *scope[2];
-static FuncEnv *lscope = NULL;
 static Queue *pairs[2];
-static FILE *finalContent = NULL;
+static FuncEnv *local;
 
 // this is not a buffer, but there is
 // not other for to put this...
@@ -238,66 +237,6 @@ void scope_end(void){
 	}
 }
 
-/* TODO
-void scope_localAdd(char *name, char *word){
-	if(lscope == NULL){
-		lscope = scope_createLocal(name);
-		return;
-	}
-
-	FuncEnv *p;
-	p = scope_localGet(name);
-
-	if(p->next == NULL){
-		p->next = scope_createLocal(name);
-		p = p->next;
-	}
-
-	fprintf(p->bufs[SCOPE_LOCAL_FUNC_VAR], "%s,", word);
-}
-
-FuncEnv* scope_localGet(char *name){
-	FuncEnv *p;
-
-	for(p = lscope; p->next != NULL && strcmp(name, p->name) == 0; p = p->next);
-
-	return p;
-}
-
-void scope_localRmvLastComma(char *name){
-	FuncEnv *p;
-	p = scope_localGet(name);
-
-	fseek(p->bufs[SCOPE_LOCAL_FUNC_VAR], -1, SEEK_CUR);
-}
-
-static FuncEnv* scope_createLocal(char *name){
-	FuncEnv *new;
-
-	new = malloc(sizeof(FuncEnv));
-	new->name = t_allocAndCopy(name);
-	new->bufs[SCOPE_LOCAL_FUNC_VAR] = tmpfile();
-	new->next = NULL;
-
-	return new;
-}
-
-void scope_localEnd(void){
-	scope_endItems(lscope);
-}
-
-void scope_endItems(FuncEnv *item){
-	if(item == NULL)
-		return;
-
-	scope_endItems(item->next);
-
-	t_copyFile(item->bufs[SCOPE_LOCAL_FUNC_VAR], item->name);
-	fclose(item->bufs[SCOPE_LOCAL_FUNC_VAR]);
-	free(item);
-}
-*/
-
 
 
 ////////// NICK //////////
@@ -366,8 +305,7 @@ void nick_end(void){
 
 
 
-
-////////// PAIR //////////
+////////// PAIRS //////////
 
 // this is only a convention
 // #define pairs_init
@@ -395,11 +333,7 @@ static void pairs_upItemQtt(Queue *item, char *string){
 }
 
 void pairs_updateOrder(void){
-	Queue *newPairs = NULL;
-
-	pairs_newOrderQueue(pairs[1], &newPairs);
-
-	pairs[1] = newPairs;
+	PAIRS_UPDATE_ORDER(pairs[1]);
 }
 
 static void pairs_newOrderQueue(Queue *src, Queue **dest){
@@ -432,4 +366,57 @@ static void pairs_endQueue(Queue *item){
 			free(item->content[i]);
 
 	free(item);
+}
+
+
+
+////////// LOCAL //////////
+
+// scope + pairs
+
+void local_init(void){
+	FuncEnv *p;
+
+	local = fromsrc.head;
+
+	for(p = local; p != NULL; p = p->next){
+		p->scope = tmpfile();
+		p->pairs = NULL; // it will be started in: local_pairsAdd
+
+		fputs("local ", p->scope);
+	}
+}
+
+void local_scopeAdd(FILE *cur, char *word){
+	fprintf(cur, "%s,", word);
+}
+
+void local_scopeRmvLastComma(FuncEnv *cur){
+	fseek(cur->scope, -1, SEEK_CUR);
+	fputc(' ', cur->scope);
+}
+
+bool local_pairsAdd(Queue **pairs, char *nick, char *ident){
+	return mm_queueInsertItem(pairs, 0, nick, ident, false);
+}
+
+void local_pairsUpdateQuantity(FuncEnv *cur, char *string){
+	pairs_upItemQtt(local->pairs, string);
+}
+
+void local_pairsUpdateOrder(FuncEnv *cur){
+	PAIRS_UPDATE_ORDER(local->pairs);
+}
+
+FuncEnv *local_get(void){
+	return local;
+}
+
+void local_end(void){
+	FuncEnv *p;
+
+	for(p = local; p != NULL; p = p->next){
+		fclose(p->scope);
+		free(p->pairs);
+	}
 }
