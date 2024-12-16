@@ -57,17 +57,21 @@ bool pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *iden
 void pairs_updateQuantity(char *string);
 void pairs_updateOrder(void);
 Queue* pairs_get(bool fromSrcFile);
+char* pairs_getNick(bool fromSrcFile, char *ident);
 void pairs_end(void);
 static void pairs_upItemQtt(Queue *item, char *string);
 static void pairs_newOrderQueue(Queue *src, Queue **dest);
+static char* pairs_searchNick(Queue *item, char *ident);
 static void pairs_endQueue(Queue *item);
 
 void local_init(void);
 void local_scopeAdd(FILE *cur, char *word);
 void local_scopeRmvLastComma(FuncEnv *cur);
+FILE* local_scopeGet(char *name);
 bool local_pairsAdd(Queue **pairs, char *nick, char *ident);
 void local_pairsUpdateQuantity(FuncEnv *cur, char *string);
 void local_pairsUpdateOrder(FuncEnv *cur);
+char* local_pairsGetNick(char *name, char *ident);
 FuncEnv* local_get(void);
 void local_end(void);
 

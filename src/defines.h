@@ -38,11 +38,6 @@ enum{
 };
 
 enum{
-	CTT_TABLE = 0,
-	CTT_FUNC,
-};
-
-enum{
 	NICK_TO_LUA_HEAD_FUNC,// none is added
 	NICK_TO_GLOBAL_IDENT, // add 'G': Ga, Gb, ...
 	NICK_TO_LOCAL_IDENT,  // add 'L': La, Lb, ...
@@ -58,6 +53,15 @@ enum{
 
 // COMPACTION PROCESS
 #define SEPARATOR(f) fputc('\n',f)
+#define REVERTE_FORDER           \
+	temp = cur->bufs[0];         \
+	cur->bufs[0] = cur->bufs[1]; \
+	cur->bufs[1] = temp;
+#define SPACE_BETWEEN         \
+	if(spaceBetween){         \
+		fputc(' ', finalCtt); \
+		spaceBetween = false; \
+	}
 
 // CONTENT-TREATMENT
 
@@ -81,6 +85,8 @@ enum{
 	t != TYPE_LOCAL_PSELF_2 && \
 	t != TYPE_LOCAL_PALIG_3    \
 )
+
+#define IS_FROM_SRCFILE(c) (c != TYPE_FROM_LUA && c != TYPE_FROM_HEAD)
 
 enum{
 	PREFIX_NONE = -1,

@@ -85,8 +85,7 @@ char* t_allocAndCopy(char *src){
 void t_getStringFromFile(FILE *src, char *c, char **string){
 	do{
 		if(*c != '\n'){
-			if(*c != '\0')
-				mm_stringAdd(string, *c);
+			mm_stringAdd(string, *c);
 		}else{
 			return;
 		}

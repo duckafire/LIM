@@ -249,11 +249,11 @@ char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId){
 	return NULL;
 }
 
-void ct_checkAndUpLayer(char *word, unsigned short *code){
+void ct_checkAndUpLayer(char *word, unsigned short *layer){
 	if(strcmp(word, "if") == 0 || strcmp(word, "do") == 0 || strcmp(word, "function") == 0)
-		(*code)++;
-	else if(*code > 0 && strcmp(word, "end") == 0)
-		(*code)--;
+		(*layer)++;
+	else if(*layer > 0 && strcmp(word, "end") == 0)
+		(*layer)--;
 }
 
 static bool checkLuaKeywords(char *word, bool stage1){

@@ -8,7 +8,7 @@
 static char c;           // stage: 1-5
 static FILE *extrCttBuf; // stage: 1, 2
 static char *string;     // stage 2-5
-static FILE *finalCtt;   // stage 4>
+static FILE *finalCtt;   // stage 5>
 
 void cp_0_checkAndOpenFiles(void){
 	info_verbose(VM_STAGE, 0, "check and open file specified.");
@@ -184,11 +184,8 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 	// FUNCTIONS AND TABLES FROM LUA AND HEADER
 	
-	// math/string/table==treaty like "word"
-	char *table = NULL;
-
-	// from Lua/"header.lim"
-	FILE *funcList[2] = {
+	char *table = NULL; // math/string/table==treaty like "word"
+	FILE *funcList[2] = { // from Lua/"header.lim"
 		(fromsrc_get())->bufs[TYPE_FROM_LUA],
 		(fromsrc_get())->bufs[TYPE_FROM_HEAD],
 	};
@@ -262,9 +259,7 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 
 	Queue *item;
-
 	unsigned short len;
-
 	char *content[2], *fullContent, *firstToCopy;
 	char *nickPrefixed;
 
@@ -315,10 +310,9 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 
 
-	// VARIABLES AND TABLES FROM SOURCE FILE
+	// VARIABLES, TABLES AND FUNCTIONS FROM SOURCE FILE
 
-	FILE *tmp;
-	tmp = (fromsrc_get())->bufs[TYPE_GLOBAL_VAR];
+	FILE *curBuf;
 
 
 	mm_stringInit(&string);
@@ -327,33 +321,40 @@ bool cp_3_globalScopeTo_varFunc(void){
 	nick_init(false);
 
 
-	// get "private global" variables and tables
-	// identifier and ordenate to build them scope
+	// get "private global" variables, tables and functions identifier,
+	// ordenate them and build (ONLY) the variables and tables scope
 	info_verbose(VM_PROCESS, "get \"private global\" variables and tables");
-	for(short mode = 0; mode < 2; mode++){
-		fseek(tmp, 0, SEEK_SET);
+	for(short fileId = 0; fileId < 2; fileId++){
+		curBuf = (fromsrc_get())->bufs[ ((fileId == 0) ? TYPE_GLOBAL_VAR : TYPE_GLOBAL_FUNC) ];
 
-		while((c = fgetc(tmp)) != EOF){
-			t_getStringFromFile(tmp, &c, &string);
+		for(short modeToVar = 0; modeToVar < 2; modeToVar++){
+			fseek(curBuf, 0, SEEK_SET);
 
-			if(mode == 0)
-				if(pairs_add(true, 0, nick_get(NICK_TO_GLOBAL_IDENT), string))
-					nick_up();
-			else
-				pairs_updateQuantity(string);
+			while((c = fgetc(curBuf)) != EOF){
+				t_getStringFromFile(curBuf, &c, &string);
 
-			mm_stringEnd(&string, true);
+				if(modeToVar == 0)
+					if(pairs_add(true, 0, nick_get(NICK_TO_GLOBAL_IDENT), string))
+						nick_up();
+				else
+					pairs_updateQuantity(string);
+
+				mm_stringEnd(&string, true);
+			}
+
+			info_verbose(VM_NORMAL, "Updating order of variables and tables pairs...");
+			pairs_updateOrder();
+
+			// functions nicknames will
+			// not be added to scope
+			if(fileId == 0 && modeToVar == 0){
+				info_verbose(VM_PROCESS, "build of \"private global\" variables and tables scope");
+				for(item = pairs_get(true); item != NULL; item = item->next)
+					scope_add(item->content[0], SCOPE_BASE);
+			}
+
 		}
 	}
-
-
-	info_verbose(VM_NORMAL, "Updating order of variables and tables pairs...");
-	pairs_updateOrder();
-
-	// build their scope
-	info_verbose(VM_PROCESS, "build of \"private global\" variables and tables scope");
-	for(item = pairs_get(true); item != NULL; item = item->next)
-		scope_add(item->content[0], SCOPE_BASE);
 
 
 	info_verbose(VM_NORMAL, "Merging scope identifier with their values (address)...");
@@ -392,9 +393,7 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 		// "i WANT that the variables and
 		// tables buffer are the FIRST!"
 		// 0(1): functions; 1(0): variables and tables
-		temp = cur->bufs[0];
-		cur->bufs[0] = cur->bufs[1];
-		cur->bufs[1] = temp;
+		REVERTE_FORDER;
 
 		for(short i = 0; i < 4; i++){
 
@@ -428,6 +427,8 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 		}
 
 		local_pairsUpdateOrder(cur);
+
+		REVERTE_FORDER;
 	}
 
 	info_verbose(VM_FREE, NULL);
@@ -437,15 +438,121 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 }
 
 bool cp_5_organizeAndCompact(void){
-	fromsrc_end();
-	scope_end();
-	pairs_end();
-	local_end();
+	// TODO: refactoring it + replace identifiers by their nicknames
 
+	bool localKeywordFound = false;
+	bool spaceBetween = false;
+	char *funcName = NULL;
+	unsigned short blockLayer = 0, anonyId = 0, last = 0;
+	GlobalEnv *from;
+	short code;
+	FILE *curBuf;
+	short isFuncEnv[4] = {
+		TYPE_LIB_FUNC,
+		TYPE_GLOBAL_FUNC,
+		TYPE_LOCAL_FUNC_0,
+		TYPE_ANONYMOUS,
+	};
+	FILE *scope;
+	char *tempString;
+	short theyWillBeCompacted[] = {
+		TYPE_GLOBAL_FUNC,
+		TYPE_GLOBAL_VAR,
+		TYPE_LOCAL_FUNC_0,
+		TYPE_LOCAL_VAR_1,
+		TYPE_LOCAL_PSELF_2,
+		TYPE_LOCAL_PALIG_3,
+	};
+	bool playScope = false;
+
+	finalCtt = tmpfile();
+	from = fromsrc_get();
+	fromsrc_fseekSetAll();
+	mm_stringInit(&string);
+	
+	while(fromsrc_getOrder(&code)){
+		curBuf = fromsrc_getBuf(code, funcName);
+
+		c = fgetc(curBuf);
+		t_getStringFromFile(curBuf, &c, &string);
+
+		if(blockLayer == 0){
+			for(short i = 0; i < 4; i++){
+				if(code == isFuncEnv[i]){
+					if(isFuncEnv[i] == TYPE_ANONYMOUS)
+						funcName = t_setAnonyFuncName(&anonyId);
+					else
+						funcName = t_allocAndCopy(string);
+
+					scope = local_scopeGet(funcName);
+					if(IS_VALID_SCOPE(scope))
+						playScope = true;
+					
+					blockLayer++;
+					break;
+				}
+			}
+		}else{
+			ct_checkAndUpLayer(string, &blockLayer);
+
+			if(blockLayer == 0){
+				free(funcName);
+				funcName = NULL;
+			}
+		}
+
+		if(localKeywordFound){
+			localKeywordFound = false;
+			if(strcmp(string, "function") == 0){
+				SPACE_BETWEEN;
+				fprintf(finalCtt, "local ");
+			}
+		
+		}else if(strcmp(string, "local") == 0){
+			localKeywordFound = true;
+			mm_stringEnd(&string, true);
+			continue;
+		}
+
+		if(strcmp(string, "_G") == 0){
+			mm_stringEnd(&string, true);
+			mm_stringAdd(&string, '_');
+		}
+		
+		if(spaceBetween){
+			if(isalnum(string[0]) || string[last] == '_')
+				fputc(' ', finalCtt);
+
+			spaceBetween = false;
+		}
+		
+		last = strlen(string) - 1;
+		if(isalnum(string[last]) || string[last] == '_')
+			spaceBetween = true;
+
+		fprintf(finalCtt, "%s", string);
+
+		if(playScope && strcmp(string, ")") == 0){
+			playScope = false;
+			SPACE_BETWEEN;
+			t_fcat(finalCtt, scope);
+		}
+
+		mm_stringEnd(&string, true);
+	}
+
+
+	mm_stringEnd(&string, false);
+	t_copyAndExportFile(finalCtt);
+	fclose(finalCtt);
 	return false;
 }
 
 void cp_6_mergeContentAndPackLib(void){
+	fromsrc_end();
+	scope_end();
+	pairs_end();
+	local_end();
 	// header.lim
 	//info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
 	//info_verbose(VM_NORMAL, header_init());

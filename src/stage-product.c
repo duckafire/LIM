@@ -92,6 +92,8 @@ bool sp_globalScopeTo_varFunc(short id){
 			TOEXP_PRINT("\n- \"GLOBAL PROVATE\" VARIABLES, TABLES AND FUNCTIONS\n");
 	}
 
+	TOEXP_PRINT("\n[ from bigger/more used to smaller/low used ]");
+
 	EXP_NOW;
 
 

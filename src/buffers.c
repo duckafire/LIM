@@ -115,6 +115,16 @@ void fromsrc_fseekSetAll(void){
 	fromsrc_fseekSetAllLocal(fromsrc.head);
 }
 
+static void fromsrc_fseekSetAllLocal(FuncEnv *local){
+	if(local == NULL)
+		return;
+
+	fromsrc_fseekSetAllLocal(local->next);
+
+	for(short i = 0; i < FUNC_ENV_TOTAL_BUF; i++)
+		fseek(local->bufs[i], 0, SEEK_SET);
+}
+
 void fromsrc_end(void){
 	while(fromsrc.head != NULL)
 		fromsrc_rmvEnv();
@@ -126,16 +136,6 @@ void fromsrc_end(void){
 		fclose(fromsrc.bufs[i]);
 		fromsrc.bufs[i] = NULL;
 	}
-}
-
-static void fromsrc_fseekSetAllLocal(FuncEnv *local){
-	if(local == NULL)
-		return;
-
-	fromsrc_fseekSetAllLocal(local->next);
-
-	fseek(local->bufs[0], 0, SEEK_SET);
-	fseek(local->bufs[1], 0, SEEK_SET);
 }
 
 
@@ -350,6 +350,17 @@ Queue* pairs_get(bool fromSrcFile){
 	return pairs[ fromSrcFile ];
 }
 
+char* pairs_getNick(bool fromSrcFile, char *ident){
+	return pairs_searchNick(pairs[ fromSrcFile ], ident);
+}
+
+static char* pairs_searchNick(Queue *item, char *ident){
+	if(t_strcmp3(ident, item->content[1]))
+		return t_allocAndCopy(item->content[0]);
+
+	pairs_searchNick(item->next, ident);
+}
+
 void pairs_end(void){
 	pairs_endQueue(pairs[0]);
 	pairs_endQueue(pairs[1]);
@@ -396,6 +407,14 @@ void local_scopeRmvLastComma(FuncEnv *cur){
 	fputc(' ', cur->scope);
 }
 
+FILE* local_scopeGet(char *name){
+	FuncEnv *p;
+
+	for(p = local; p != NULL; p = p->next)
+		if(strcmp(name, p->name) == 0)
+			return p->scope;
+}
+
 bool local_pairsAdd(Queue **pairs, char *nick, char *ident){
 	return mm_queueInsertItem(pairs, 0, nick, ident, false);
 }
@@ -406,6 +425,14 @@ void local_pairsUpdateQuantity(FuncEnv *cur, char *string){
 
 void local_pairsUpdateOrder(FuncEnv *cur){
 	PAIRS_UPDATE_ORDER(local->pairs);
+}
+
+char* local_pairsGetNick(char *name, char *ident){
+	FuncEnv *p;
+
+	for(p = local; p != NULL; p = p->next)
+		if(strcmp(name, p->name) == 0)
+			return pairs_searchNick(local->pairs, ident);
 }
 
 FuncEnv *local_get(void){
