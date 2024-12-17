@@ -99,8 +99,8 @@ void cf_toCompaction(void){ // "destineName_1"
 				er_argExpected( t_getLongFlag(F_UNTIL_S) );
 			}
 
-			if(strlen(argv[i + 1]) > 1 || argv[i + 1][0] < '1' || argv[i + 1][0] > '4'){
-				er_invalidSuffixToFlag( t_getLongFlag(F_UNTIL_S) , "number (1 - 4)", argv[i + 1]);
+			if(strlen(argv[i + 1]) > 1 || argv[i + 1][0] < '1' || argv[i + 1][0] > '5'){
+				er_invalidSuffixToFlag( t_getLongFlag(F_UNTIL_S) , "number (1 - 5)", argv[i + 1]);
 			}
 
 			flags.untilStage = (short)(argv[i + 1][0] - '0');

@@ -156,6 +156,6 @@ bool sp_extractSourceContent(short id, FILE *extrCttBuf);
 bool sp_separateExtractContent(short id);
 bool sp_globalScopeTo_varFunc(short id);
 bool sp_localScopeTo_varFuncGParPar(short id);
-bool sp_organizeAndCompact(short id);
+bool sp_organizeAndCompact(short id, FILE *tmp_debug);
 
 #endif

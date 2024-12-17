@@ -178,7 +178,7 @@ bool cp_2_separateExtractContent(void){
 	return sp_separateExtractContent(2);
 }
 
-bool cp_3_globalScopeTo_varFunc(void){
+bool cp_3_globalScopeTo_varFunc(void){ // TODO: header scope need to be create here
 	info_verbose(VM_STAGE, 3, "build scope to \"private global\" variables, tables and functions");
 
 
@@ -449,81 +449,69 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 }
 
 bool cp_5_organizeAndCompact(void){
-	// TODO: refactoring it + replace identifiers by their nicknames
+	// TODO: replace identifiers by their nicknames
 
-	bool localKeywordFound = false;
-	bool isLibFunc = false;
-	bool spaceBetween = false;
-	char *libFuncName = NULL;
-	char *funcName = NULL;
-	unsigned short blockLayer = 0, anonyId = 0, last = 0;
-	GlobalEnv *from;
+
+	bool localKeywordFound, isLibFunc, spaceBetween, putScope;
+	unsigned short blockLayer, anonyId;
 	short code;
-	FILE *curBuf;
+	char *libFuncName, *bufName, *tmpString, lastStrChar;
+	FILE *curBuf, *scope;
+
 	short isFuncEnv[4] = {
 		TYPE_LIB_FUNC,
 		TYPE_GLOBAL_FUNC,
 		TYPE_LOCAL_FUNC_0,
-		TYPE_ANONYMOUS,
+		TYPE_ANONYMOUS
 	};
-	FILE *scope;
-	char *tmpString;
-	short theyWillBeCompacted[] = {
-		TYPE_GLOBAL_FUNC,
-		TYPE_GLOBAL_VAR,
-		TYPE_LOCAL_FUNC_0,
-		TYPE_LOCAL_VAR_1,
-		TYPE_LOCAL_PSELF_2,
-		TYPE_LOCAL_PALIG_3,
-	};
-	bool playScope = false;
+	//short theyWillBeCompacted[6] = {TYPE_GLOBAL_FUNC, TYPE_GLOBAL_VAR, TYPE_LOCAL_FUNC_0, TYPE_LOCAL_VAR_1, TYPE_LOCAL_PSELF_2, TYPE_LOCAL_PALIG_3};
+
+
+	localKeywordFound = isLibFunc = spaceBetween = putScope = false;
+	code = blockLayer = anonyId = 0;
+	libFuncName = bufName = tmpString = NULL;
+	curBuf = scope = NULL;
 
 	finalCtt = tmpfile();
-	from = fromsrc_get();
 	fromsrc_fseekSetAll();
 	mm_stringInit(&string);
 	
 	while(fromsrc_getOrder(&code)){
-		curBuf = fromsrc_getBuf(code, funcName);
+		curBuf = fromsrc_getBuf(code, bufName);
 
 		c = fgetc(curBuf);
 		t_getStringFromFile(curBuf, &c, &string);
-		last = strlen(string) - 1;
+		lastStrChar = string[strlen(string) - 1];
 
 		if(blockLayer == 0){
+			
 			for(short i = 0; i < 4; i++){
 				if(code == isFuncEnv[i]){
-					if(isFuncEnv[i] == TYPE_ANONYMOUS)
-						funcName = t_setAnonyFuncName(&anonyId);
-					else
-						funcName = t_allocAndCopy(string);
+					bufName = ((code == TYPE_ANONYMOUS) ? t_setAnonyFuncName(&anonyId) : t_allocAndCopy(string));
 
-					scope = local_scopeGet(funcName);
+					// it will be printed after that the "parameter
+					// declaration area" is close, with ')'
+					scope = local_scopeGet(bufName);
 					if(IS_VALID_SCOPE(scope))
-						playScope = true;
+						putScope = true;
 					
 					blockLayer++;
 					break;
 				}
 			}
+
 		}else{
 			ct_checkAndUpLayer(string, &blockLayer);
 
 			if(blockLayer == 0){
-				free(funcName);
-				funcName = NULL;
+				free(bufName);
+				bufName = NULL;
 			}
-		}
-
-		if(code == TYPE_FROM_LUA || code == TYPE_FROM_HEAD){
-			last = 0;
-			tmpString = string;
-			string = pairs_getNick(false, tmpString);
-			mm_stringEnd(&tmpString, false);
 		}
 
 		if(isLibFunc){
 			if(libFuncName == NULL){
+				// it is an anonymous function
 				if(strcmp(string, "(") == 0){
 					fprintf(finalCtt, "function(");
 					mm_stringEnd(&string, true);
@@ -536,77 +524,87 @@ bool cp_5_organizeAndCompact(void){
 				continue;
 			}
 
+			// it is a library function
 			if(strcmp(string, "(") == 0){
 				SPACE_BETWEEN;
 				fprintf(finalCtt, "_.%s=function", libFuncName);
+
+			// table function/method or sintax error
 			}else{
+				// TODO: when the compaction is enable, here
+				// must move the files cursor to behind
 				fprintf(finalCtt, "function %s", libFuncName);
 			}
 
 			spaceBetween = isLibFunc = false;
 			free(libFuncName);
 			libFuncName = NULL;
-		}else{
-			if(localKeywordFound){
-				localKeywordFound = false;
-				if(strcmp(string, "function") == 0){
-					SPACE_BETWEEN;
-					fprintf(finalCtt, "local ");
-				}
-			
-			}else if(strcmp(string, "local") == 0){
-				localKeywordFound = true;
-				mm_stringEnd(&string, true);
-				continue;
 
-			}else if(strcmp(string, "function") == 0){
-				isLibFunc = true;
-				mm_stringEnd(&string, true);
-				continue;
+		}else if(localKeywordFound){
+			localKeywordFound = false;
+			if(strcmp(string, "function") == 0){
+				SPACE_BETWEEN;
+				fprintf(finalCtt, "local ");
 			}
-		}
+
+			// TODO: check if it is a declaration of
+			// a nil variable (`local foo`), case yes,
+			// it will not be compacted
 		
-		if(strcmp(string, "_G") == 0){
+		// '_' is the library table
+		}else if(strcmp(string, "_G") == 0){
 			mm_stringEnd(&string, true);
 			mm_stringAdd(&string, '_');
+
+		// scopes become this keyword unnecessary,
+		// except to local functions declaration
+		}else if(strcmp(string, "local") == 0){
+			localKeywordFound = true;
+			mm_stringEnd(&string, true);
+			continue;
+
+		// it will be added to library
+		}else if(strcmp(string, "function") == 0){
+			isLibFunc = true;
+			mm_stringEnd(&string, true);
+			continue;
 		}
 		
+		
+		// mandatory space
 		if(spaceBetween){
-			if(isalnum(string[0]) || string[last] == '_')
+			if(isalnum(string[0]) || string[0] == '_')
 				fputc(' ', finalCtt);
 
 			spaceBetween = false;
 		}
 		
-		if(isalnum(string[last]) || string[last] == '_')
+		if(isalnum(lastStrChar) || lastStrChar == '_')
 			spaceBetween = true;
+
 
 		fprintf(finalCtt, "%s", string);
 
-		if(playScope && strcmp(string, ")") == 0){
-			playScope = false;
+		if(putScope && strcmp(string, ")") == 0){
+			putScope = false;
 			SPACE_BETWEEN;
 			t_fcat(finalCtt, scope);
 		}
+
 
 		mm_stringEnd(&string, true);
 	}
 
 
 	mm_stringEnd(&string, false);
-	t_copyAndExportFile(finalCtt);
-	fclose(finalCtt);
-	return false;
+
+	return sp_organizeAndCompact(5, finalCtt);
 }
 
 void cp_6_mergeContentAndPackLib(void){
+	fclose(finalCtt);
 	fromsrc_end();
 	scope_end();
 	pairs_end();
 	local_end();
-	// header.lim
-	//info_verbose(VM_NORMAL, "Loading \"header.lim\":...");
-	//info_verbose(VM_NORMAL, header_init());
-
-	//header_end();
 }

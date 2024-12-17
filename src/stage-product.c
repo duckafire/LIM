@@ -142,10 +142,16 @@ bool sp_localScopeTo_varFuncGParPar(short id){
 	return true;
 }
 
-bool sp_organizeAndCompact(short id){
+bool sp_organizeAndCompact(short id, FILE *tmp_debug){
 	SP_BASE(id);
 
-	// wip
+	t_copyAndExportFile(tmp_debug);
+	fclose(tmp_debug);
+
+	fromsrc_end();
+	scope_end();
+	pairs_end();
+	local_end();
 
 	return true;
 }
