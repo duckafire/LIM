@@ -184,8 +184,9 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 	// FUNCTIONS AND TABLES FROM LUA AND HEADER
 	
-	char *table = NULL; // math/string/table==treaty like "word"
-	FILE *funcList[2] = { // from Lua/"header.lim"
+	bool alreadyGetted = false; // to "string"
+	char *table = NULL;         // math/string/table==treaty like "word"
+	FILE *funcList[2] = {       // from Lua/"header.lim"
 		(fromsrc_get())->bufs[TYPE_FROM_LUA],
 		(fromsrc_get())->bufs[TYPE_FROM_HEAD],
 	};
@@ -209,30 +210,40 @@ bool cp_3_globalScopeTo_varFunc(void){
 
 
 		while((c = fgetc(funcList[ funcListId ])) != EOF){
-			t_getStringFromFile(funcList[ funcListId ], &c, &string);
+			if(alreadyGetted){
+				alreadyGetted = false;
+				fseek(funcList[ funcListId ], -1, SEEK_CUR);
+			}else
+				t_getStringFromFile(funcList[ funcListId ], &c, &string);
 
 			// the string is a table
 			if(string[0] != '.' && (funcListId == 1 || ct_checkLuaTabs(string))){
-				// a table was collected, but after
-				// it there is not function
+				// table that will be stored like a function
 				if(table != NULL){
-					refe_add(table, NULL);
+					refe_add(NULL, table);
 					free(table);
 				}
 
 				table = t_allocAndCopy(string);
-				strcpy(table, string);
 				mm_stringEnd(&string, true);
 				continue;
 			}
 
 			if(table != NULL){
-				refe_add(table, string);
+				if(string[0] == '.' || string[0] == ':'){
+					refe_add(table, string);
+
+				}else{ // invalid suffix
+					refe_add(NULL, table);
+					alreadyGetted = true;
+				}
 				
 				free(table);
 				table = NULL;
 				
-				mm_stringEnd(&string, true);
+				if(!alreadyGetted)
+					mm_stringEnd(&string, true);
+
 				continue;
 			}
 
@@ -441,7 +452,9 @@ bool cp_5_organizeAndCompact(void){
 	// TODO: refactoring it + replace identifiers by their nicknames
 
 	bool localKeywordFound = false;
+	bool isLibFunc = false;
 	bool spaceBetween = false;
+	char *libFuncName = NULL;
 	char *funcName = NULL;
 	unsigned short blockLayer = 0, anonyId = 0, last = 0;
 	GlobalEnv *from;
@@ -454,7 +467,7 @@ bool cp_5_organizeAndCompact(void){
 		TYPE_ANONYMOUS,
 	};
 	FILE *scope;
-	char *tempString;
+	char *tmpString;
 	short theyWillBeCompacted[] = {
 		TYPE_GLOBAL_FUNC,
 		TYPE_GLOBAL_VAR,
@@ -475,6 +488,7 @@ bool cp_5_organizeAndCompact(void){
 
 		c = fgetc(curBuf);
 		t_getStringFromFile(curBuf, &c, &string);
+		last = strlen(string) - 1;
 
 		if(blockLayer == 0){
 			for(short i = 0; i < 4; i++){
@@ -501,19 +515,57 @@ bool cp_5_organizeAndCompact(void){
 			}
 		}
 
-		if(localKeywordFound){
-			localKeywordFound = false;
-			if(strcmp(string, "function") == 0){
-				SPACE_BETWEEN;
-				fprintf(finalCtt, "local ");
-			}
-		
-		}else if(strcmp(string, "local") == 0){
-			localKeywordFound = true;
-			mm_stringEnd(&string, true);
-			continue;
+		if(code == TYPE_FROM_LUA || code == TYPE_FROM_HEAD){
+			last = 0;
+			tmpString = string;
+			string = pairs_getNick(false, tmpString);
+			mm_stringEnd(&tmpString, false);
 		}
 
+		if(isLibFunc){
+			if(libFuncName == NULL){
+				if(strcmp(string, "(") == 0){
+					fprintf(finalCtt, "function(");
+					mm_stringEnd(&string, true);
+					isLibFunc = false;
+					continue;
+				}
+
+				libFuncName = t_allocAndCopy(string);
+				mm_stringEnd(&string, true);
+				continue;
+			}
+
+			if(strcmp(string, "(") == 0){
+				SPACE_BETWEEN;
+				fprintf(finalCtt, "_.%s=function", libFuncName);
+			}else{
+				fprintf(finalCtt, "function %s", libFuncName);
+			}
+
+			spaceBetween = isLibFunc = false;
+			free(libFuncName);
+			libFuncName = NULL;
+		}else{
+			if(localKeywordFound){
+				localKeywordFound = false;
+				if(strcmp(string, "function") == 0){
+					SPACE_BETWEEN;
+					fprintf(finalCtt, "local ");
+				}
+			
+			}else if(strcmp(string, "local") == 0){
+				localKeywordFound = true;
+				mm_stringEnd(&string, true);
+				continue;
+
+			}else if(strcmp(string, "function") == 0){
+				isLibFunc = true;
+				mm_stringEnd(&string, true);
+				continue;
+			}
+		}
+		
 		if(strcmp(string, "_G") == 0){
 			mm_stringEnd(&string, true);
 			mm_stringAdd(&string, '_');
@@ -526,7 +578,6 @@ bool cp_5_organizeAndCompact(void){
 			spaceBetween = false;
 		}
 		
-		last = strlen(string) - 1;
 		if(isalnum(string[last]) || string[last] == '_')
 			spaceBetween = true;
 
