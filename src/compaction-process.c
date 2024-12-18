@@ -509,7 +509,11 @@ bool cp_5_organizeAndCompact(void){
 			}
 		}
 
-		if(isLibFunc){
+		if(code == TYPE_FROM_LUA || code == TYPE_FROM_HEAD){
+			// table, utf8, ipairs, tonumber...
+			ct_tableFuncFromLuaOrHead(&string);
+
+		}else if(isLibFunc){
 			if(libFuncName == NULL){
 				// it is an anonymous function
 				if(strcmp(string, "(") == 0){

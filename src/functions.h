@@ -27,6 +27,7 @@ void fromsrc_init(void);
 void fromsrc_newEnv(char *name);
 void fromsrc_order(short code);
 bool fromsrc_getOrder(short *code);
+void fromsrc_fseekOrderRedo(short bufId, char *cttGetted);
 void fromsrc_write(char *word, char *name, short bufId);
 void fromsrc_rmvEnv(void);
 GlobalEnv* fromsrc_get(void);
@@ -106,6 +107,8 @@ short ct_setPrefix(char *word, short prefix, short codeType, bool isRootEnv);
 char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId);
 void ct_checkAndUpLayer(char *word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);
+
+void ct_tableFuncFromLuaOrHead(char **string);
 
 static void clearComment(bool isLine);
 static void saveString(FILE *buf, char signal);

@@ -282,3 +282,59 @@ bool ct_checkLuaTabs(char *word){
 
 	return false;
 }
+
+
+
+////////// STAGE 5 //////////
+
+void ct_tableFuncFromLuaOrHead(char **string){
+	char *strBuf;
+	strBuf = *string;
+
+	// type, tostring, pairs, ...
+	if(!ct_checkLuaTabs(*string)){
+		*string = pairs_getNick(false, strBuf);
+		mm_stringEnd(&strBuf, false);
+		return;
+	}
+
+	char c;
+	FILE *buf;
+	short code;
+
+	if(!fromsrc_getOrder(&code)){
+		*string = pairs_getNick(false, strBuf);
+		mm_stringEnd(&strBuf, false);
+		return;
+	}
+
+	buf = fromsrc_getBuf(code, NULL);
+
+	mm_stringInit(string);
+	c = fgetc(buf);
+	t_getStringFromFile(buf, &c, string);
+
+	// invalid suffix (something)
+	if((code != TYPE_FROM_LUA && code != TYPE_FROM_HEAD) || (*string[0] != '.' && *string[0] != ':')){
+		fromsrc_fseekOrderRedo(code, *string);
+		mm_stringEnd(string, false);
+
+		*string = pairs_getNick(false, strBuf);
+		mm_stringEnd(&strBuf, false);
+		return;
+	}
+
+	// valid suffix: .floor, :seek, .insert
+	char *full;
+
+	full = malloc(strlen(strBuf) + strlen(*string) + 1);
+	strcpy(full, strBuf);
+	strcat(full, *string);
+
+	mm_stringEnd(&strBuf, false);
+	mm_stringEnd(string, false);
+
+	*string = pairs_getNick(false, full);
+
+	mm_stringEnd(&full, false);
+}

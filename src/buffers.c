@@ -59,6 +59,11 @@ bool fromsrc_getOrder(short *code){
 	return (fread(code, sizeof(short), 1, fromsrc.bufs[FROMSRC_ORDER]) > 0);
 }
 
+void fromsrc_fseekOrderRedo(short bufId, char *cttGetted){
+	fseek(fromsrc.bufs[FROMSRC_ORDER], -sizeof(short), SEEK_CUR);
+	fseek(fromsrc_getBuf(bufId, NULL), -(strlen(cttGetted) + 1), SEEK_CUR);
+}
+
 void fromsrc_write(char *word, char *name, short bufId){
 	// `name == NULL` for write in a global buffer
 	fprintf( fromsrc_getBuf(bufId, name), "%s\n", word);
