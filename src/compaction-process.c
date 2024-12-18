@@ -109,6 +109,11 @@ bool cp_2_separateExtractContent(void){
 	info_verbose(VM_STAGE, 2, "separate extracted content.");
 
 
+	// HEADER.LIM CONTENT
+	
+	info_verbose(VM_HEADER, header_init());
+
+
 	bool isRootEnv = true, isFunc = false, isAnony = false;
 	short prefix = PREFIX_NONE, typeCode = TYPE_NONE;
 	char *funcName = NULL, *anonyName = NULL;
@@ -178,18 +183,16 @@ bool cp_2_separateExtractContent(void){
 	return sp_separateExtractContent(2);
 }
 
-bool cp_3_globalScopeTo_varFunc(void){ // TODO: header scope need to be create here
+bool cp_3_globalScopeTo_varFunc(void){
 	info_verbose(VM_STAGE, 3, "build scope to \"private global\" variables, tables and functions");
 
 
-	// FUNCTIONS AND TABLES FROM LUA AND HEADER
+	// FUNCTIONS AND TABLES FROM LUA AND FUNCTIONS FROM HEADER
 	
 	bool alreadyGetted = false; // to "string"
 	char *table = NULL;         // math/string/table==treaty like "word"
-	FILE *funcList[2] = {       // from Lua/"header.lim"
-		(fromsrc_get())->bufs[TYPE_FROM_LUA],
-		(fromsrc_get())->bufs[TYPE_FROM_HEAD],
-	};
+	FILE *curFile;
+	//(fromsrc_get())->bufs[TYPE_FROM_HEAD],
 
 
 	info_verbose(VM_BUFFER_INIT, "refe", NULL);
@@ -200,67 +203,75 @@ bool cp_3_globalScopeTo_varFunc(void){ // TODO: header scope need to be create h
 
 	// build binary tree with functions, from Lua
 	// and header file, that were used in source file
-	info_verbose(VM_NORMAL, "Build of binary tree (with \"root functions\")");
-	for(short funcListId = 0; funcListId < 2; funcListId++){
-		// only #1 can be NULL
-		if(funcList[ funcListId ] == NULL)
-			break;
+	curFile = (fromsrc_get())->bufs[TYPE_FROM_LUA];
 
-		fseek(funcList[ funcListId ], 0, SEEK_SET);
+	fseek(curFile, 0, SEEK_SET);
 
+	// from lua
+	info_verbose(VM_NORMAL, "Build of binary tree (functions from Lua and \"header.lim\")");
+	while((c = fgetc(curFile)) != EOF){
+		if(alreadyGetted){
+			alreadyGetted = false;
+			fseek(curFile, -1, SEEK_CUR);
+		}else
+			t_getStringFromFile(curFile, &c, &string);
 
-		while((c = fgetc(funcList[ funcListId ])) != EOF){
-			if(alreadyGetted){
-				alreadyGetted = false;
-				fseek(funcList[ funcListId ], -1, SEEK_CUR);
-			}else
-				t_getStringFromFile(funcList[ funcListId ], &c, &string);
-
-			// the string is a table
-			if(string[0] != '.' && (funcListId == 1 || ct_checkLuaTabs(string))){
-				// table that will be stored like a function
-				if(table != NULL){
-					refe_add(NULL, table);
-					free(table);
-				}
-
-				table = t_allocAndCopy(string);
-				mm_stringEnd(&string, true);
-				continue;
-			}
-
+		// the string is a table
+		if(string[0] != '.' && ct_checkLuaTabs(string)){
+			// table that will be stored like a function
 			if(table != NULL){
-				if(string[0] == '.' || string[0] == ':'){
-					refe_add(table, string);
-
-				}else{ // invalid suffix
-					refe_add(NULL, table);
-					alreadyGetted = true;
-				}
-				
+				refe_add(NULL, table);
 				free(table);
-				table = NULL;
-				
-				if(!alreadyGetted)
-					mm_stringEnd(&string, true);
-
-				continue;
 			}
 
-			// function not prefixed by a table
-			// (tonumber, next, select, ...)
-			refe_add(NULL, string);
+			table = t_allocAndCopy(string);
 			mm_stringEnd(&string, true);
+			continue;
 		}
-
 
 		if(table != NULL){
-			refe_add(NULL, table);
+			if(string[0] == '.' || string[0] == ':'){
+				refe_add(table, string);
 
+			}else{ // invalid suffix
+				refe_add(NULL, table);
+				alreadyGetted = true;
+			}
+			
 			free(table);
 			table = NULL;
+			
+			if(!alreadyGetted)
+				mm_stringEnd(&string, true);
+
+			continue;
 		}
+
+		// function not prefixed by a table
+		// (tonumber, next, select, ...)
+		refe_add(NULL, string);
+		mm_stringEnd(&string, true);
 	}
+
+	if(table != NULL){
+		refe_add(NULL, table);
+
+		free(table);
+		table = NULL;
+	}
+
+	// from "header.lim"
+	curFile = (fromsrc_get())->bufs[TYPE_FROM_HEAD];
+
+	mm_stringEnd(&string, true);
+	fseek(curFile, 0, SEEK_SET);
+
+	while((c = fgetc(curFile)) != EOF){
+		t_getStringFromFile(curFile, &c, &string);
+		refe_add(NULL, string);
+		mm_stringEnd(&string, true);
+	}
+
 
 	info_verbose(VM_FREE, NULL);
 	mm_stringEnd(&string, false);
@@ -449,7 +460,7 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 }
 
 bool cp_5_organizeAndCompact(void){
-	// TODO: replace identifiers by their nicknames
+	// TODO: replace identifiers by their nicknames (variables, tables and function from source file)
 
 
 	bool localKeywordFound, isLibFunc, spaceBetween, putScope;
@@ -511,7 +522,7 @@ bool cp_5_organizeAndCompact(void){
 
 		if(code == TYPE_FROM_LUA || code == TYPE_FROM_HEAD){
 			// table, utf8, ipairs, tonumber...
-			ct_tableFuncFromLuaOrHead(&string);
+			ct_tableFuncFromLuaOrHead(&string, code);
 
 		}else if(isLibFunc){
 			if(libFuncName == NULL){
@@ -611,4 +622,5 @@ void cp_6_mergeContentAndPackLib(void){
 	scope_end();
 	pairs_end();
 	local_end();
+	header_end();
 }

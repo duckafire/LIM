@@ -182,6 +182,7 @@ enum{ // Verbose Mode
 	VM_FREE,
 	VM_BUFFER_INIT,
 	VM_BUFFER_END,
+	VM_HEADER,
 };
 
 #endif

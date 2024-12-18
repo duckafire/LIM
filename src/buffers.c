@@ -280,10 +280,11 @@ static void nick_upAll(long last){
 	char *buf;
 	buf = nick;
 
-	last = strlen(nick) + 1;
-	nick = malloc(last);
+	nick = malloc(strlen(nick) + 1);
 	
 	nick[0] = nickFirst;
+	nick[1] = '\0';
+
 	strcat(nick, buf);
 	free(buf);
 }
@@ -316,7 +317,7 @@ void nick_end(void){
 // #define pairs_init
 
 bool pairs_add(bool fromSrcFile, unsigned short quantity, char *nick, char *ident){
-	// 0 (A-Z): functions from Lua and from "header.lim"
+	// 0 (A-Z): functions and tables from Lua and functions from "header.lim"
 	// 1 (a-z): variables, tables and functions declared with `local`, in root env.
 	return mm_queueInsertItem(&pairs[ fromSrcFile ], quantity, nick, ident, false);
 }

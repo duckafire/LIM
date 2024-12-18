@@ -33,6 +33,7 @@ void fromsrc_rmvEnv(void);
 GlobalEnv* fromsrc_get(void);
 FILE* fromsrc_getBuf(short bufId, char *name);
 void fromsrc_fseekSetAll(void);
+void fromsrc_setFuncListFromHead(void);
 void fromsrc_end(void);
 static void fromsrc_fseekSetAllLocal(FuncEnv *local);
 
@@ -108,7 +109,7 @@ char* ct_checkAndCreateNewEnv(char *word, short typeCode, short *anonyId);
 void ct_checkAndUpLayer(char *word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);
 
-void ct_tableFuncFromLuaOrHead(char **string);
+void ct_tableFuncFromLuaOrHead(char **string, short lastCode);
 
 static void clearComment(bool isLine);
 static void saveString(FILE *buf, char signal);

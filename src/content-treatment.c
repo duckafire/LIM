@@ -287,12 +287,12 @@ bool ct_checkLuaTabs(char *word){
 
 ////////// STAGE 5 //////////
 
-void ct_tableFuncFromLuaOrHead(char **string){
+void ct_tableFuncFromLuaOrHead(char **string, short lastCode){
 	char *strBuf;
 	strBuf = *string;
 
 	// type, tostring, pairs, ...
-	if(!ct_checkLuaTabs(*string)){
+	if(!ct_checkLuaTabs(*string) || lastCode == TYPE_FROM_HEAD){
 		*string = pairs_getNick(false, strBuf);
 		mm_stringEnd(&strBuf, false);
 		return;
@@ -315,7 +315,7 @@ void ct_tableFuncFromLuaOrHead(char **string){
 	t_getStringFromFile(buf, &c, string);
 
 	// invalid suffix (something)
-	if((code != TYPE_FROM_LUA && code != TYPE_FROM_HEAD) || (*string[0] != '.' && *string[0] != ':')){
+	if(code != TYPE_FROM_LUA || code == TYPE_FROM_HEAD || (*string[0] != '.' && *string[0] != ':')){
 		fromsrc_fseekOrderRedo(code, *string);
 		mm_stringEnd(string, false);
 

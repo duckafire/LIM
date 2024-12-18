@@ -25,7 +25,7 @@ bool sp_separateExtractContent(short id){
 		"USE OR CALL",
 		"CONSTANTS",
 		"TABLES AND FUNCTIONS FROM Lua",
-		"TABLES AND FUNCTIONS FROM \"header.lim\"",
+		"FUNCTIONS FROM \"header.lim\"",
 	};
 
 	GlobalEnv *from;
@@ -83,7 +83,7 @@ bool sp_globalScopeTo_varFunc(short id){
 	TOEXP_PRINT("@ IDENTIFIER SCOPE OF THE \"%s\"\n\n", lim.sourceFileName);
 	TOEXP_FCAT(scope_get(SCOPE_BASE));
 
-	TOEXP_PRINT("\n\n@ VARIABLES, TABLES AND FUNCTIONS NICKNAME\n- FUNCTIONS FROM Lua and \"header.lim\"\n");
+	TOEXP_PRINT("\n\n@ VARIABLES, TABLES AND FUNCTIONS NICKNAME\n- FUNCTIONS AND TABLES FROM Lua AND FUNCTIONS FROM \"header.lim\"\n");
 	for(short i = 0; i < 2; i++){
 		for(pairs = pairs_get(i); pairs != NULL; pairs = pairs->next)
 			TOEXP_PRINT("%s\t%s\n", pairs->content[0], pairs->content[1]);
@@ -130,6 +130,8 @@ bool sp_localScopeTo_varFuncGParPar(short id){
 		TOEXP_PRINT("\n\n");
 	}
 
+	TOEXP_PRINT("\n[\"__fn_\" for anonymous functions]\n");
+
 	EXP_NOW;
 
 
@@ -148,10 +150,12 @@ bool sp_organizeAndCompact(short id, FILE *tmp_debug){
 	t_copyAndExportFile(tmp_debug);
 	fclose(tmp_debug);
 
+	info_verbose(VM_BREAK_FREE, "fromsrc", "scope", "pairs", "local", "header", NULL);
 	fromsrc_end();
 	scope_end();
 	pairs_end();
 	local_end();
+	header_end();
 
 	return true;
 }

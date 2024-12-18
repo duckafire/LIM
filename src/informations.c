@@ -223,13 +223,16 @@ void info_verbose(short mode, ...){
 		printf("[LIM] Freeing allocated memory(ies).\n");
 
 	else if(mode == VM_BREAK_STAGE)
-		printf("\n[LIM] Program break; stopped in Stage %d; ", va_arg(text, int));
+		printf("\n[LIM] Program break; stopped in Stage %d.\n\t", va_arg(text, int));
+
+	else if(mode == VM_HEADER)
+		printf("[LIM] Loading \"header.lim\": ...\n\t%s\n", va_arg(text, char*));
 
 	else{
 		char *cur;
 
 		if(mode == VM_BREAK_FREE)
-			printf("finishing buffers:");
+			printf("> Finishing buffers:");
 
 		else if(mode == VM_BUFFER_INIT)
 			printf("[LIM] Starting buffer:");
