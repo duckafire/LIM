@@ -144,11 +144,11 @@ static void saveBraces(FILE *buf){
 
 short ct_readPrefix(char *word, short prefix, short blockLayer, bool isRootEnv){
 	if(prefix == PREFIX_PARAMETER){
-		if(t_strcmp2(word, ",", "("))
+		if(word[0] == ',' || word[0] == '(')
 			return TYPE_PARAM_CONST;
 
 		// end of function parameters
-		if(strcmp(word, ")") == 0)
+		if(word[0] == ')')
 			return TYPE_PARAM_END;
 
 		if(blockLayer == 1) // itself parameters
@@ -158,11 +158,14 @@ short ct_readPrefix(char *word, short prefix, short blockLayer, bool isRootEnv){
 		return TYPE_LOCAL_PALIG_3;
 	}
 
-	if(prefix == PREFIX_LOCAL && strcmp(word, "function") == 0)
-		return TYPE_CONSTANT;
 
-	if(prefix == PREFIX_FUNCTION && strcmp(word, "(") == 0)
+	if(prefix == PREFIX_FUNCTION && word[0] == '(')
 		return TYPE_ANONYMOUS;
+
+
+	if(prefix == PREFIX_POS_COMMA && (isalpha(word[0]) || word[0] == '_'))
+		return ((isRootEnv) ? TYPE_GLOBAL_VAR : TYPE_LOCAL_VAR_1);
+
 
 	switch(prefix){
 		case PREFIX_G:          return TYPE_LIB_VAR;
@@ -206,8 +209,19 @@ short ct_setPrefix(char *word, short prefix, short codeType, bool isRootEnv){
 	if(IS_FUNC_TYPE(codeType))
 		return PREFIX_PARAMETER;
 
+
+	if(prefix == PREFIX_POS_COMMA && (isalpha(word[0]) || word[0] == '_'))
+		return PREFIX_COMMA;
+
+	if(prefix == PREFIX_COMMA && word[0] == ',')
+		return PREFIX_POS_COMMA;
+
+	if(codeType == TYPE_GLOBAL_VAR || codeType == TYPE_LOCAL_VAR_1)
+		return PREFIX_COMMA;
+
+
 	if(strcmp(word, "_G") == 0)
-			return PREFIX_G;
+		return PREFIX_G;
 
 	if(strcmp(word, "local") == 0)
 		return PREFIX_LOCAL;
@@ -220,6 +234,7 @@ short ct_setPrefix(char *word, short prefix, short codeType, bool isRootEnv){
 	
 	if(ct_checkLuaTabs(word))
 		return PREFIX_LUA_TABLE;
+
 
 	return PREFIX_NONE;
 }
@@ -337,4 +352,116 @@ void ct_tableFuncFromLuaOrHead(char **string, short lastCode){
 	*string = pairs_getNick(false, full);
 
 	mm_stringEnd(&full, false);
+}
+
+char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *bufName){
+	// local car, var, val, vrum -> [NONE]
+	// local car, var = 16       -> a=12
+	// local car, var = 16, 39   -> a,b=12,39
+	// local car = 16, 39        -> a=12
+	
+	FILE *buf;
+	short code, preCommaCtt = 0, posCommaCtt = 0;
+	bool signFound = false, commaExpected = false;
+	char c, *preSign, *posSign, *tmpSign, *string, *tmpStr, *destine;
+
+
+	fromsrc_fseekOrderRedo(lastCode, lastString);
+
+	mm_stringInit(&string);
+	mm_stringInit(&preSign);
+	mm_stringInit(&posSign);
+
+
+	while(fromsrc_getOrder(&code)){
+		mm_stringEnd(&string, true);
+		buf = fromsrc_getBuf(code, bufName);
+
+		c = fgetc(buf);
+		t_getStringFromFile(buf, &c, &string);
+
+		if(commaExpected){
+			commaExpected = false;
+
+			if(!signFound && string[0] == '='){
+				signFound = true;
+				continue;
+			}
+			
+			if(string[0] != ','){
+				fromsrc_fseekOrderRedo(code, string);
+				mm_stringEnd(&string, false);
+
+				if(signFound)
+					break; // to merge content getted
+				else
+					return "\0"; // `continue` Stage 5 loop
+			}
+
+			(!signFound) ? preCommaCtt++ : posCommaCtt++;
+
+		}else if(string[0] != ','){
+			commaExpected = true;
+
+			if(!signFound){
+				tmpStr = string;
+
+				if(bufName == NULL)
+					string = pairs_getNick(true, tmpStr);
+				else
+					string = local_pairsGetNick(bufName, tmpStr);
+
+				mm_stringEnd(&tmpStr, false);
+			}
+		}
+
+		tmpSign = ((!signFound) ? preSign : posSign);
+
+		destine = malloc(strlen(tmpSign) + strlen(string) + 1);
+		strcpy(destine, tmpSign);
+		strcat(destine, string);
+
+		mm_stringEnd(&tmpSign, false);
+
+		if(!signFound)
+			preSign = destine;
+		else
+			posSign = destine;
+	}
+
+	if(posSign[0] == '\0'){
+		mm_stringEnd(&string, false);
+		return NULL; // `break` Stage 5 loop
+	}
+
+	char *full, *toCut;
+	short commaLarger;
+
+	if(preCommaCtt > posCommaCtt){
+		toCut = preSign;
+		commaLarger = posCommaCtt;
+	}else{
+		toCut = posSign;
+		commaLarger = preCommaCtt;
+	}
+
+	for(short i = 0; true; i++){
+
+		if(toCut[i] == ','){
+			commaLarger--;
+
+			if(commaLarger == -1){
+				toCut[i] = '\0';
+				break;
+			}
+		}
+	}
+
+	full = malloc(strlen(preSign) + strlen(posSign) + sizeof(char) * 2);
+
+	strcpy(full, preSign);
+	strcat(full, "=");
+	strcat(full, posSign);
+
+	return full;
 }

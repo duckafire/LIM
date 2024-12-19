@@ -96,6 +96,8 @@ enum{
 	PREFIX_LOCAL_FUNC, // local function
 	PREFIX_LUA_TABLE,  // table, math, ...
 	PREFIX_PARAMETER,  // [`function` | func. ident.] <(>
+	PREFIX_COMMA,      // <local> <ident0> <,> [ident1 <,> [identn <,>]] [=] ...
+	PREFIX_POS_COMMA,  // [ident1, [iden2, [identn]]]
 };
 
 enum{

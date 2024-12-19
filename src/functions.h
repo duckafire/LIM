@@ -22,7 +22,6 @@ char* t_setAnonyFuncName(unsigned short *index);
 char* t_getLongFlag(char *f, char *flag);
 
 // BUFFERS
-
 void fromsrc_init(void);
 void fromsrc_newEnv(char *name);
 void fromsrc_order(short code);
@@ -110,6 +109,7 @@ void ct_checkAndUpLayer(char *word, unsigned short *code);
 bool ct_checkLuaTabs(char *word);
 
 void ct_tableFuncFromLuaOrHead(char **string, short lastCode);
+char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *funcName);
 
 static void clearComment(bool isLine);
 static void saveString(FILE *buf, char signal);

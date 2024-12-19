@@ -560,11 +560,21 @@ bool cp_5_organizeAndCompact(void){
 			if(strcmp(string, "function") == 0){
 				SPACE_BETWEEN;
 				fprintf(finalCtt, "local ");
-			}
 
-			// TODO: check if it is a declaration of
-			// a nil variable (`local foo`), case yes,
-			// it will not be compacted
+			}else if(1 && (code == TYPE_GLOBAL_VAR || code == TYPE_LOCAL_VAR_1)){
+				tmpString = string;
+				string = ct_varTabDeclarationTreatment(code, tmpString, bufName);
+
+				mm_stringEnd(&tmpString, false);
+				if(string == NULL)
+					break;
+
+				else if(string[0] == '\0'){
+					string = NULL;
+					mm_stringInit(&string);
+					continue;
+				}
+			}
 		
 		// '_' is the library table
 		}else if(strcmp(string, "_G") == 0){
