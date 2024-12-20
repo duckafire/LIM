@@ -394,16 +394,20 @@ char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *bufN
 
 				if(signFound)
 					break; // to merge content getted
-				else
+				else{
+					mm_stringEnd(&string,  false);
+					mm_stringEnd(&preSign, false);
+					mm_stringEnd(&posSign, false);
 					return "\0"; // `continue` Stage 5 loop
+				}
 			}
 
 			(!signFound) ? preCommaCtt++ : posCommaCtt++;
 
-		}else if(string[0] != ','){
+		}else{
 			commaExpected = true;
 
-			if(!signFound){
+			if(isalpha(string[0]) || string[0] == '_'){
 				tmpStr = string;
 
 				if(bufName == NULL)
@@ -412,6 +416,9 @@ char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *bufN
 					string = local_pairsGetNick(bufName, tmpStr);
 
 				mm_stringEnd(&tmpStr, false);
+			}else if(string[0] == '('){
+				mm_stringEnd(&string, false);
+				string = varTabGetParenContent(bufName);
 			}
 		}
 
@@ -430,7 +437,9 @@ char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *bufN
 	}
 
 	if(posSign[0] == '\0'){
-		mm_stringEnd(&string, false);
+		mm_stringEnd(&string,  false);
+		mm_stringEnd(&preSign, false);
+		mm_stringEnd(&posSign, false);
 		return NULL; // `break` Stage 5 loop
 	}
 
@@ -464,4 +473,40 @@ char* ct_varTabDeclarationTreatment(short lastCode, char *lastString, char *bufN
 	strcat(full, posSign);
 
 	return full;
+}
+
+static char* varTabGetParenContent(char *bufName){
+	FILE *buf;
+	char c, *content, *string;
+	unsigned short code, layer = 1, i;
+
+	mm_stringInit(&string);
+	mm_stringInit(&content);
+	mm_stringAdd(&content, '(');
+
+	while(fromsrc_getOrder(&code)){
+		mm_stringEnd(&string, true);
+		buf = fromsrc_getBuf(code, bufName);
+
+		c = fgetc(buf);
+		t_getStringFromFile(buf, &c, &string);
+
+		if(string[0] == '(')
+			layer++;
+		else if(string[0] == ')')
+			layer--;
+
+		if(layer == 0){
+			mm_stringAdd(&content, ')');
+			mm_stringEnd(&string, false);
+			return content;
+		}
+
+		for(i = 0; string[i] != '\0'; i++)
+			mm_stringAdd(&content, string[i]);
+	}
+
+	mm_stringEnd(&string, false);
+	mm_stringEnd(&content, false);
+	return NULL;
 }

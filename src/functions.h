@@ -116,6 +116,7 @@ static void saveString(FILE *buf, char signal);
 static void saveBraces(FILE *buf);
 static bool checkLuaKeywords(char *word, bool stage1);
 static bool checkLuaFuncs(char *word);
+static char* varTabGetParenContent(char *bufName);
 
 // HEADER
 char* header_init(void);
