@@ -460,7 +460,9 @@ bool cp_4_localScopeTo_varFuncGParPar(void){
 }
 
 bool cp_5_organizeAndCompact(void){
-	// TODO: replace identifiers by their nicknames (variables, tables and function from source file)
+	// TODO: if a local identifier was not found,
+	// "the globals" identifiers need to be checked
+	// [ there is other "todo" ]
 
 
 	bool localKeywordFound, isLibFunc, spaceBetween, putScope;
@@ -475,7 +477,6 @@ bool cp_5_organizeAndCompact(void){
 		TYPE_LOCAL_FUNC_0,
 		TYPE_ANONYMOUS
 	};
-	//short theyWillBeCompacted[6] = {TYPE_GLOBAL_FUNC, TYPE_GLOBAL_VAR, TYPE_LOCAL_FUNC_0, TYPE_LOCAL_VAR_1, TYPE_LOCAL_PSELF_2, TYPE_LOCAL_PALIG_3};
 
 
 	localKeywordFound = isLibFunc = spaceBetween = putScope = false;
@@ -593,6 +594,15 @@ bool cp_5_organizeAndCompact(void){
 			isLibFunc = true;
 			mm_stringEnd(&string, true);
 			continue;
+		}else if(IS_VALID_CODE_TO_COMPACT(code)){
+			tmpString = string;
+
+			if(bufName == NULL)
+				string = pairs_getNick(code, tmpString);
+			else
+				string = local_pairsGetNick(bufName, tmpString);
+
+			mm_stringEnd(&tmpString, false);
 		}
 		
 		

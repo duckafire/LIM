@@ -62,6 +62,15 @@ enum{
 		fputc(' ', finalCtt); \
 		spaceBetween = false; \
 	}
+#define IS_VALID_CODE_TO_COMPACT(c) ( \
+	c == TYPE_USE_OR_CALL   || \
+	c == TYPE_GLOBAL_FUNC   || \
+	c == TYPE_GLOBAL_VAR    || \
+	c == TYPE_LOCAL_FUNC_0  || \
+	c == TYPE_LOCAL_VAR_1   || \
+	c == TYPE_LOCAL_PSELF_2 || \
+	c == TYPE_LOCAL_PALIG_3 \
+)
 
 // CONTENT-TREATMENT
 
