@@ -8,17 +8,6 @@ static bool update_item_quantity = false;
 static Queue *new_item;
 static unsigned short new_item_len, son_len;
 
-Queue* qee_create(char *content0, char *content1){
-	new_item = malloc(sizeof(Queue));
-
-	new_item->quantity = 0;
-	new_item->content[0] = content0;
-	new_item->content[1] = content1;
-	new_item->next = NULL;
-
-	return new_item;
-}
-
 #define QEE_ADD_AND_INSERT_ITEM_CORE(h)                     \
 	if(h == NULL){                                          \
 		h = new_item;                                       \
@@ -42,6 +31,17 @@ Queue* qee_create(char *content0, char *content1){
 		(h) = new_item;                                     \
 		return true;                                        \
 	}
+
+Queue* qee_create(char *content0, char *content1){
+	new_item = malloc(sizeof(Queue));
+
+	new_item->quantity = 0;
+	new_item->content[0] = content0;
+	new_item->content[1] = content1;
+	new_item->next = NULL;
+
+	return new_item;
+}
 
 bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt){
 	new_item = qee_create(content0, content1);
@@ -80,3 +80,5 @@ static void qee_free_item(Queue *item){
 	free(item->content[1]);
 	free(item);
 }
+
+#undef QEE_ADD_AND_INSERT_ITEM_CORE

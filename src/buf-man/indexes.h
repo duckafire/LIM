@@ -7,7 +7,7 @@
 #define FROMSRC_ADJ_LOCAL_CODE(i) (i - FROMSRC_LOCAL_FUNC)
 #define IS_GLOBAL_CODE(c) (c <= FROMSRC_TOTAL_GLOBAL_BUFS)
 
-enum{
+typedef enum{
 	FROMSRC_ORDER,
 	
 	FROMSRC_LIB_FUNC,
@@ -25,6 +25,6 @@ enum{
 	FROMSRC_LOCAL_VAR,
 	FROMSRC_LOCAL_SELF_PARAM,
 	FROMSRC_LOCAL_ALIGN_PARA,
-};
+}srcb_buf_id;
 
 #endif

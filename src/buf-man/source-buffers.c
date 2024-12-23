@@ -93,7 +93,7 @@ void srcb_fseek_set_all(FromSrcRoot *global){
 			fseek(i_func_env->bufs[i], 0, SEEK_SET);
 }
 
-static short srcb_convert_bufId(short *bufId){
+static fromsrc_buf_id srcb_convert_bufId(short *bufId){
 	// other "format" were created to
 	// easily other process
 	if(*bufId > FROMSRC_TOTAL_GLOBAL_BUFS + FROMSRC_TOTAL_LOCAL_BUFS)
@@ -128,3 +128,5 @@ void srcb_free(FromSrcRoot *global){
 
 	free(global);
 }
+
+#undef SRCB_CREATE_CORE

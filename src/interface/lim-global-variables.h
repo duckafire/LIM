@@ -17,6 +17,12 @@ struct Lim_Global_Variables{
 		bool header_file;
 		char *until_stage;
 	}flags;
+
+	struct{
+		FILE *top_header;
+		FILE *code_scope;
+		FILE *funct_list;
+	}header_partitions;
 };
 
 extern struct Lim_Global_Variables lim;

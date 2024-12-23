@@ -1,6 +1,8 @@
 #ifndef INTERFACE_ARGS_PRINT_INFO_FLAGS
 #define INTERFACE_ARGS_PRINT_INFO_FLAGS
 
+#include "../../../cmake-h/version.h"
+
 #define no_arguments_to_lim              \
 	MESSAGE(                             \
 		"[LIM] - Lua Library Compactor", \

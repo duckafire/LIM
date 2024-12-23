@@ -29,7 +29,7 @@ void srcb_remove_func_env(FromSrcRoot *global, char *funcName);
 void srcb_free_func_env(FromSrcFunc *func, FromSrcFunc **tmp);
 FILE* srcb_get_buf(FromSrcRoot *global, short bufId, char *funcName);
 void srcb_fseek_set_all(FromSrcRoot *global);
-static short srcb_convert_bufId(short *bufId);
+static srcb_buf_id srcb_convert_bufId(short *bufId);
 void srcb_write_in(FromSrcRoot *global, short bufId, char *content, char *funcName);
 void srcb_write_in_order(FromSrcRoot *global, short content);
 bool srcb_get_order(FromSrcRoot *global, short *bufId);
