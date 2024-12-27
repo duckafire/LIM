@@ -1,0 +1,22 @@
+
+./scripts/.tmp/a.lua
+./scripts/.tmp/a.lua --replace
+./scripts/.tmp/a.lua --verbose
+./scripts/.tmp/a.lua --name output
+./scripts/.tmp/a.lua --no-header
+./scripts/.tmp/a.lua --until-stage 1
+--version
+--help
+--help header
+--help license
+--help list
+--help list-syn
+--help rules
+--help synopsis
+--help --version
+--help --help
+--help --verbose
+--help --name
+--help --replace
+--help --no-header
+--help --until-stage
