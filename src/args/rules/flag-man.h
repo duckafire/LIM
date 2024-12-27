@@ -1,5 +1,5 @@
-#ifndef INTERFACE_ARGS_FLAG_MAN
-#define INTERFACE_ARGS_FLAG_MAN
+#ifndef ARGS_RULES_FLAG_MAN
+#define ARGS_RULES_FLAG_MAN
 
 #include <stdio.h>
 #include <stdlib.h>

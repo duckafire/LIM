@@ -1,5 +1,5 @@
-#ifndef INTERFACE_ARGS_CHECK_AND_TREAT
-#define INTERFACE_ARGS_CHECK_AND_TREAT
+#ifndef ARGS_RULES_CHECK_AND_TREAT
+#define ARGS_RULES_CHECK_AND_TREAT
 
 #include <stdio.h>
 #include <stdbool.h>

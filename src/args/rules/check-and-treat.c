@@ -32,7 +32,7 @@ static void is_it_information_flag(void){
 	}
 
 	if(flag_cmp(argv[1], FLAG_HELP)){
-		if(argc == 2)
+		if(argc == 1)
 			show_help_messages(NULL);
 
 		// "help" arguments are checked in:
@@ -54,8 +54,6 @@ static bool read_other_arguments(void){
 	if(argc == 1)
 		return true;
 
-#define INVALID_USE_TOTAL 2
-#define INVALID_USE(l) invalid_use[l][0], invalid_use[l][1]
 #define REPETITION(cond) if(cond){ERROR_flag_repetititon(argv[i]);}
 #define CMP_AND_SET(cond, var, val, ...) \
 	if(flag_cmp(argv[i], __VA_ARGS__)){  \
@@ -64,48 +62,46 @@ static bool read_other_arguments(void){
 		continue;                        \
 	}
 
-	char *invalid_use[INVALID_USE_TOTAL][3] = {
-		FLAG_VERSION,
-		FLAG_HELP,
-	};
+	for(short i = 1; i <= argc; i++){
 
-	short i, j;
-
-	for(i = 1; i <= argc; i++){
-
-		for(j = 0; j < INVALID_USE_TOTAL; j++){
-			REPETITION(flag_cmp(argv[i], INVALID_USE(j)))
+		if(flag_cmp(argv[i], FLAG_VERSION)){
+			REPETITION(flag_cmp(argv[i], FLAG_VERSION))
 		}
 
+		if(flag_cmp(argv[i], FLAG_HELP)){
+			REPETITION(flag_cmp(argv[i], FLAG_HELP))
+		}
+
+
 		if(flag_cmp(argv[i], FLAG_DEST_NAME)){
-			REPETITION( (lim.destine_file_name == NULL) )
+			REPETITION( (lim.destine_file_name != NULL) )
 
 			if(i == argc){
 				ERROR_suffix_expected_after_flag(argv[i]);
 			}
 
-			set_destine_file_name(argv[i + 1]);
+			set_destine_file_name(argv[++i]);
 			continue;
 		}
 
 		if(flag_cmp(argv[i], FLAG_UNTIL_STAGE)){
 			REPETITION( (lim.flags.until_stage != NULL) )
 
-			if(strlen(argv[i]) > 1 || (argv[i][0] < '1' && argv[i][0] > '5')){
-				ERROR_unvalid_suffix_to_flag("-us --until-stage", "1-5", argv[i]);
+			i++;
+			if(strlen(argv[i]) > 1 && !(argv[i][0] > '1' && argv[i][0] < '5')){
+				ERROR_unvalid_suffix_to_flag("-us | --until-stage", "1-5", argv[i]);
 			}
 
 			lim.flags.until_stage = argv[i];
 			continue;
 		}
 
-		CMP_AND_SET(lim.flags.verbose,          lim.flags.verbose,     true,    FLAG_VERBOSE)
-		CMP_AND_SET(lim.flags.replace,          lim.flags.replace,     true,    FLAG_REPLACE)
-		CMP_AND_SET(!lim.flags.header_file,     lim.flags.header_file, false,   FLAG_NO_HEADER)
+
+		CMP_AND_SET(lim.flags.verbose,      lim.flags.verbose,     true,  FLAG_VERBOSE)
+		CMP_AND_SET(lim.flags.replace,      lim.flags.replace,     true,  FLAG_REPLACE)
+		CMP_AND_SET(!lim.flags.header_file, lim.flags.header_file, false, FLAG_NO_HEADER)
 	}
 
-#undef INVALID_USE_TOTAL
-#undef INVALID_USE
 #undef REPETITION
 #undef CMP_AND_SET
 

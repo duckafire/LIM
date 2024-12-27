@@ -4,11 +4,11 @@
 #include "error.h"
 
 void show_help_messages(char *str){
-	if(str == NULL)
+	if(str == NULL){
 		MESSAGE(
 			"lim {-h | --help} [arg]",
 			" ",
-			"Print informations about a specific argument, that can be a flag or one of the"
+			"Print informations about a specific argument, that can be a flag or one of the "
 			"keywords in below:",
 			"* (h) header   -> how work and how to use \"header.lim\".",
 			"* (l) list     -> list all flags.",
@@ -17,6 +17,7 @@ void show_help_messages(char *str){
 			"* (r) rules    -> semantic rules to source file.",
 			"* (s) synopsis -> recommended synopsis for all arguments to Lim."
 		);
+	}
 
 	help_with_arg(str);
 	help_flag(str);
@@ -25,8 +26,8 @@ void show_help_messages(char *str){
 }
 
 static void help_with_arg(char *arg){
-	if(flag_cmp(arg, HELP_ARG_LIST))
-		MESSAGE(0,
+	if(flag_cmp(arg, HELP_ARG_LIST)){
+		MESSAGE(
 			"-v  --version",
 			"-h  --help",
 			"-V  --verbose",
@@ -35,8 +36,9 @@ static void help_with_arg(char *arg){
 			"-nh --no-header",
 			"-us --until-stage"
 		);
-	if(flag_cmp(arg, HELP_ARG_LICENSE))
-		MESSAGE(0,
+	}
+	if(flag_cmp(arg, HELP_ARG_LICENSE)){
+		MESSAGE(
 			"MIT License",
 			" ",
 			"Copyright (c) 2024 DuckAfire <duckafire.github.io/nest>",
@@ -59,8 +61,9 @@ static void help_with_arg(char *arg){
 			"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE",
 			"SOFTWARE."
 		);
-	if(flag_cmp(arg, HELP_ARG_RULES))
-		MESSAGE(0,
+	}
+	if(flag_cmp(arg, HELP_ARG_RULES)){
+		MESSAGE(
 			"Compaction rules (work in progress):",
 			" ",
 			"1 - Global variables and tables must ALWAYS to be prefixed by \"_G.\".",
@@ -82,8 +85,9 @@ static void help_with_arg(char *arg){
 			"    line feed)."
 			"9 - Identifiers started with '_' will not be compacted."
 		);
-	if(flag_cmp(arg, HELP_ARG_HEADER))
-		MESSAGE(0,
+	}
+	if(flag_cmp(arg, HELP_ARG_HEADER)){
+		MESSAGE(
 			"The \"header.lim\" file is search always that the Lim run, unless the flag \"-nh |",
 			"--no-header\" is used. When it is found, the Lim read, separate and store its",
 			"content in a buffer, for future use.",
@@ -114,64 +118,74 @@ static void help_with_arg(char *arg){
 			"foo_func_0",
 			"foo_func_1"
 		);
-	if(flag_cmp(arg, HELP_ARG_SYNOPSIS))
-		MESSAGE(0,
-			"lim [-v] [-h [help-arg]] [-V] [-r] <src-name> [-nh] [-us <1 | 2 | 3 | 4>] [-n <dest-name>]"
+	}
+	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
+		MESSAGE(
+			"lim [-v] [-h [help-arg]] [-V] [-r] <src-name> [-nh] [-us <1 - 5>] [-n <dest-name>]"
 		);
-	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS))
-		MESSAGE(0,
+	}
+	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
+		MESSAGE(
 			"-v  --version     -> lim {-v | --version}",
 			"-h  --help        -> lim {-h | --help} [arg]",
 			"-V  --verbose     -> lim {-V | --verbose} <source-name>",
 			"-n  --name        -> lim <source-name> {-n | --name} <destine-name>",
 			"-r  --replace     -> lim {-r | --replace} <source-name>",
 			"-nh --no-header   -> lim <source> {-nh | --no-header} <source-name>",
-			"-us --until-stage -> lim <source-name> {-us | --until-stage} <1 | 2 | 3 | 4>"
+			"-us --until-stage -> lim <source-name> {-us | --until-stage} <1 - 5>"
 		);
+	}
 }
 
 static void help_flag(char *flag){
-	if(flag_cmp(flag, FLAG_VERSION))
-		message(0,
+	if(flag_cmp(flag, FLAG_VERSION)){
+		MESSAGE(
 			"lim {-v | --version}",
 			" ",
 			"Print the program version"
 		);
-	if(flag_cmp(flag, FLAG_HELP))
-		message(0,
+	}
+	if(flag_cmp(flag, FLAG_HELP)){
+		MESSAGE(
 			"lim {-h | --help} [flag]",
 			" ",
 			"Print informations about flags and other something."
 		);
-	if(flag_cmp(flag, FLAG_VERBOSE))
-		message(0,
+	}
+	if(flag_cmp(flag, FLAG_VERBOSE)){
+		MESSAGE(
 			"lim {-V | --verbose} <source-name>",
 			" ",
 			"Print informations about the compaction, during this process."
 		);
-	if(flag_cmp(flag, FLAG_DEST_NAME))
-		message(0,
+	}
+	if(flag_cmp(flag, FLAG_DEST_NAME)){
+		MESSAGE(
 			"lim <source-name> {-n | --name} <destine-name>",
 			" ",
 			"Specify that the next flagument is the output file name."
 		);
-	if(flag_cmp(flag, FLAG_REPLACE))
-		message(0,
+	}
+	if(flag_cmp(flag, FLAG_REPLACE)){
+		MESSAGE(
 			"lim {-r | --replace} <source-name>",
 			" ",
 			"Specify that, if already exist a file with the same name of the",
 			"output file, it must be replaced."
 		);
-	if(flag_cmp(flag, FLAG_NO_HEADER))
-		message(0,
+	}
+	if(flag_cmp(flag, FLAG_NO_HEADER)){
+		MESSAGE(
 			"lim <source> {-nh | --no-header} <source-name>",
 			" ",
 			"Specific that the file \"header.lim\" must be ignored."
 		);
-	if(flag_cmp(flag, FLAG_UNTIL_STAGE))
-		message(0,
-			"lim <source-name> {-us | --until-stage} <1 | 2 | 3 | 4>",
+	}
+	if(flag_cmp(flag, FLAG_UNTIL_STAGE)){
+		MESSAGE(
+			"lim <source-name> {-us | --until-stage} <1 - 5>",
 			" ",
 			"Specific that the compaction process must run until a specific stage."
 		);
+	}
 }

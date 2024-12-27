@@ -1,5 +1,5 @@
-#ifndef INTERFACES_ARGS_ERROR
-#define INTERFACES_ARGS_ERROR
+#ifndef ARGS_ERROR
+#define ARGS_ERROR
 
 #include <stdio.h>
 #include <stdlib.h>

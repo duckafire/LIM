@@ -1,5 +1,5 @@
-#ifndef INTERFACES_LIM_GLOBAL_VARIABLES
-#define INTERFACES_LIM_GLOBAL_VARIABLES
+#ifndef MASTER_LIM_GLOBAL_VARIABLES
+#define MASTER_LIM_GLOBAL_VARIABLES
 
 #include <stdio.h>
 #include <stdbool.h>

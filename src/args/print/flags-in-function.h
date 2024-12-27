@@ -1,5 +1,5 @@
-#ifndef INTERFACE_ARGS_PRINT_HELP
-#define INTERFACE_ARGS_PRINT_HELP
+#ifndef ARGS_PRINT_HELP
+#define ARGS_PRINT_HELP
 
 void show_help_messages(char *str);
 
