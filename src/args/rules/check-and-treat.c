@@ -1,12 +1,12 @@
 #include <stdbool.h>
 #include <string.h>
-#include "../lim-global-variables.h"
+#include "../../master/lim-global-variables.h"
 #include "check-and-treat.h"
-#include "print/flags-in-define.h"
-#include "print/flags-in-function.h"
+#include "../print/flags-in-define.h"
+#include "../print/flags-in-function.h"
+#include "../print/error.h"
 #include "flag-man.h"
 #include "flags.h"
-#include "error.h"
 
 static int argc;
 static char **argv;

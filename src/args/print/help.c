@@ -1,7 +1,7 @@
 #include "flags-in-function.h"
-#include "../flags.h"
-#include "../flag-man.h"
-#include "../error.h"
+#include "../rules/flag-man.h"
+#include "../rules/flags.h"
+#include "error.h"
 
 void show_help_messages(char *str){
 	if(str == NULL)
@@ -80,14 +80,15 @@ static void help_with_arg(char *arg){
 			"    > Instead <table>={<ident>=function()end}",
 			"8 - The use of \"[[]]\", to declare string, is not supported (use \"\\n\" to apply",
 			"    line feed)."
+			"9 - Identifiers started with '_' will not be compacted."
 		);
 	if(flag_cmp(arg, HELP_ARG_HEADER))
 		MESSAGE(0,
-			"The \"header.lim\" file is search always that the Lim run, unless the flag \"(-nh)",
+			"The \"header.lim\" file is search always that the Lim run, unless the flag \"-nh |",
 			"--no-header\" is used. When it is found, the Lim read, separate and store its",
 			"content in a buffer, for future use.",
 			" ",
-			"The header content is divided in three partitions, they are separated by \"\\n@\".",
+			"The header content is divided in three partitions, they are separated by \"\\n@\n\".",
 			"All partitions are listed below:",
 			" ",
 			"* Top -> its content will not be compacted, it will be pritted in top of output",
@@ -102,16 +103,16 @@ static void help_with_arg(char *arg){
 			" ",
 			"If the \"header.lim\", or some of its partition, is not found, the Lim will not be",
 			"stop and it will be continue the compaction process. This can be monitored with the",
-			"use of the flag \"(-V) --verbose\".",
+			"use of the flag \"-V | --verbose\".",
 			" ",
 			"Structure synopsis:",
 			" ",
 			"-- Top of header file",
 			"@",
-			"local function add(a,b)return a+b end",
+			"local function _Ga(a,b)return a+b end",
 			"@",
-			"rectangle",
-			"rectangleBoard"
+			"foo_func_0",
+			"foo_func_1"
 		);
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS))
 		MESSAGE(0,

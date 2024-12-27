@@ -1,8 +1,10 @@
 #ifndef INTERFACE_ARGS_FLAG_MAN
 #define INTERFACE_ARGS_FLAG_MAN
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 bool flag_cmp(char *arg, char *f, char *flag);
 void message(char n, ...);
