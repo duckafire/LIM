@@ -5,6 +5,8 @@ bin-alpha/
 
 src/void
 
+tests/scripts/.tmp
+
 Makefile
 CMakeCache.txt
 CMakeFiles

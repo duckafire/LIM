@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+declare -r args=$1
+declare cur_arg
+
+declare -i is_first=0
+declare -i index=$(wc -l < $(get_args_path $args))
+
+
+clear
+while read cur_args; do
+	echo -e "$index) lim $cur_args\n"
+	
+	if [[ ! -z $cur_args ]] || [[ $is_first -eq 0 ]]; then
+		$TMP/exe $cur_args
+	fi
+
+	if [[ $? -ne 0 ]]; then
+		echo -e "[!] AN ERROR OCCUR [!]\n"
+	fi
+
+	is_first=1
+	index=$index-1
+
+	read -p "Press [ENTER] to continue: " < /dev/tty
+	clear
+done < $(get_args_path $args)
+
+
+unset cur_arg is_first index

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 if [[ $# -eq 0 ]]; then
 	echo -e "./run < args >\n"
 	exit 0
@@ -8,7 +9,8 @@ fi
 [[ $# -gt 1 ]] && echo -e "Arguments superior 1th are ignored.\n"
 
 
-declare -r TMP="./scripts/.tmp"
+declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+declare -r TMP="$ADDR/scripts/.tmp"
 declare -r MAIN="$TMP/main.c"
 declare -r EXE="$TMP/exe"
 declare -r OUT="$TMP/output"
@@ -16,6 +18,12 @@ declare -r SRC="$TMP/a.lua"
 declare -r BIN="../src/"
 
 declare _files _includes _main _args _main_c_path
+
+[[ -d $TMP ]] && rm -r $TMP
+mkdir $TMP
+
+> $MAIN && > $EXE && > $OUT && > $SRC
+
 
 function get_main_path(){
 	echo "./scripts/$1/main.c"
@@ -26,8 +34,11 @@ function get_args_path(){
 }
 
 function read_file(){
-	local -r file_name="./scripts/$1" add_include=$2 only_copy=$3
-	local cur_line with_path full_content=""
+	local -r file_name="./scripts/$1"
+	local -r add_include=$2
+	local -r only_copy=$3
+
+	local cur_line="" with_path="" full_content=""
 
 	while read cur_line; do
 
@@ -50,19 +61,23 @@ function read_file(){
 	echo -e "$full_content"
 }
 
-export TMP MAIN EXE OUT SRC BIN
+
+export ADDR TMP MAIN EXE OUT SRC BIN
 export _files _includes _main _args _main_c_path
 export -f read_file get_main_path get_args_path
 
-[[ ! -d $TMP ]] && mkdir $TMP
-> $MAIN && > $EXE && > $OUT && > $SRC
 
 if [[ $1 = "args" ]]; then
-	./scripts/args/argss
-	exit $?
+	$ADDR/scripts/create-main args
+	$ADDR/scripts/start-tests args
+else
+	echo -e 'Invalid argument: "'$1'"'"\n\nTry: ./run < args >\n"
+	exit 1
 fi
 
 
-# else
-echo -e 'Invalid argument: "'$1'"'"\n\n./run < args >\n"
+unset _files _includes _main _args _main_c_path
+unset -f read_file get_main_path get_args_path
+
 rm -r $TMP
+exit 0

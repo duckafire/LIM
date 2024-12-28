@@ -12,12 +12,14 @@ int main(int argc, char *argv[]){
 	start_global_variables();
 	atexit(lim_free);
 	check_program_arguments(argc, argv);
-	printf("Source file name: %s\n", lim.source_file_name);
-	printf("Destine file name: %s\n", lim.destine_file_name);
-	printf("--verbose: %d\n", lim.flags.verbose);
-	printf("--replace: %d\n", lim.flags.replace);
-	printf("--header file: %d\n", lim.flags.header_file);
-	printf("--until-stage: %s\n\n", lim.flags.until_stage);
+
+	printf("Source file name:   %s\n", lim.source_file_name);
+	printf("Destine file name:  %s\n", lim.destine_file_name);
+	printf("Flags:\n");
+	printf("   --verbose:      %d\n", lim.flags.verbose);
+	printf("   --replace:      %d\n", lim.flags.replace);
+	printf("   --no-header:    %d\n", lim.flags.header_file);
+	printf("   --until-stage:  %s\n\n", lim.flags.until_stage);
 	return 0;
 }
 

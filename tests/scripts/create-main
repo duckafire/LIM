@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
 
+
 if [[ $1 = "args" ]]; then
 	_main_c_path=$(get_main_path args)
 	_files=$(read_file args/files 1 1)
 	_includes=$(read_file args/includes 0 1)
 	_main=$(read_file args/main.c 1 0)
+
 else
 	echo 'Invalid parameter: "'$1'"'
 	echo "Try: args"
 	exit 1
 fi
 
+
 echo "$_main" > $MAIN
 gcc -g $_main_c_path $_files $_includes -o $EXE > $OUT 2>&1
+
 
 if [[ $? != "0" ]]; then
 	cat $OUT
 	echo -e "\nCompilation error. Stopping test script..."
-	rm -r ../scripts/.tmp
+	rm -r $TMP
 	exit 1
 fi
-
-> $SRC
-unset main_content
