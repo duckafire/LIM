@@ -4,24 +4,25 @@
 #include "lim-global-variables.h"
 #include "../args/rules/check-and-treat.h"
 
-static void lim_free(void);
 static void start_global_variables(void);
+static void lim_free(void);
 
 struct Lim_Global_Variables lim;
 
 int main(int argc, char *argv[]){
-	start_global_variables();
 	atexit(lim_free);
+
+	start_global_variables();
 
 	check_program_arguments(argc, argv);
 	return 0;
 }
 
 static void start_global_variables(void){
-	lim.source_file       = NULL;
-	lim.destine_file      = NULL;
-	lim.source_file_name  = NULL;
-	lim.destine_file_name = NULL;
+	lim.files.source       = NULL;
+	lim.files.destine      = NULL;
+	lim.files.source_name  = NULL;
+	lim.files.destine_name = NULL;
 
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
@@ -34,14 +35,17 @@ static void start_global_variables(void){
 }
 
 static void lim_free(void){
-	if(lim.source_file != NULL)
-		fclose(lim.source_file);
+	if(lim.files.source != NULL)
+		fclose(lim.files.source);
 
-	if(lim.destine_file != NULL)
-		fclose(lim.destine_file);
+	if(lim.files.destine != NULL)
+		fclose(lim.files.destine);
 
-	free(lim.source_file_name);
-	free(lim.destine_file_name);
+
+	// "destine_name" store a
+	// value from "argv"
+	free(lim.files.destine_name);
+
 
 	if(lim.header_partitions.top_header != NULL)
 		fclose(lim.header_partitions.top_header);

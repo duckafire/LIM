@@ -1,10 +1,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../../master/lim-global-variables.h"
-#include "check-and-treat.h"
 #include "../print/flags-in-define.h"
 #include "../print/flags-in-function.h"
 #include "../print/error.h"
+#include "check-and-treat.h"
 #include "flag-man.h"
 #include "flags.h"
 
@@ -19,7 +19,7 @@ void check_program_arguments(int c, char *v[]){
 	search_and_set_source_file();
 
 	if(read_other_arguments())
-		set_destine_file_name( lim.source_file_name );
+		set_destine_file_name( lim.files.source_name );
 }
 
 static void is_it_information_flag(void){
@@ -42,10 +42,10 @@ static void is_it_information_flag(void){
 }
 
 static void search_and_set_source_file(void){
-	lim.source_file_name = argv[1];
-	lim.source_file = fopen(argv[1], "r");
+	lim.files.source_name = argv[1];
+	lim.files.source = fopen(argv[1], "r");
 
-	if(lim.source_file == NULL){
+	if(lim.files.source == NULL){
 		ERROR_source_file_not_exist(argv[1]);
 	}
 }
@@ -54,16 +54,16 @@ static bool read_other_arguments(void){
 	if(argc == 1)
 		return true;
 
-#define REPETITION(cond) if(cond){ERROR_flag_repetititon(argv[i]);}
-#define CMP_AND_SET(cond, var, val, ...) \
-	if(flag_cmp(argv[i], __VA_ARGS__)){  \
-		REPETITION( (cond) )             \
-		var = val;                       \
-		continue;                        \
+
+#define REPETITION(cond)                 \
+	if(cond){                            \
+		ERROR_flag_repetititon(argv[i]); \
 	}
+
 
 	for(short i = 1; i <= argc; i++){
 
+		// invalid
 		if(flag_cmp(argv[i], FLAG_VERSION)){
 			REPETITION(flag_cmp(argv[i], FLAG_VERSION))
 		}
@@ -73,8 +73,9 @@ static bool read_other_arguments(void){
 		}
 
 
+		// valid (one time)
 		if(flag_cmp(argv[i], FLAG_DEST_NAME)){
-			REPETITION( (lim.destine_file_name != NULL) )
+			REPETITION( (lim.files.destine_name != NULL) )
 
 			if(i == argc){
 				ERROR_suffix_expected_after_flag(argv[i]);
@@ -97,23 +98,33 @@ static bool read_other_arguments(void){
 		}
 
 
+#define CMP_AND_SET(cond, var, val, ...) \
+	if(flag_cmp(argv[i], __VA_ARGS__)){  \
+		REPETITION( (cond) )             \
+		var = val;                       \
+		continue;                        \
+	}
+
 		CMP_AND_SET(lim.flags.verbose,      lim.flags.verbose,     true,  FLAG_VERBOSE)
 		CMP_AND_SET(lim.flags.replace,      lim.flags.replace,     true,  FLAG_REPLACE)
 		CMP_AND_SET(!lim.flags.header_file, lim.flags.header_file, false, FLAG_NO_HEADER)
 	}
 
+
 #undef REPETITION
 #undef CMP_AND_SET
 
-	return (lim.destine_file_name == NULL);
+	return (lim.files.destine_name == NULL);
 }
 
 static void set_destine_file_name(const char *src){
 	const unsigned short len = strlen(src);
 	char *tmp;
 
+
 	tmp = malloc(len + 1);
 	strcpy(tmp, src);
+
 
 	if(len > 4
 	&& tmp[len - 4] == '.'
@@ -122,5 +133,6 @@ static void set_destine_file_name(const char *src){
 	&& tmp[len - 1] == 'a')
 		tmp[len - 4] = '\0';
 
-	lim.destine_file_name = tmp;
+
+	lim.files.destine_name = tmp;
 }

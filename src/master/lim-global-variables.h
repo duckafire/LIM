@@ -5,11 +5,12 @@
 #include <stdbool.h>
 
 struct Lim_Global_Variables{
-	FILE *source_file;
-	FILE *destine_file;
-
-	char *source_file_name;
-	char *destine_file_name;
+	struct{
+		FILE *source;
+		FILE *destine;
+		char *source_name;
+		char *destine_name;
+	}files;
 	
 	struct{
 		bool verbose;

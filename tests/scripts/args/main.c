@@ -13,21 +13,22 @@ int main(int argc, char *argv[]){
 	atexit(lim_free);
 	check_program_arguments(argc, argv);
 
-	printf("Source file name:   %s\n", lim.source_file_name);
-	printf("Destine file name:  %s\n", lim.destine_file_name);
+	printf("Source file name:   %s\n", lim.files.source_name);
+	printf("Destine file name:  %s\n", lim.files.destine_name);
 	printf("Flags:\n");
-	printf("   --verbose:      %d\n", lim.flags.verbose);
-	printf("   --replace:      %d\n", lim.flags.replace);
-	printf("   --no-header:    %d\n", lim.flags.header_file);
-	printf("   --until-stage:  %s\n\n", lim.flags.until_stage);
+	printf("  [-V ] Verbose messages:  %d\n",   lim.flags.verbose);
+	printf("  [-r ] Replace output:    %d\n",   lim.flags.replace);
+	printf("  [-nh] Header included:   %d\n",   lim.flags.header_file);
+	printf("  [-us] Last stage:        %s\n\n", lim.flags.until_stage);
 	return 0;
 }
 
 static void start_global_variables(void){
-	lim.source_file       = NULL;
-	lim.destine_file      = NULL;
-	lim.source_file_name  = NULL;
-	lim.destine_file_name = NULL;
+	lim.files.source       = NULL;
+	lim.files.destine      = NULL;
+	lim.files.source_name  = NULL;
+	lim.files.destine_name = NULL;
+
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
 	lim.flags.header_file = true;
@@ -35,11 +36,13 @@ static void start_global_variables(void){
 }
 
 static void lim_free(void){
-	if(lim.source_file != NULL)
-		fclose(lim.source_file);
+	if(lim.files.source != NULL)
+		fclose(lim.files.source);
 
-	if(lim.destine_file != NULL)
-		fclose(lim.destine_file);
+	if(lim.files.destine != NULL)
+		fclose(lim.files.destine);
 
-	free(lim.destine_file_name);
+	// "destine_name" store a
+	// value from "argv"
+	free(lim.files.destine_name);
 }
