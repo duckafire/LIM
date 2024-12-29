@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "../tools/string.h"
 #include "buf-man.h"
 
 static bool update_item_quantity = false;
@@ -30,17 +31,6 @@ static unsigned short new_item_len, son_len;
 		(h) = new_item;                                     \
 		return true;                                        \
 	}
-
-// TODO: move it to ../tools/string
-static char* string_copy(char *str){
-	char *buf;
-
-	buf = malloc(strlen(str) + sizeof(char));
-	strcpy(buf, str);
-
-	return buf;
-}
-/////
 
 Queue* qee_create(char *content0, char *content1){
 	new_item = malloc(sizeof(Queue));
