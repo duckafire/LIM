@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "../tools/string-plus.h"
 #include "buf-man.h"
 
 static bool update_node_quantity = false;
@@ -24,8 +25,8 @@ BinNode* bin3_create(char id){
 
 bool bin3_add_node(BinNode *root, char id, char *content0, char *content1, bool upQtt){
 	new_node = bin3_create(id);
-	new_node->content[0] = content0;
-	new_node->content[1] = content1;
+	new_node->content[0] = string_copy(content0);
+	new_node->content[1] = string_copy(content1);
 
 	update_node_quantity = upQtt;
 	return bin3_insert_node(root);

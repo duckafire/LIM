@@ -15,7 +15,10 @@ while read cur_args; do
 	fi
 
 	if [[ $? -ne 0 ]]; then
-		echo -e "[!] AN ERROR OCCUR [!]\n"
+		echo -e "\n[!] AN ERROR OCCUR [!]\nSee $ADDR/lim-broken/\n\n"
+
+		[[ ! -d $ADDR/lim-broken ]] && mkdir $ADDR/lim-broken
+		cp $TMP/exe $ADDR/lim-broken/lim
 	fi
 
 	is_first=1

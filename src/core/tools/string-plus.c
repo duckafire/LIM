@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "string.h"
+#include "string-plus.h"
 
 void string_set(char **str, STR mode){
 	if(mode != STR_START)
@@ -13,6 +13,9 @@ void string_set(char **str, STR mode){
 }
 
 char* string_copy(char *str){
+	if(str == NULL)
+		return NULL;
+
 	char *buf;
 
 	buf = malloc(strlen(str) + sizeof(char));

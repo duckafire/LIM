@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../tools/string.h"
+#include "../tools/string-plus.h"
 #include "buf-man.h"
 
 static bool update_item_quantity = false;

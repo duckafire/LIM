@@ -6,6 +6,7 @@ bin-alpha/
 src/void
 
 tests/scripts/.tmp
+tests/lim-broken
 
 Makefile
 CMakeCache.txt

@@ -1,5 +1,5 @@
-#ifndef CORE_TOOLS_STRING
-#define CORE_TOOLS_STRING
+#ifndef CORE_TOOLS_STRING_PLUS
+#define CORE_TOOLS_STRING_PLUS
 
 typedef enum{
 	STR_END,

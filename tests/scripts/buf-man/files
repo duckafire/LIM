@@ -1,3 +1,4 @@
 core/buf-man/bin-tree.c
 core/buf-man/queue.c
 core/buf-man/convert-tree-to-queue.c
+core/tools/string-plus.c
