@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
 
+declare -r RUN_ARG=$1
+declare -r TRY="./run < args | buf-man >"
+
 if [[ $# -eq 0 ]]; then
-	echo -e "./run < args >\n"
+	echo -e "$TRY\n"
 	exit 0
 fi
 
@@ -13,7 +16,7 @@ declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 declare -r TMP="$ADDR/scripts/.tmp"
 declare -r MAIN="$TMP/main.c"
 declare -r EXE="$TMP/exe"
-declare -r OUT="$TMP/output"
+declare -r LOG="$TMP/log"
 declare -r SRC="$TMP/a.lua"
 declare -r BIN="../src/"
 
@@ -22,7 +25,7 @@ declare _files _includes _main _args _main_c_path
 [[ -d $TMP ]] && rm -r $TMP
 mkdir $TMP
 
-> $MAIN && > $EXE && > $OUT && > $SRC
+> $MAIN && > $EXE && > $LOG && > $SRC
 
 
 function get_main_path(){
@@ -61,23 +64,28 @@ function read_file(){
 	echo -e "$full_content"
 }
 
+function rm_tmp_dir(){
+	[[ -d $TMP ]] && rm -r $TMP
+}
 
-export ADDR TMP MAIN EXE OUT SRC BIN
+
+export RUN_ARG ADDR TMP MAIN EXE LOG SRC BIN
 export _files _includes _main _args _main_c_path
-export -f read_file get_main_path get_args_path
+export -f read_file get_main_path get_args_path rm_tmp_dir
 
 
-if [[ $1 = "args" ]]; then
-	$ADDR/scripts/create-main args
-	$ADDR/scripts/start-tests args
-else
-	echo -e 'Invalid argument: "'$1'"'"\n\nTry: ./run < args >\n"
+if [[ $RUN_ARG != "args" ]] && [[ $RUN_ARG != "buf-man" ]]; then
+	echo -e 'Invalid argument: "'$1'"'"\n\nTry: $TRY\n"
 	exit 1
 fi
+
+$ADDR/scripts/create-main
+declare -ri CREATE_MAIN_STATUS=$?
+[[ $CREATE_MAIN_STATUS -eq 0 ]] && $ADDR/scripts/start-tests
 
 
 unset _files _includes _main _args _main_c_path
 unset -f read_file get_main_path get_args_path
 
-rm -r $TMP
-exit 0
+rm_tmp_dir
+exit $CREATE_MAIN_STATUS

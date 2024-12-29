@@ -16,6 +16,7 @@ typedef struct Queue{
 	unsigned short quantity;
 	struct Queue *next;
 }Queue;
+
 BinNode* bin3_create(char id);
 bool bin3_add_node(BinNode *root, char id, char *content0, char *content1, bool upQtt);
 static bool bin3_insert_node(BinNode *node);

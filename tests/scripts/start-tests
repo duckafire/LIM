@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-declare -r args=$1
 declare cur_arg
 
 declare -i is_first=0
-declare -i index=$(wc -l < $(get_args_path $args))
+declare -i index=$(wc -l < $(get_args_path $RUN_ARG))
 
 
 clear
@@ -24,7 +23,7 @@ while read cur_args; do
 
 	read -p "Press [ENTER] to continue: " < /dev/tty
 	clear
-done < $(get_args_path $args)
+done < $(get_args_path $RUN_ARG)
 
 
 unset cur_arg is_first index

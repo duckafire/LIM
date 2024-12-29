@@ -31,12 +31,23 @@ static unsigned short new_item_len, son_len;
 		return true;                                        \
 	}
 
+// TODO: move it to ../tools/string
+static char* string_copy(char *str){
+	char *buf;
+
+	buf = malloc(strlen(str) + sizeof(char));
+	strcpy(buf, str);
+
+	return buf;
+}
+/////
+
 Queue* qee_create(char *content0, char *content1){
 	new_item = malloc(sizeof(Queue));
 
 	new_item->quantity = 0;
-	new_item->content[0] = content0;
-	new_item->content[1] = content1;
+	new_item->content[0] = string_copy(content0);
+	new_item->content[1] = string_copy(content1);
 	new_item->next = NULL;
 
 	return new_item;
