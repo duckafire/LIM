@@ -13,6 +13,6 @@ void string_set(char **str, STR mode);
 void string_add(char **str, char c);
 char* string_copy(char *str);
 bool string_compare(char *str0, char *str1);
-int string_length(char *str);
+short string_length(char *str);
 
 #endif

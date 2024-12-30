@@ -5,10 +5,11 @@
 static char *nick, *nick_formated;
 static char nick_first_char, nick_end_char;
 
-static const char nick_format_list[3] = {
-	NICK_PREFIX_GLOBAL,
-	NICK_PREFIX_LOCAL,
-	NICK_PREFIX_PARAMETER,
+static const char nick_format_list[4] = {
+	NICK_PREFIX_CHAR_NONE,
+	NICK_PREFIX_CHAR_GLOBAL,
+	NICK_PREFIX_CHAR_LOCAL,
+	NICK_PREFIX_CHAR_PARAMETER,
 };
 
 void nick_init(NICK_TO type){
@@ -33,7 +34,7 @@ char* nick_get(NICK_PREFIX id){
 
 	nick_formated[0] = nick_format_list[id];
 	nick_formated[1] = '\0';
-	strcpy(nick_formated, nick);
+	strcat(nick_formated, nick);
 
 	return nick_formated;
 }
@@ -55,7 +56,7 @@ static void nick_update_str(const int last){
 	}
 
 	char *buf;
-	const unsigned short len = strlen(buf);
+	const unsigned short len = (strlen(nick));
 
 	buf = nick;
 	nick = malloc(len + 2);

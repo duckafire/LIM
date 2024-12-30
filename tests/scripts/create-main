@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 
-_main_c_path=$(get_main_path $RUN_ARG)
-_files=$(      read_file $RUN_ARG/files    1 1)
-_includes=$(   read_file $RUN_ARG/includes 0 1)
-_main=$(       read_file $RUN_ARG/main.c   1 0)
+_main_c_path=$(get_main_path $ARG_TARGET)
+_files=$(      read_file $ARG_TARGET/files    1 1)
+_includes=$(   read_file $ARG_TARGET/includes 0 1)
+_main=$(       read_file $ARG_TARGET/main.c   1 0)
 
 
 echo "$_main" > $MAIN

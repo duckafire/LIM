@@ -4,8 +4,10 @@
 #include "string-plus.h"
 
 void string_set(char **str, STR mode){
-	if(mode != STR_START)
+	if(mode != STR_START){
 		free(*str);
+		*str = NULL;
+	}
 
 	if(mode != STR_END){
 		*str = malloc(sizeof(char));
@@ -22,8 +24,8 @@ void string_add(char **str, char c){
 	*str = malloc(len + 2);
 	strcpy(*str, buf);
 
-	*str[len] = c;
-	*str[len + 1] = '\0';
+	(*str)[len] = c;
+	(*str)[len + 1] = '\0';
 
 	free(buf);
 }
@@ -50,7 +52,7 @@ bool string_compare(char *str0, char *str1){
 	return (strcmp(str0, str1) == 0);
 }
 
-int string_length(char *str){
+short string_length(char *str){
 	if(str == NULL)
 		return -1;
 

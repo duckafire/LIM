@@ -1,15 +1,34 @@
 #!/usr/bin/env bash
 
 
-declare -r RUN_ARG=$1
-declare -r TRY="./run < args | buf-man >"
+# NOTE - arguments to #2 -
+# -g - IF a error occur, create the ./lim-broken/lim, to debug with gdb
+# -c - only compile the ./lim-broken/lim, no execute none test
+# -r - remove the ./lim-broken/lim IF none error occur during the tests
+
+
+declare -r TRY="./run < args | buf-man | tools > [ -g | -c | -r ]"
 
 if [[ $# -eq 0 ]]; then
 	echo -e "$TRY\n"
 	exit 0
 fi
 
-[[ $# -gt 1 ]] && echo -e "Arguments superior 1th are ignored.\n"
+
+declare -r ARG_TARGET=$1
+declare -i ARG_BROKEN
+
+case $2 in
+	"-r") ARG_BROKEN=3 ;;
+	"-c") ARG_BROKEN=2 ;;
+	"-g") ARG_BROKEN=1 ;;
+	*)    ARG_BROKEN=0 ;;
+esac
+
+function check_argument(){
+	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "tools" ]]
+	return $?
+}
 
 
 declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
@@ -69,13 +88,30 @@ function rm_tmp_dir(){
 	[[ -d $TMP ]] && rm -r $TMP
 }
 
+function debug_exe(){
+	# 0: create after an error occur
+	# 1: force the creation
+	# 2: delete them, IF none error occur
 
-export RUN_ARG ADDR TMP BROK MAIN EXE LOG SRC BIN
+	if [[ $ARG_BROKEN -eq 3 ]] && [[ $1 -eq 2 ]]; then
+		[[ -d $BROK ]] && rm -r $BROK
+		return
+	fi
+
+	if [[ $ARG_BROKEN -eq 1 ]] || [[ $1 -eq 0 ]]; then
+		[[ ! -d $BROK ]] && mkdir $BROK
+		cp $TMP/exe $BROK/lim
+	fi
+}
+
+
+export ARG_TARGET ARG_BROKEN
+export ADDR TMP BROK MAIN EXE LOG SRC BIN
 export _files _includes _main _args _main_c_path
-export -f read_file get_main_path get_args_path rm_tmp_dir
+export -f read_file get_main_path get_args_path rm_tmp_dir debug_exe
 
 
-if [[ $RUN_ARG != "args" ]] && [[ $RUN_ARG != "buf-man" ]]; then
+if check_argument $ARG_TARGET; then
 	echo -e 'Invalid argument: "'$1'"'"\n\nTry: $TRY\n"
 	exit 1
 fi
@@ -83,11 +119,18 @@ fi
 $ADDR/scripts/create-main
 
 declare -ri CREATE_MAIN_STATUS=$?
+
+if [[ $ARG_BROKEN -eq 2 ]]; then
+	debug_exe 0
+	echo "See $BROK"
+	exit 1
+fi
+
 [[ $CREATE_MAIN_STATUS -eq 0 ]] && $ADDR/scripts/start-tests
 
 
 unset _files _includes _main _args _main_c_path
-unset -f read_file get_main_path get_args_path
+unset -f read_file get_main_path get_args_path debug_exe
 
 rm_tmp_dir
 exit $CREATE_MAIN_STATUS

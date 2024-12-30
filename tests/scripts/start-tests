@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
 declare cur_arg
-declare error_status="0"
 
-declare -i is_first=0
-declare -i index=$(wc -l < $(get_args_path $RUN_ARG))
+declare -i is_first=0 an_error_occur=0
+declare -i index=$(wc -l < $(get_args_path $ARG_TARGET))
 
 
 clear
@@ -16,11 +15,10 @@ while read cur_args; do
 	fi
 
 	if [[ $? -ne 0 ]]; then
-		echo -e "\n[!] AN ERROR OCCUR [!]\nSee $BROK/\n\n"
-		error_status="1"
+		echo -e "\n[!] AN ERROR OCCUR [!]\n"
 
-		[[ ! -d $BROK ]] && mkdir $BROK
-		cp $TMP/exe $BROK/lim
+		debug_exe 1
+		an_error_occur=1
 	fi
 
 	is_first=1
@@ -28,8 +26,9 @@ while read cur_args; do
 
 	read -p "Press [ENTER] to continue: " < /dev/tty
 	clear
-done < $(get_args_path $RUN_ARG)
+done < $(get_args_path $ARG_TARGET)
 
 
-[[ $error_status = "0" ]] && [[ -d $BROK ]] && rm -r $BROK
-unset cur_arg error_status is_first index
+[[ $an_error_occur -eq 0 ]] && debug_exe 2
+
+unset cur_arg is_first index an_error_occur

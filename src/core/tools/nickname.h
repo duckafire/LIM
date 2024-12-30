@@ -7,10 +7,16 @@ typedef enum{
 }NICK_TO;
 
 typedef enum{
-	NICK_PREFIX_GLOBAL    = 'G',
-	NICK_PREFIX_LOCAL     = 'L',
-	NICK_PREFIX_PARAMETER = '\0',
+	NICK_PREFIX_NONE,
+	NICK_PREFIX_GLOBAL,
+	NICK_PREFIX_LOCAL,
+	NICK_PREFIX_PARAMETER,
 }NICK_PREFIX;
+
+#define NICK_PREFIX_CHAR_NONE      '\0'
+#define NICK_PREFIX_CHAR_GLOBAL    'G'
+#define NICK_PREFIX_CHAR_LOCAL     'L'
+#define NICK_PREFIX_CHAR_PARAMETER '\0'
 
 void nick_init(NICK_TO type);
 char* nick_get(NICK_PREFIX id);
