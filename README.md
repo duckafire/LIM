@@ -1,108 +1,71 @@
-<div align="center">
-    <img src="https://github.com/duckafire/LIM/blob/main/lim-icon.png" width="200"/>
-</div>
+# Work in progress
 
-<br>
+<h1 id="index">Indexes</h1>
 
-<div align="center">
-    <p>
-   		<a href=""><img alt="Last release" src="https://img.shields.io/badge/Last%20release-v0.1.0-%2325a319"/></a>
-    	<a href=""><img alt="License" src="https://img.shields.io/badge/License-MIT-%23a61f82"/></a>
-    </p>
-    <p>
-    	<a href=""><img alt="LUA version" src="https://img.shields.io/badge/LUA%20version-5.4-%236d1993"/></a>
-    	<a href=""><img alt="Tic80 API" src="https://img.shields.io/badge/Tic80%20API-1.0.2164-blue"/></a>
-	</p>
-</div>
-
-## General vision
-###### [Versão em Português-BR](https://github.com/duckafire/LIM/blob/main/info/pt-br/README-main.ptbr.md)
-
-&emsp; **L**ua L**i**brary Co**m**pactor is a small terminal program, created for to easily the compaction of Lua libraries in a format nicknamed of [*Local Package*](#local-package). <br>
-
-&emsp; In summary, Lim create a copy of the file used like argument and accomplish a serie of abbreviations and remotions of characters, *trying* not break the code logic. Its objective is not become the code more fast, but yes minor in relation to the characters size (and as a consequence in `bytes`)<br>
-
-&emsp; Lim can be used in practically all type of program that use Lua, but its main finality is assist in the build of small libraries to the [Tic80 Tiny Computer](https://tic80.com "Official site"), like the libraries natives of the project [TinyLibrary](https;//github.com/duckafire/TinyLibrary "Repository"). <br>
-
-&emsp; For obtain more informations about Lim, in relation to the **rules**, good pratices and others informations, [*click here*](https://github.com/duckafire/LIM/tree/main/info/README.md "Official Documentation of the LIM"). <br> <br>
-
-<details><summary><b>Useful links</b></summary>
+<ul>
+<li><a href="#general">General vision</a></li>
 	<ul>
-		<details><summary>LUA</summary>
+		<li><a href="#intro">Introdution</a></li>
+		<li><a href="#the-process">The compaction process</a></li>
+		<ul>
+			<li><a href="#proc-0">Getting and separate content</a></li>
 			<ul>
-				<li><a href="https://lua.org">Site</a></li>
-				<li><a href="https://github.com/lua/lua">GitHub</a></li>
+				<li><a href="#proc-0-0">Identifier X Constant</a></li>
+				<li><a href="#proc-0-1">Identifiers types</a></li>
 			</ul>
-		</details>
-		<details><summary>Tic80</summary>
-			<ul>
-				<li><a href="https://github.com/nesbox/tic-80/wiki/api)">API</a></li>
-				<li><a href="https://tic80.com">Site</a></li>
-				<li><a href="https://github.com/nesbox/TIC-80">GitHub</a></li>
-			</ul>
-		</details>
+		</ul>
 	</ul>
-</details>
+</ul>
+
+<br>
+<hr>
+<br>
+
+<h2 id="general">General Vision</h2>
+
+<h3 id="intro">Introdution</h3>
+
+&emsp; The *"**L**ua L**i**brary Co**m**pactor"*, or only __*"Lim"*__, is a simple terminal program, for compact [Lua](https://lua.org "Lua website") scripts, created for easily the creation, maintain and update to libraries from [Tiny Library](https://github.com/duckafire/TinyLibrary "Repository, on GitHub"), but nothing prevents that it will be used in other contexts.
 
 <br>
 
-## Example
-
-#### Original
-
-``` lua
---[[
-		Simple example
-]]
-
-local seed = math.random(math.random(0, 65536))
-_G.__CUR_MAP = 0 -- CURrent MAP
-
-local function LIB_collision(ent1, ent2) -- ENTity
-	-- reference
-	local errorMsg = "Table not specified. Argument #"
-
-	-- check arguments type
-	assert(type(ent1) == "table", "1"..errorMsg)
-	assert(type(ent2) == "table", "2"..errorMsg)
-
-	-- collision between squares/rectangles
-	return math.max(ent1.x, ent2.x) < math.min(ent1.x + ent1.width,  ent2.x + ent2.width ) &&
-		   math.max(ent1.y, ent2.y) < math.min(ent1.y + ent1.height, ent2.y + ent2.height)
-end
-```
-
-#### Compacted
-
-``` lua
-local LIB={}
-do local MR19,A0,T21,MM12,MM14=math.random,assert,type,math.max,math.min local seed=MR19(MR19(0,65536))__CUR_MAP=0 LIB.collision=function(a,b)local c="Table not specified. Argument #" A0(T21(a)=="table","1"..c)A0(T21(b)=="table","2"..c)return MM12(a.x,b.x)<MM14(a.x+a.width,b.x+b.width)&&MM12(a.y,b.y)<MM14(a.y+a.height,b.y+b.height)end end
---local reference=LIB
-```
+> [!IMPORTANT]
+> **Lim cannot fix syntax or semantic errors in the code**, it single objective is to compact the code and mantain it working after the process, if it does not work before the compaction, it will not be work after it.
 
 <br>
 
-## Local package
-###### Structure
+<h3 id="the-process">The compaction process</h3>
 
-```
-~    +--> Table that will be store the library functions
-~    |
-~ +---------+
-1 local TL={}
-~
-2 do local MA0=math.abs TL.abs=function(a) return MA0(a) end end
-~ ++ +----------------+ +----------------------------------+ +-+
-~  |    |                                           |         |
-~  |    +--> References to LUA functions            |         |
-~  |                                                |         |
-~  |                     Function of the library <--+         |
-~  +----------------------------------------------------------+
-~                 |
-3 local lib=TL    +--> Contention to the library environment
-~ +----------+
-~      |
-~      +--> Reference to the library
-```
+&emsp; In summary, Lim will be replace specify indetifiers to a lower string, will remove unnenessary white spaces and will group all the resultant content in **three lines**. All the process, not summaried, are listed below:
+
+* Getting and separate content
+* [Work in progress]
+
+<br>
+
+<h4 id="proc-0">Getting and separate content</h4>
+
+&emsp; The the content from the file (`foo.lua`) specified is reading, it is converted in strings formed by **one** (except to `'` and `"`) special character (except `'_'`) or a sequence of alphanumeric caracters (`'_'` is included). Their classification can be divided in two parts:
+
+<h5 id="proc-0-0">Identifier X Constant</h5>
+
+&emsp; The diference is auto-explanatory; the strings are separated based in it first character, if it is an alphabetic character (and it is not a Lua keyword), the string is an identifier, otherwise it is a constant. Ergo: `1foo` is a constant; `"Hello_world"` is a constant; `player` is an identifier; `_car` is a constant.
+
+<h5 id="proc-0-1">Identifiers types</h5>
+
+&emsp; Each identifier collected are classified based in the its position (global or local; inside or outside of functions) and its _type_ (variables, table or function). It is used to choose in what buffer it will be stored and the *prefix* its "nickname". The classification "classes", and the way used to set it, are listed below:
+
+<br>
+
+| Type      | Variable/tables | Function | Parameters |
+| :-:       | :--             | :--      | :--        |
+| *Library* | Prefixed by `_G`, in declaration and ALL uses. | Declared in either place, only with prefix `function`. | |
+| *Global*  | Declared in *root environment*, with prefix `local`. | Declared in *root environment*, with prefix `local function`. | Declared in *Library* or *Global functions*. |
+| *Local*   | Declared in either *function environment*, with prefix `local`. | Declared in either *function environment*, with prefix `local function`. | Declared in *Local functions*. |
+
+<br>
+
+> [!NOTE]
+> *Library* identifiers will be added to library table, because of this, they will not be compacted.
 
 <br>
