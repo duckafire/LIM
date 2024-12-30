@@ -8,28 +8,28 @@ static bool update_item_quantity = false;
 static Queue *new_item;
 static unsigned short new_item_len, son_len;
 
-#define QEE_ADD_AND_INSERT_ITEM_CORE(h)                     \
-	if(h == NULL){                                          \
-		h = new_item;                                       \
-		return true;                                        \
-	}                                                       \
-	if(strcmp(new_item->content[1], (h)->content[1]) == 0){ \
-		if(update_item_quantity)                            \
-			((h)->quantity)++;                              \
-		qee_free_item(new_item);                            \
-		return false;                                       \
-	}                                                       \
-	new_item_len = strlen(new_item->content[1]);            \
-	son_len = strlen((h)->content[1]);                      \
-	if(new_item_len > son_len){                             \
-		new_item->next = (h);                               \
-		(h) = new_item;                                     \
-		return true;                                        \
-	}                                                       \
-	if(new_item->quantity > (h)->quantity){                 \
-		new_item->next = (h);                               \
-		(h) = new_item;                                     \
-		return true;                                        \
+#define QEE_ADD_AND_INSERT_ITEM_CORE(h)                        \
+	if(h == NULL){                                             \
+		h = new_item;                                          \
+		return true;                                           \
+	}                                                          \
+	if(string_compare(new_item->content[1], (h)->content[1])){ \
+		if(update_item_quantity)                               \
+			((h)->quantity)++;                                 \
+		qee_free_item(new_item);                               \
+		return false;                                          \
+	}                                                          \
+	new_item_len = string_length(new_item->content[1]);        \
+	son_len = string_length((h)->content[1]);                  \
+	if(new_item_len > son_len){                                \
+		new_item->next = (h);                                  \
+		(h) = new_item;                                        \
+		return true;                                           \
+	}                                                          \
+	if(new_item->quantity > (h)->quantity){                    \
+		new_item->next = (h);                                  \
+		(h) = new_item;                                        \
+		return true;                                           \
 	}
 
 Queue* qee_create(char *content0, char *content1){
@@ -60,7 +60,7 @@ static bool qee_insert_item(Queue *mom, Queue *son){
 }
 
 Queue* qee_get_item(Queue *item, char *content1){
-	if(strcmp(content1, item->content[1]) == 0)
+	if(string_compare(content1, item->content[1]))
 		return item;
 	
 	qee_get_item(item->next, content1);

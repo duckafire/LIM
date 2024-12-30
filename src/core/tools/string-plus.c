@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "string-plus.h"
 
 void string_set(char **str, STR mode){
@@ -10,18 +11,6 @@ void string_set(char **str, STR mode){
 		*str = malloc(sizeof(char));
 		*str[0] = '\0';
 	}
-}
-
-char* string_copy(char *str){
-	if(str == NULL)
-		return NULL;
-
-	char *buf;
-
-	buf = malloc(strlen(str) + sizeof(char));
-	strcpy(buf, str);
-
-	return buf;
 }
 
 void string_add(char **str, char c){
@@ -37,4 +26,33 @@ void string_add(char **str, char c){
 	*str[len + 1] = '\0';
 
 	free(buf);
+}
+
+char* string_copy(char *str){
+	if(str == NULL)
+		return NULL;
+
+	char *buf;
+
+	buf = malloc(strlen(str) + sizeof(char));
+	strcpy(buf, str);
+
+	return buf;
+}
+
+bool string_compare(char *str0, char *str1){
+	if(str0 == NULL && str1 == NULL)
+		return true;
+
+	if(str0 == NULL || str1 == NULL)
+		return false;
+
+	return (strcmp(str0, str1) == 0);
+}
+
+int string_length(char *str){
+	if(str == NULL)
+		return -1;
+
+	return strlen(str);
 }

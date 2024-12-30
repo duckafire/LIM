@@ -6,22 +6,30 @@
 #include <time.h>
 #include "../../../src/core/buf-man/buf-man.h"
 
+
 static void bin_tree_c(void);
 static void queue_c(void);
 static void convert_tree_to_queue_c(void);
 
 static void printf_node(BinNode *node, char *name);
 static void printf_item(Queue *item, char *name);
+static void printf_full_tree(BinNode *node);
+static void printf_full_queue(Queue *item);
 
 static BinNode *tree;
 static Queue *head;
+
+static bool print_messages = true;
+
 
 #define CONTENT      "content-#0","content-#1"
 #define CONTENT_2    "CONTENT-#0","CONTENT-#1"
 #define CONTENT_3(b) NULL,b
 
-#define PARAGRAPH puts("\n\n")
-#define PUTS(str) printf("[!] %s.\n\n", str)
+#define PARAGRAPH    if(print_messages) puts("\n\n")
+#define PUTS(str)    if(print_messages) printf("[!] %s.\n\n", str)
+#define PRINTF(s, i) if(print_messages) printf(s, i);
+
 
 int main(int argc, char *argv[]){
 	srand(time(NULL));
@@ -51,7 +59,11 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
+
 static void printf_node(BinNode *node, char *name){
+	if(!print_messages)
+		return;
+
 	if(name != NULL)
 		printf("# %s\n", name);
 
@@ -63,19 +75,6 @@ static void printf_node(BinNode *node, char *name){
 	printf("Left (BinNode):   %p\n",    node->left);
 	printf("Right (BinNode):  %p\n",    node->right);
 	printf("Next (BinNode):   %p\n",    node->next);
-
-	putchar('\n');
-}
-
-static void printf_item(Queue *item, char *name){
-	if(name != NULL)
-		printf("# %s\n", name);
-
-	printf("Content #0:     \"%s\"\n", item->content[0]);
-	printf("Content #1:     \"%s\"\n", item->content[1]);
-	printf("Quantity:        %d\n",    item->quantity);
-	printf("\"This\" (Queue):  %p\n",  item);
-	printf("Next (Queue):    %p\n",    item->next);
 
 	putchar('\n');
 }
@@ -145,12 +144,30 @@ static void bin_tree_c(void){
 
 		buf = bin3_get_node(tree, id, "content-#1");
 		
-		printf("# node '%c'\n", id);
+		PRINTF("# node '%c'\n", id);
 		printf_node(buf, NULL);
 	}
 	PARAGRAPH;
 
-	bin3_free_tree(tree);
+	if(print_messages)
+		bin3_free_tree(tree);
+}
+
+
+static void printf_item(Queue *item, char *name){
+	if(!print_messages)
+		return;
+
+	if(name != NULL)
+		printf("# %s\n", name);
+
+	printf("Content #0:     \"%s\"\n", item->content[0]);
+	printf("Content #1:     \"%s\"\n", item->content[1]);
+	printf("Quantity:        %d\n",    item->quantity);
+	printf("\"This\" (Queue):  %p\n",  item);
+	printf("Next (Queue):    %p\n",    item->next);
+
+	putchar('\n');
 }
 
 static void queue_c(void){
@@ -162,7 +179,7 @@ static void queue_c(void){
 	char content[2] = "`";
 	short i, j, max;
 
-#define PRINTF(t)                                                              \
+#define PRINT_QUEUE(t)                                                         \
 	PUTS(t);                                                                   \
 	printf_item(head,                         "init");                         \
 	printf_item(head->next,                   "init->next");                   \
@@ -176,7 +193,7 @@ static void queue_c(void){
 		qee_add_item(&head, CONTENT_3(content), false);
 	}
 
-	PRINTF("Add new items to queue");
+	PRINT_QUEUE("Add new items to queue");
 
 
 #define RAND_CTT content[0] = 'a' + rand() % 4
@@ -190,7 +207,7 @@ static void queue_c(void){
 			qee_add_item(&head, CONTENT_3(content), true);
 	}
 
-	PRINTF("Update items quantity");
+	PRINT_QUEUE("Update items quantity");
 
 
 	PUTS("Get 5-9 random items");
@@ -202,7 +219,7 @@ static void queue_c(void){
 		RAND_CTT;
 		buf = qee_get_item(head, content);
 
-		printf("# item '%c'\n", content[0]);
+		PRINTF("# item '%c'\n", content[0]);
 		printf_item(buf, NULL);
 	}
 	PARAGRAPH;
@@ -212,8 +229,51 @@ static void queue_c(void){
 	qee_free_queue(head);
 }
 
+
+static void printf_full_tree(BinNode *node){
+	if(node == NULL)
+		return;
+
+	printf_full_tree(node->left);
+
+	printf_node(node, NULL);
+	printf_full_tree(node->next);
+
+	printf_full_tree(node->right);
+}
+
+static void printf_full_queue(Queue *item){
+	if(item == NULL)
+		return;
+
+	printf_item(item, NULL);
+
+	printf_full_queue(item->next);
+}
+
+// TODO
 static void convert_tree_to_queue_c(void){
-	printf("Work in progress!\n\n");
-	//bin_tree_c();
-	//queue_c();
+	print_messages = false;
+	bin_tree_c();
+	print_messages = true;
+
+	PUTS("Binary tree");
+	printf_full_tree(tree);
+	PARAGRAPH;
+
+	Queue *no_update, *with_update;
+	no_update   = convert_bin3_to_qee(tree, false);
+	with_update = convert_bin3_to_qee(tree, true);
+
+	PUTS("Queue NO quantity update)");
+	printf_full_queue(no_update);
+	PARAGRAPH;
+
+	PUTS("Queue (WITH quantity update)");
+	printf_full_queue(with_update);
+	PARAGRAPH;
+
+	bin3_free_tree(tree);
+	qee_free_queue(no_update);
+	qee_free_queue(with_update);
 }

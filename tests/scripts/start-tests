@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 declare cur_arg
+declare error_status="0"
 
 declare -i is_first=0
 declare -i index=$(wc -l < $(get_args_path $RUN_ARG))
@@ -15,10 +16,11 @@ while read cur_args; do
 	fi
 
 	if [[ $? -ne 0 ]]; then
-		echo -e "\n[!] AN ERROR OCCUR [!]\nSee $ADDR/lim-broken/\n\n"
+		echo -e "\n[!] AN ERROR OCCUR [!]\nSee $BROK/\n\n"
+		error_status="1"
 
-		[[ ! -d $ADDR/lim-broken ]] && mkdir $ADDR/lim-broken
-		cp $TMP/exe $ADDR/lim-broken/lim
+		[[ ! -d $BROK ]] && mkdir $BROK
+		cp $TMP/exe $BROK/lim
 	fi
 
 	is_first=1
@@ -29,4 +31,5 @@ while read cur_args; do
 done < $(get_args_path $RUN_ARG)
 
 
-unset cur_arg is_first index
+[[ $error_status = "0" ]] && [[ -d $BROK ]] && rm -r $BROK
+unset cur_arg error_status is_first index

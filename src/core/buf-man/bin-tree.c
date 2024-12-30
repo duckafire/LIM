@@ -35,7 +35,7 @@ bool bin3_add_node(BinNode *root, char id, char *content0, char *content1, bool 
 static bool bin3_insert_node(BinNode *node){
 	if(new_node->id == node->id){
 
-		if(update_node_quantity && strcmp(node->content[1], new_node->content[1]) == 0){
+		if(update_node_quantity && string_compare(node->content[1], new_node->content[1])){
 			bin3_free_node(new_node);
 			(node->quantity)++;
 
@@ -69,7 +69,7 @@ static bool bin3_insert_node(BinNode *node){
 
 BinNode* bin3_get_node(BinNode *node, char id, char *content1){
 	if(id == node->id){
-		if(strcmp(content1, node->content[1]) == 0)
+		if(string_compare(content1, node->content[1]))
 			return node;
 
 		return bin3_get_node(node->next, id, content1);

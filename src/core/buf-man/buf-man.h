@@ -31,7 +31,7 @@ Queue *qee_get_item(Queue *item, char *content1);
 void qee_free_queue(Queue *item);
 static void qee_free_item(Queue *item);
 
-Queue* convert_bin3_to_qee(BinNode *tree);
+Queue* convert_bin3_to_qee(BinNode *tree, bool upQtt);
 static void build_bin3_to_qee(BinNode *node);
 
 #endif
