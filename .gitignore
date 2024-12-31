@@ -3,6 +3,7 @@ bin-alpha/
 *.lua
 *.lim
 
+void
 src/void
 
 tests/scripts/.tmp
