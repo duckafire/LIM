@@ -7,6 +7,7 @@
 typedef struct BinNode{
 	char id;
 	char *content[2]; // #1 is single
+	short height;
 	unsigned short quantity;
 	struct BinNode *left, *right, *next;
 }BinNode;
@@ -18,11 +19,19 @@ typedef struct Queue{
 }Queue;
 
 BinNode* bin3_create(char id);
-bool bin3_add_node(BinNode *root, char id, char *content0, char *content1, bool upQtt);
-static bool bin3_insert_node(BinNode *node);
+bool bin3_add_node(BinNode **root, char id, char *content0, char *content1, bool upQtt);
+static BinNode* bin3_insert_node(BinNode *node);
 BinNode* bin3_get_node(BinNode *node, char id, char *content1);
 void bin3_free_tree(BinNode *node);
 static void bin3_free_node(BinNode *node);
+static short max(short a, short b);
+static short update_node_height(BinNode *node);
+static short avl_balancement_factor(BinNode *root);
+static BinNode* avl_balance(BinNode *root);
+static BinNode* avl_rotation_left(BinNode *node);
+static BinNode* avl_rotation_right(BinNode *node);
+static BinNode* avl_rotation_left_right(BinNode *node);
+static BinNode* avl_rotation_right_left(BinNode *node);
 
 Queue* qee_create(char *content0, char *content1);
 bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt);

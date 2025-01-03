@@ -12,9 +12,9 @@ static void bin_tree_c(void);
 static void queue_c(void);
 static void convert_tree_to_queue_c(void);
 
-static void printf_node(BinNode *node, char *name);
-static void printf_item(Queue *item, char *name);
+static void printf_node(BinNode *node);
 static void printf_full_tree(BinNode *node);
+static void printf_item(Queue *item, char *name);
 static void printf_full_queue(Queue *item);
 
 static BinNode *tree;
@@ -53,17 +53,15 @@ int main(int argc, char *argv[]){
 }
 
 
-static void printf_node(BinNode *node, char *name){
+static void printf_node(BinNode *node){
 	if(!print_messages)
 		return;
-
-	if(name != NULL)
-		printf("# %s\n", name);
 
 	printf("\"This\" (BinNode): %p\n",  node);
 	printf("Index (id):      '%c'\n",   node->id);
 	printf("Content #0:      \"%s\"\n", node->content[0]);
 	printf("Content #1:      \"%s\"\n", node->content[1]);
+	printf("Height:           %d\n",    node->height);
 	printf("Quantity:         %d\n",    node->quantity);
 	printf("Left (BinNode):   %p\n",    node->left);
 	printf("Right (BinNode):  %p\n",    node->right);
@@ -72,36 +70,41 @@ static void printf_node(BinNode *node, char *name){
 	putchar('\n');
 }
 
+static void printf_full_tree(BinNode *node){
+	if(node == NULL || !print_messages)
+		return;
+
+	printf_full_tree(node->left);
+	printf_node(node);
+	printf_full_tree(node->right);
+}
+
 static void bin_tree_c(void){
 	_PUTS("Create binary tree, with index '`'");
 	tree = bin3_create('`');
-	printf_node(tree, "root");
+	printf_full_tree(tree);
 	PARAGRAPH;
 
 
 	_PUTS("Add two new nodes, with the respective indexes 'A' and 'a'");
-	bin3_add_node(tree, 'A', CONTENT, false);
-	bin3_add_node(tree, 'a', CONTENT, false);
+	bin3_add_node(&tree, 'A', CONTENT, false);
+	bin3_add_node(&tree, 'a', CONTENT, false);
 
 	// ` A a
-	printf_node(tree,        "root");
-	printf_node(tree->left,  "root->left");
-	printf_node(tree->right, "root->right");
+	printf_full_tree(tree);
 	PARAGRAPH;
 
 
-	BinNode *buf;
-	short max, lower, i, j;
+	short upQtt, max, lower, i, j;
 
 #define ADD_NODE(c, ctt)                                               \
 	if(upQtt == 1)                                                     \
 		max = rand() % 5 + 1;                                          \
 	for(i = 0; (i == 0 && upQtt == 0) || (upQtt == 1 && i < max); i++) \
-		bin3_add_node(tree, c + lower, ctt, (upQtt == 1))
+		bin3_add_node(&tree, c + lower, ctt, (upQtt == 1))
 //#enddef
 
-	for(short upQtt = 0; upQtt < 2; upQtt++){
-		buf = tree->left;
+	for(upQtt = 0; upQtt < 2; upQtt++){
 
 		if(upQtt == 0)
 			_PUTS("Add four new nodes: x3 to left/right, x1 to next");
@@ -117,14 +120,8 @@ static void bin_tree_c(void){
 				ADD_NODE('A' + rand() % 4, CONTENT_2);
 
 			// ` A/a B/b C/c D/d
-			printf_node(tree,              "tree");
-			printf_node(buf,               "tree->left");
-			printf_node(buf->right->left,  "tree->left->right->left");
-			printf_node(buf->right,        "tree->left->right");
-			printf_node(buf->right->right, "tree->left->right->right");
+			printf_full_tree(tree);
 			PARAGRAPH;
-
-			buf = tree->right;
 		}
 	}
 
@@ -134,15 +131,16 @@ static void bin_tree_c(void){
 	_PUTS("Get 5-9 random nodes (A-D/a-d)");
 
 	char id;
+	BinNode *buf;
 	max = rand() % 5 + 5;
 
-	for(short i = 0; i < max; i++){
+	for(i = 0; i < max; i++){
 		id = ((rand() % 2 == 0) ? 'A' : 'a') + rand() % 4;
 
 		buf = bin3_get_node(tree, id, "content-#1");
 		
 		PRINTF("# node '%c'\n", id);
-		printf_node(buf, NULL);
+		printf_node(buf);
 	}
 	PARAGRAPH;
 
@@ -229,18 +227,6 @@ static void queue_c(void){
 	qee_free_queue(head);
 }
 
-
-static void printf_full_tree(BinNode *node){
-	if(node == NULL)
-		return;
-
-	printf_full_tree(node->left);
-
-	printf_node(node, NULL);
-	printf_full_tree(node->next);
-
-	printf_full_tree(node->right);
-}
 
 static void printf_full_queue(Queue *item){
 	if(item == NULL)
