@@ -32,32 +32,32 @@ bool bin3_add_node(BinNode **root, char id, char *content0, char *content1, bool
 
 	update_node_quantity = upQtt;
 	bin3_add_node_status = false;
-	*root = bin3_insert_node(*root);
+	*root = insert_node(*root);
 
 	return bin3_add_node_status;
 }
 
-static BinNode* bin3_insert_node(BinNode *node){
+static BinNode* insert_node(BinNode *node){
 	if(node == NULL){
 		bin3_add_node_status = true;
 		return new_node;
 	}
 
 	if(new_node->id < node->id){
-		node->left = bin3_insert_node(node->left);
+		node->left = insert_node(node->left);
 
 	}else if(new_node->id > node->id){
-		node->right = bin3_insert_node(node->right);
+		node->right = insert_node(node->right);
 
 	}else{
 		if(update_node_quantity && string_compare(node->content[1], new_node->content[1])){
-			bin3_free_node(new_node);
+			free_node(new_node);
 			(node->quantity)++;
 
 			return node;
 		}
 
-		node->next = bin3_insert_node(node->next);
+		node->next = insert_node(node->next);
 		return node;
 	}
 
@@ -89,10 +89,10 @@ void bin3_free_tree(BinNode *node){
 	bin3_free_tree(node->right);
 	bin3_free_tree(node->next);
 
-	bin3_free_node(node);
+	free_node(node);
 }
 
-static void bin3_free_node(BinNode *node){
+static void free_node(BinNode *node){
 	free(node->content[0]);
 	free(node->content[1]);
 	free(node);

@@ -20,10 +20,10 @@ typedef struct Queue{
 
 BinNode* bin3_create(char id);
 bool bin3_add_node(BinNode **root, char id, char *content0, char *content1, bool upQtt);
-static BinNode* bin3_insert_node(BinNode *node);
+static BinNode* insert_node(BinNode *node);
 BinNode* bin3_get_node(BinNode *node, char id, char *content1);
 void bin3_free_tree(BinNode *node);
-static void bin3_free_node(BinNode *node);
+static void free_node(BinNode *node);
 static short max(short a, short b);
 static short update_node_height(BinNode *node);
 static short avl_balancement_factor(BinNode *root);
@@ -35,11 +35,11 @@ static BinNode* avl_rotation_right_left(BinNode *node);
 
 Queue* qee_create(char *content0, char *content1);
 bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt);
-static Queue* qee_insert_item(Queue *item);
-static Queue* qee_ordenate_queue(Queue *item);
+static Queue* insert_item(Queue *item);
+static Queue* ordenate_queue(Queue *item);
 Queue *qee_get_item(Queue *item, char *content1);
 void qee_free_queue(Queue *item);
-static void qee_free_item(Queue *item);
+static void free_item(Queue *item);
 
 Queue* convert_bin3_to_qee(BinNode *tree, bool upQtt);
 static void build_bin3_to_qee(BinNode *node);

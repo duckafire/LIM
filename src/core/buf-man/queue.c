@@ -28,13 +28,13 @@ bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt){
 
 	update_item_quantity = upQtt;
 	qee_add_item_status = false;
-	*head = qee_insert_item(*head);
-	*head = qee_ordenate_queue(*head);
+	*head = insert_item(*head);
+	*head = ordenate_queue(*head);
 
 	return qee_add_item_status;
 }
 
-static Queue* qee_insert_item(Queue *item){
+static Queue* insert_item(Queue *item){
 	if(item == NULL){
 		qee_add_item_status = true;
 		return new_item;
@@ -48,15 +48,15 @@ static Queue* qee_insert_item(Queue *item){
 		if(update_item_quantity)
 			(item->quantity)++;
 
-		qee_free_item(new_item);
+		free_item(new_item);
 		return item;
 	}
 
-	item->next = qee_insert_item(item->next);
+	item->next = insert_item(item->next);
 	return item;
 }
 
-static Queue* qee_ordenate_queue(Queue *item){
+static Queue* ordenate_queue(Queue *item){
 	if(item == NULL || item->next == NULL)
 		return item;
 
@@ -65,11 +65,11 @@ static Queue* qee_ordenate_queue(Queue *item){
 		item->next = tmp_item->next;
 		tmp_item->next = item;
 
-		tmp_item->next = qee_ordenate_queue(item);
+		tmp_item->next = ordenate_queue(item);
 		return tmp_item;
 	}
 
-	item->next = qee_ordenate_queue(item->next);
+	item->next = ordenate_queue(item->next);
 	return item;
 }
 
@@ -86,13 +86,11 @@ void qee_free_queue(Queue *item){
 
 	qee_free_queue(item->next);
 
-	qee_free_item(item);
+	free_item(item);
 }
 
-static void qee_free_item(Queue *item){
+static void free_item(Queue *item){
 	free(item->content[0]);
 	free(item->content[1]);
 	free(item);
 }
-
-#undef QEE_ADD_AND_INSERT_ITEM_CORE
