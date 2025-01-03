@@ -35,7 +35,8 @@ static BinNode* avl_rotation_right_left(BinNode *node);
 
 Queue* qee_create(char *content0, char *content1);
 bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt);
-static bool qee_insert_item(Queue *mom, Queue *son);
+static Queue* qee_insert_item(Queue *item);
+static Queue* qee_ordenate_queue(Queue *item);
 Queue *qee_get_item(Queue *item, char *content1);
 void qee_free_queue(Queue *item);
 static void qee_free_item(Queue *item);

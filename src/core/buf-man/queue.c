@@ -4,33 +4,13 @@
 #include "../tools/string-plus.h"
 #include "buf-man.h"
 
-static bool update_item_quantity = false;
+static bool qee_add_item_status;
+static bool update_item_quantity;
 static Queue *new_item;
-static unsigned short new_item_len, son_len;
+static Queue *tmp_item;
 
-#define QEE_ADD_AND_INSERT_ITEM_CORE(h)                        \
-	if(h == NULL){                                             \
-		h = new_item;                                          \
-		return true;                                           \
-	}                                                          \
-	if(string_compare(new_item->content[1], (h)->content[1])){ \
-		if(update_item_quantity)                               \
-			((h)->quantity)++;                                 \
-		qee_free_item(new_item);                               \
-		return false;                                          \
-	}                                                          \
-	new_item_len = string_length(new_item->content[1]);        \
-	son_len = string_length((h)->content[1]);                  \
-	if(new_item_len > son_len){                                \
-		new_item->next = (h);                                  \
-		(h) = new_item;                                        \
-		return true;                                           \
-	}                                                          \
-	if(new_item->quantity > (h)->quantity){                    \
-		new_item->next = (h);                                  \
-		(h) = new_item;                                        \
-		return true;                                           \
-	}
+#define CK_QTT_AND_LEN(n0, n1) \
+	(n0->quantity < n1->quantity || (n0->quantity == n1->quantity && string_length(n0->content[1]) < string_length(n1->content[1])))
 
 Queue* qee_create(char *content0, char *content1){
 	new_item = malloc(sizeof(Queue));
@@ -47,16 +27,50 @@ bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt){
 	new_item = qee_create(content0, content1);
 
 	update_item_quantity = upQtt;
+	qee_add_item_status = false;
+	*head = qee_insert_item(*head);
+	*head = qee_ordenate_queue(*head);
 
-	QEE_ADD_AND_INSERT_ITEM_CORE(*head)
-
-	return qee_insert_item(*head, (*head)->next);
+	return qee_add_item_status;
 }
 
-static bool qee_insert_item(Queue *mom, Queue *son){
-	QEE_ADD_AND_INSERT_ITEM_CORE(mom->next)
+static Queue* qee_insert_item(Queue *item){
+	if(item == NULL){
+		qee_add_item_status = true;
+		return new_item;
+	}
 
-	return qee_insert_item(son, son->next);
+	if(CK_QTT_AND_LEN(item, new_item)){
+		qee_add_item_status = true;
+		new_item->next = item;
+		return new_item;
+	}else if(string_compare(item->content[1], new_item->content[1])){
+		if(update_item_quantity)
+			(item->quantity)++;
+
+		qee_free_item(new_item);
+		return item;
+	}
+
+	item->next = qee_insert_item(item->next);
+	return item;
+}
+
+static Queue* qee_ordenate_queue(Queue *item){
+	if(item == NULL || item->next == NULL)
+		return item;
+
+	if(CK_QTT_AND_LEN(item, item->next)){
+		tmp_item = item->next;
+		item->next = tmp_item->next;
+		tmp_item->next = item;
+
+		tmp_item->next = qee_ordenate_queue(item);
+		return tmp_item;
+	}
+
+	item->next = qee_ordenate_queue(item->next);
+	return item;
 }
 
 Queue* qee_get_item(Queue *item, char *content1){
