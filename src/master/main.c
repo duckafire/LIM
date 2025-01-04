@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "lim-global-variables.h"
 #include "../args/rules/check-and-treat.h"
+#include "../core/buf-man/buf-man.h"
 
 static void start_global_variables(void);
 static void lim_free(void);
@@ -23,6 +24,7 @@ static void start_global_variables(void){
 	lim.files.destine      = NULL;
 	lim.files.source_name  = NULL;
 	lim.files.destine_name = NULL;
+	lim.files.header_lim   = NULL;
 
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
@@ -32,6 +34,7 @@ static void start_global_variables(void){
 	lim.header_partitions.top_header = NULL;
 	lim.header_partitions.code_scope = NULL;
 	lim.header_partitions.funct_list = NULL;
+	lim.header_partitions.table_list = NULL;
 }
 
 static void lim_free(void){
@@ -40,6 +43,9 @@ static void lim_free(void){
 
 	if(lim.files.destine != NULL)
 		fclose(lim.files.destine);
+
+	if(lim.files.header_lim != NULL)
+		fclose(lim.files.header_lim);
 
 
 	// "destine_name" store a
@@ -53,6 +59,7 @@ static void lim_free(void){
 	if(lim.header_partitions.code_scope != NULL)
 		fclose(lim.header_partitions.code_scope);
 
-	if(lim.header_partitions.funct_list != NULL)
-		fclose(lim.header_partitions.funct_list);
+	qee_free_queue(lim.header_partitions.funct_list);
+	qee_free_queue(lim.header_partitions.table_list);
+
 }

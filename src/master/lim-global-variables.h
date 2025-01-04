@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "../core/buf-man/buf-man.h"
 
 struct Lim_Global_Variables{
 	struct{
@@ -10,6 +11,7 @@ struct Lim_Global_Variables{
 		FILE *destine;
 		char *source_name;
 		char *destine_name;
+		FILE *header_lim;
 	}files;
 	
 	struct{
@@ -22,7 +24,8 @@ struct Lim_Global_Variables{
 	struct{
 		FILE *top_header;
 		FILE *code_scope;
-		FILE *funct_list;
+		Queue *funct_list;
+		Queue *table_list;
 	}header_partitions;
 };
 
