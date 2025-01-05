@@ -28,12 +28,12 @@ static bool print_messages = true;
 #define CONTENT_3(b) NULL,b
 
 #define PARAGRAPH    if(print_messages) puts("\n\n")
-#define _PUTS(str)   if(print_messages) PUTS(str)
+#define _WARN(str)   if(print_messages) WARN(str)
 #define PRINTF(s, i) if(print_messages) printf(s, i)
 
 
 int main(int argc, char *argv[]){
-	CHECK_ARG
+	CHECK_PROGRAM_ARG_QUANTITY
 	srand(time(NULL));
 
 	if(strcmp(argv[1], "bin-tree.c") == 0)
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 		convert_tree_to_queue_c();
 
 	else{
-		INVALID_ARG("bin-tree.c\nqueue.c\nconvert-tree-to-queue.c");
+		INVALID_ARG_TO_MAIN("bin-tree.c\nqueue.c\nconvert-tree-to-queue.c");
 	}
 
 	return 0;
@@ -80,13 +80,13 @@ static void printf_full_tree(BinNode *node){
 }
 
 static void bin_tree_c(void){
-	_PUTS("Create binary tree, with index '`'");
+	_WARN("Create binary tree, with index '`'");
 	tree = bin3_create('`');
 	printf_full_tree(tree);
 	PARAGRAPH;
 
 
-	_PUTS("Add two new nodes, with the respective indexes 'A' and 'a'");
+	_WARN("Add two new nodes, with the respective indexes 'A' and 'a'");
 	bin3_add_node(&tree, 'A', CONTENT, false);
 	bin3_add_node(&tree, 'a', CONTENT, false);
 
@@ -107,9 +107,9 @@ static void bin_tree_c(void){
 	for(upQtt = 0; upQtt < 2; upQtt++){
 
 		if(upQtt == 0)
-			_PUTS("Add four new nodes: x3 to left/right, x1 to next");
+			_WARN("Add four new nodes: x3 to left/right, x1 to next");
 		else
-			_PUTS("Update the quantity of nodes (random)");
+			_WARN("Update the quantity of nodes (random)");
 
 		for(lower = 0; lower <= 32; lower += 32){
 			ADD_NODE('C', CONTENT);
@@ -128,7 +128,7 @@ static void bin_tree_c(void){
 #undef ADD_NODE
 
 
-	_PUTS("Get 5-9 random nodes (A-D/a-d)");
+	_WARN("Get 5-9 random nodes (A-D/a-d)");
 
 	char id;
 	BinNode *buf;
@@ -167,7 +167,7 @@ static void printf_item(Queue *item, char *name){
 }
 
 static void queue_c(void){
-	_PUTS("Create a queue, with the contents: NULL; \"`\";");
+	_WARN("Create a queue, with the contents: NULL; \"`\";");
 	head = qee_create(CONTENT_3("`"));
 	printf_item(head, "head");
 	PARAGRAPH;
@@ -177,7 +177,7 @@ static void queue_c(void){
 	short i, j, max;
 
 #define PRINT_QUEUE(t)                                                         \
-	_PUTS(t);                                                                   \
+	_WARN(t);                                                                   \
 	printf_item(head,                         "init");                         \
 	printf_item(head->next,                   "init->next");                   \
 	printf_item(head->next->next,             "init->next->next");             \
@@ -207,7 +207,7 @@ static void queue_c(void){
 	PRINT_QUEUE("Update items quantity");
 
 
-	_PUTS("Get 5-9 random items");
+	_WARN("Get 5-9 random items");
 
 	Queue *buf;
 	max = rand() % 5 + 5;
@@ -243,7 +243,7 @@ static void convert_tree_to_queue_c(void){
 	print_messages = true;
 
 
-	_PUTS("Binary tree");
+	_WARN("Binary tree");
 	printf_full_tree(tree);
 	PARAGRAPH;
 
@@ -252,11 +252,11 @@ static void convert_tree_to_queue_c(void){
 	no_update   = convert_bin3_to_qee(tree, false);
 	with_update = convert_bin3_to_qee(tree, true);
 
-	_PUTS("Queue NO quantity update)");
+	_WARN("Queue NO quantity update)");
 	printf_full_queue(no_update);
 	PARAGRAPH;
 
-	_PUTS("Queue (WITH quantity update)");
+	_WARN("Queue (WITH quantity update)");
 	printf_full_queue(with_update);
 	PARAGRAPH;
 

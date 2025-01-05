@@ -8,6 +8,7 @@ src/void
 
 tests/scripts/.tmp
 tests/lim-broken
+tests/new
 
 Makefile
 CMakeCache.txt
