@@ -100,7 +100,7 @@ function debug_exe(){
 
 	if [[ $ARG_BROKEN -eq 1 ]] || [[ $1 -eq 0 ]]; then
 		[[ ! -d $BROK ]] && mkdir $BROK
-		cp $TMP/exe $BROK/lim
+		[[ -f $TMP/exe ]] && cp $TMP/exe $BROK/lim
 	fi
 }
 
@@ -123,7 +123,7 @@ declare -ri CREATE_MAIN_STATUS=$?
 if [[ $ARG_BROKEN -eq 2 ]]; then
 	debug_exe 0
 	echo "See $BROK"
-	exit 1
+	exit 0
 fi
 
 [[ $CREATE_MAIN_STATUS -eq 0 ]] && $ADDR/scripts/start-tests
