@@ -46,7 +46,7 @@ HF_OUT_STATUS read_header_file(char **indiv_part_status){
 
 static bool is_empty_file(FILE **file){
 	if(*file == NULL)
-		return false; // NULL != EMPTY
+		return true;
 
 	fseek(*file, 0, SEEK_SET);
 
@@ -59,19 +59,31 @@ static bool is_empty_file(FILE **file){
 	return false;
 }
 
-static HF_READ_STATUS refine_brute_status(FILE **buf, Queue *item, bool brute, bool isfile){
-	bool status;
+static bool is_empty_list(Queue **list){
+	if(*list == NULL)
+		return true;
+
+	if((*list)->content[1] != NULL)
+		return false;
+
+	qee_free_queue(*list);
+	*list = NULL;
+	return true;
+}
+
+static HF_READ_STATUS refine_brute_status(FILE **buf, Queue **list, bool new_part_found, bool isfile){
+	bool empty_status;
 
 	if(isfile)
-		status = is_empty_file(buf);
+		empty_status = is_empty_file(buf);
 	else
-		status = (item == NULL);
+		empty_status = is_empty_list(list);
 
 
-	if(!brute && status)
+	if(!new_part_found && empty_status)
 		return HF_EOF_FOUND;
 
-	if(status)
+	if(empty_status)
 		return HF_EMPTY_PART;
 
 	return HF_NEXT_PART;
@@ -87,13 +99,13 @@ static void start_reading(HF_READ_STATUS *refined_status){
 
 	brute_status[0] = read_top_header();
 	brute_status[1] = read_code_scope();
-	brute_status[2] = read_list(&(lim.header_partitions.funct_list));
-	brute_status[3] = read_list(&(lim.header_partitions.table_list));
+	brute_status[2] = read_list(&(lim.header_partitions.funct_list), brute_status[1]);
+	brute_status[3] = read_list(&(lim.header_partitions.table_list), brute_status[2]);
 
 	refined_status[0] = refine_brute_status(&(lim.header_partitions.top_header), NULL, brute_status[0], true);
 	refined_status[1] = refine_brute_status(&(lim.header_partitions.code_scope), NULL, brute_status[1], true);
-	refined_status[2] = refine_brute_status(NULL, &(lim.header_partitions.funct_list), brute_status[1], false);
-	refined_status[3] = refine_brute_status(NULL, &(lim.header_partitions.table_list), brute_status[1], false);
+	refined_status[2] = refine_brute_status(NULL, &(lim.header_partitions.funct_list), brute_status[2], false);
+	refined_status[3] = refine_brute_status(NULL, &(lim.header_partitions.table_list), brute_status[3], false);
 }
 
 static bool check_partitions_separator(void){
@@ -102,8 +114,11 @@ static bool check_partitions_separator(void){
 		return false;
 
 	if(FGETC == '@'){
-		if(FGETC == '\n')
+
+		if(FGETC == '\n'){
+			FGETC; // jump last separator char.
 			return true;
+		}
 
 		FSEEK;
 	}
@@ -113,14 +128,17 @@ static bool check_partitions_separator(void){
 }
 
 static bool read_top_header(void){
+	if(FGETC == EOF)
+		return false;
+
 	lim.header_partitions.top_header = tmpfile();
 
-	while(FGETC != EOF){
+	do{
 		if(check_partitions_separator())
 			return true;
 
 		FPUTC(c, top_header);
-	}
+	}while(FGETC != EOF);
 
 	return false;
 }
@@ -131,7 +149,7 @@ static bool read_code_scope(void){
 
 	lim.header_partitions.code_scope = tmpfile();
 
-	while(FGETC != EOF){
+	do{
 		if(check_partitions_separator())
 			return true;
 
@@ -145,14 +163,23 @@ static bool read_code_scope(void){
 		}
 
 		FPUTC(c, code_scope);
-	}
+	}while(FGETC != EOF);
 
 	return false;
 }
 
-static bool read_list(Queue **buf){
+static bool read_list(Queue **buf, bool is_this_found){
+	if(c == EOF){
+		if(is_this_found)
+			*buf = qee_create(NULL, NULL);
+
+		return false;
+	}
+
+
 	char *cur;
 	string_set(&cur, STR_START);
+
 
 	#define ADD_CUR                       \
 		if(*buf == NULL)                  \
@@ -160,16 +187,19 @@ static bool read_list(Queue **buf){
 		else                              \
 			qee_add_item(buf, NULL, cur, false)
 	//#enddef
+	
 
-	while(FGETC != EOF){
+	do{
 		if(isgraph(c)){
 			string_add(&cur, c);
 			continue;
 		}
 
 
-		ADD_CUR;
-		string_set(&cur, STR_RESTART);
+		if(cur[0] != '\0'){
+			ADD_CUR;
+			string_set(&cur, STR_RESTART);
+		}
 
 
 		if(check_partitions_separator()){
@@ -191,10 +221,15 @@ static bool read_list(Queue **buf){
 		}
 
 		FSEEK;
-	}
+	}while(FGETC != EOF);
 
-	if(isgraph(cur[0]))
+	if(cur[0] != '\0'){
 		ADD_CUR;
+	
+	}else if(*buf == NULL){
+		// set "EMPTY status" (it will be clean)
+		*buf = qee_create(NULL, NULL);
+	}
 
 	string_set(&cur, STR_END);
 	return false;

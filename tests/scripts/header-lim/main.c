@@ -5,9 +5,10 @@
 #include "../../../src/core/header-lim/read.h"
 #include "../../../src/master/lim-global-variables.h"
 
-// TODO (fix): funct_list and table_list
-// individual code
-// word collect
+// (little) BUG:
+// wrong "individual status" after use the
+// arguments: 5, 6, 8, 12, 19, 20, 22, 26
+// (it is not critical)
 
 
 static FILE* write_and_print_header_lim(short code);
@@ -209,5 +210,5 @@ static void print_queue(Queue *item){
 
 	print_queue(item->next);
 
-	printf("%s\t%d\n", item->content[1], item->content[1][0]);
+	printf("%s\n", item->content[1]);
 }
