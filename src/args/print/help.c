@@ -64,59 +64,12 @@ static void help_with_arg(char *arg){
 	}
 	if(flag_cmp(arg, HELP_ARG_RULES)){
 		MESSAGE(
-			"Compaction rules (work in progress):",
-			" ",
-			"1 - Global variables and tables must ALWAYS to be prefixed by \"_G.\".",
-			"2 - Global variables, tables and functions will be added to the library table.",
-			"3 - Variables, tables and functions declared inside aligned functions must not have",
-			"    the same name.",
-			"4 - \"_\" is a reservated identifier to appoint the library table, because of this,",
-			"    it must not be used to other purposes.",
-			"5 - Variables and tables, global and local, declared in root environment will be",
-			"    hoisted to the top of this environment, like what happen with variables declared",
-			"    with \"var\" in JavaScript.",
-			"6 - Global variables, tables and function, and table keys, will not be their",
-			"    identifiers compacted.",
-			"7 - Functions declared inside of tables environment will not be their content",
-			"    currectly compacted.",
-			"    > Try: <table>.<ident>=function()end",
-			"    > Instead <table>={<ident>=function()end}",
-			"8 - The use of \"[[]]\", to declare string, is not supported (use \"\\n\" to apply",
-			"    line feed)."
-			"9 - Identifiers started with '_' will not be compacted."
+			"Work in progress"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_HEADER)){
 		MESSAGE(
-			"The \"header.lim\" file is search always that the Lim run, unless the flag \"-nh |",
-			"--no-header\" is used. When it is found, the Lim read, separate and store its",
-			"content in a buffer, for future use.",
-			" ",
-			"The header content is divided in three partitions, they are separated by \"\\n@\n\".",
-			"All partitions are listed below:",
-			" ",
-			"* Top -> its content will not be compacted, it will be pritted in top of output",
-			"file, above the library code.",
-			" ",
-			"* Scope -> code, extern to the source file, that will be placed below references",
-			"functions scope. It content will not be compacted, because of this, it is",
-			"recommended that its content already has be compacted.",
-			" ",
-			"* List -> functions, extern of Lua default collection, that may be present in",
-			"source file.",
-			" ",
-			"If the \"header.lim\", or some of its partition, is not found, the Lim will not be",
-			"stop and it will be continue the compaction process. This can be monitored with the",
-			"use of the flag \"-V | --verbose\".",
-			" ",
-			"Structure synopsis:",
-			" ",
-			"-- Top of header file",
-			"@",
-			"local function _Ga(a,b)return a+b end",
-			"@",
-			"foo_func_0",
-			"foo_func_1"
+			"Work in progress"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){

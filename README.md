@@ -18,7 +18,7 @@
 <br>
 
 > [!TIP]
-> [Read the documentation.](https://github.com/duckafire/LIM/blob/main/docs.md "Work in progress")
+> [Read the documentation.](https://github.com/duckafire/LIM/tree/main/docs "./docs/")
 
 <br>
 
@@ -69,6 +69,11 @@ lim --help --replace
 
 # Known bugs
 
-&emsp;For now, this list is empty :D
+1. *header.lim* structured like the tests `5`, `6`, `8`, `12`, `19`, `20`, `22` and `26` (from `./tests/run header-lim`) return a wrong *individual status* to last two buffers (both or one).
+
+<br>
+
+> [!NOTE]
+> Please reporte bugs [here](https://github.com/duckafire/LIM/issues "Github issues").
 
 <br>
