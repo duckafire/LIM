@@ -1,5 +1,5 @@
-#ifndef ARGS_PRINT_INFO_FLAGS
-#define ARGS_PRINT_INFO_FLAGS
+#ifndef ARGS_PRINT_FLAGS_IN_DEFINE
+#define ARGS_PRINT_FLAGS_IN_DEFINE
 
 #include "../../cmake-h/version.h"
 

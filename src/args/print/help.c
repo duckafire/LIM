@@ -1,4 +1,4 @@
-#include "flags-in-function.h"
+#include "help.h"
 #include "../rules/flag-man.h"
 #include "../rules/flags.h"
 #include "error.h"

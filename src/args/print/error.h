@@ -1,5 +1,5 @@
-#ifndef ARGS_ERROR
-#define ARGS_ERROR
+#ifndef ARGS_PRINT_ERROR
+#define ARGS_PRINT_ERROR
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +30,7 @@
 	LIM_ERROR(7, "<LIM> Invalid flag: \"%s\".\n\n", flag)
 
 #define ERROR_unexpected_file_name(name) \
-	LIM_ERROR(8, "<LIM> Unexpected file name: \"%s\". \n\n", name)
+	LIM_ERROR(8, "<LIM> Unexpected file name: \"%s\".\n\n", name)
 
 #define ERROR_dest_file_already_exist(dest) \
 	LIM_ERROR(9, "<LIM> The destine/output file already exist: \"%s\".\n\n", dest)

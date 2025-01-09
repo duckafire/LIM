@@ -17,7 +17,7 @@ static short max;
 
 
 int main(int argc, char *argv[]){
-	CHECK_ARG
+	CHECK_PROGRAM_ARG_QUANTITY
 	srand(time(NULL));
 
 	if(strcmp(argv[1], "string-plus.c") == 0)
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 		nickname_c();
 
 	else{
-		INVALID_ARG("string-plus.c\nnickname.c");
+		INVALID_ARG_TO_MAIN("string-plus.c\nnickname.c");
 	}
 
 	return 0;
@@ -41,7 +41,7 @@ static void string_plus_c(void){
 	char *dinamic;
 
 
-	PUTS("Create a \"dinamic string\" and add random characteres to it.");
+	WARN("Create a \"dinamic string\" and add random characteres to it.");
 
 	string_set(&dinamic, STR_START);
 	for(short i = 0; i < max; i++)
@@ -50,7 +50,7 @@ static void string_plus_c(void){
 	PRINTF;
 
 
-	PUTS("End string, copy \"Hello world!\" to it, restart and end it");
+	WARN("End string, copy \"Hello world!\" to it, restart and end it");
 
 	string_set(&dinamic, STR_END);
 	dinamic = string_copy("Hello world!");
@@ -60,7 +60,7 @@ static void string_plus_c(void){
 	string_set(&dinamic, STR_END);
 
 
-	PUTS("Get it length and compare it with \"Hello world!\" and `NULL`");
+	WARN("Get it length and compare it with \"Hello world!\" and `NULL`");
 
 	printf("Length:   %d\n",   string_length(dinamic));
 	printf("Compare0: %d\n",   string_compare(dinamic, "HELLO WORLD!"));
@@ -72,7 +72,7 @@ static void string_plus_c(void){
 
 static void nickname_c(void){
 #define PRINTF(text, init, get)        \
-	PUTS(text);                        \
+	WARN(text);                        \
 	nick_init(init);                   \
 	MAX;                               \
 	max *= 2 + rand() % 4;             \

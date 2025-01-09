@@ -2,7 +2,7 @@
 #include <string.h>
 #include "../../master/lim-global-variables.h"
 #include "../print/flags-in-define.h"
-#include "../print/flags-in-function.h"
+#include "../print/help.h"
 #include "../print/error.h"
 #include "check-and-treat.h"
 #include "flag-man.h"
