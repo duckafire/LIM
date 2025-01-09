@@ -74,7 +74,7 @@ static void help_with_arg(char *arg){
 	}
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
 		MESSAGE(
-			"lim [-v] [-h [help-arg]] [-V] [-r] <src-name> [-nh] [-us <1 - 5>] [-n <dest-name>]"
+			"lim [-v] [-h [help-arg]] [-V] [-r] <src-name> [-nh] [-us < 1 - 5 >] [-n <dest-name>]"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
@@ -85,7 +85,7 @@ static void help_with_arg(char *arg){
 			"-n  --name        -> lim <source-name> {-n | --name} <destine-name>",
 			"-r  --replace     -> lim {-r | --replace} <source-name>",
 			"-nh --no-header   -> lim <source> {-nh | --no-header} <source-name>",
-			"-us --until-stage -> lim <source-name> {-us | --until-stage} <1 - 5>"
+			"-us --until-stage -> lim <source-name> {-us | --until-stage} < 1 - 5 >"
 		);
 	}
 }
@@ -136,7 +136,7 @@ static void help_flag(char *flag){
 	}
 	if(flag_cmp(flag, FLAG_UNTIL_STAGE)){
 		MESSAGE(
-			"lim <source-name> {-us | --until-stage} <1 - 5>",
+			"lim <source-name> {-us | --until-stage} < 1 - 5 >",
 			" ",
 			"Specific that the compaction process must run until a specific stage."
 		);

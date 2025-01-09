@@ -36,7 +36,6 @@ declare -r TMP="$ADDR/scripts/.tmp"
 declare -r BROK="$ADDR/lim-broken"
 declare -r MAIN="$TMP/main.c"
 declare -r EXE="$TMP/exe"
-declare -r LOG="$TMP/log"
 declare -r BIN="../src/"
 
 declare _files _includes _main _args _main_c_path
@@ -44,7 +43,7 @@ declare _files _includes _main _args _main_c_path
 [[ -d $TMP ]] && rm -r $TMP
 mkdir $TMP
 
-> $MAIN && > $EXE && > $LOG
+> $MAIN && > $EXE
 > "$TMP/a.lua" && > "$TMP/b.lua" && > "$TMP/b.lim"
 
 

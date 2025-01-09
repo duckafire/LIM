@@ -14,3 +14,4 @@
 | 7    | Invalid flag                      |
 | 8    | Unexpected file name              |
 | 9    | Destine/output file already exist |
+| 10   | Invalid file extension            |

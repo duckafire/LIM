@@ -11,6 +11,13 @@
 static int argc;
 static char **argv;
 
+#define IS_DOT_LUA(str, len) \
+	(len > 4                 \
+	&& str[len - 4] == '.'   \
+	&& str[len - 3] == 'l'   \
+	&& str[len - 2] == 'u'   \
+	&& str[len - 1] == 'a')
+
 void check_program_arguments(int c, char *v[]){
 	argc = c - 1;
 	argv = v;
@@ -68,6 +75,10 @@ static void search_and_set_source_file(void){
 
 	if(argv[1][0] == '-'){
 		ERROR_file_name_expected_instead_flag(argv[1]);
+	}
+
+	if(!IS_DOT_LUA( argv[1], strlen(argv[1])) ){
+		ERROR_invalid_file_extension(argv[1]);
 	}
 }
 
@@ -162,11 +173,7 @@ static void set_destine_file_name(const char *src){
 	strcpy(tmp, src);
 
 
-	if(len > 4
-	&& tmp[len - 4] == '.'
-	&& tmp[len - 3] == 'l'
-	&& tmp[len - 2] == 'u'
-	&& tmp[len - 1] == 'a')
+	if(IS_DOT_LUA(tmp, len))
 		tmp[len - 4] = '\0';
 
 	strcat(tmp, ".lim");

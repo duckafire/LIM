@@ -36,6 +36,7 @@
 ./scripts/.tmp/b.lua -r -us 1
 ./scripts/.tmp/b.lua -r --until-stage 1
 ./scripts/.tmp/c.lua
+./scripts/.tmp/main.c
 -v -x
 -x -v
 --v
