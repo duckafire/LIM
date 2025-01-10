@@ -8,7 +8,7 @@ void show_help_messages(char *str){
 		MESSAGE(
 			"lim {-h | --help} [arg]",
 			" ",
-			"Print informations about a specific argument, that can be a flag or one of the "
+			"Print information about a specific argument, that can be a flag or one of the "
 			"keywords in below:",
 			"* (h) header   -> how work and how to use \"header.lim\".",
 			"* (l) list     -> list all flags.",
@@ -69,23 +69,53 @@ static void help_with_arg(char *arg){
 	}
 	if(flag_cmp(arg, HELP_ARG_HEADER)){
 		MESSAGE(
-			"Work in progress"
+			"The \"header.lim\" is a optional file searched by Lim in start of all compaction",
+			"processes. It content can be divided in four partitions:",
+			" ",
+			"top header: will be writed in top of the output file, outside the library.",
+			"code scope: will be placed inside the library, below function scope.",
+			"table list: will receive the same treatment that Lua standard tables, like \"string\"",
+			"\"math\", ...",
+			"func. list: will receive the same treatment that Lua standard functions, like \"select\"",
+			"\"toumber\", ...",
+			" ",
+			"These content must be separated by string \"\\n@\\n\", like the example below:",
+			" ",
+			">>> FILE >>>",
+			"-- Foo message",
+			"@",
+			"local function _foo()return\"foo\"end",
+			"@",
+			"foo_table_0",
+			"foo_table_1",
+			"foo_table_n",
+			"@",
+			"foo_function_0",
+			"foo_function_1",
+			"foo_function_n",
+			"<<< FILE <<<",
+			" ",
+			"The \"header.lim\" will be ignored one of the flags (-nh) --no-header or (-us) --until-stage",
+			"is used.",
+			" ",
+			"Access the official documentation for more information:",
+			"https://github.com/duckafire/lim/blob/main/docs/the-header-lim.md"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
 		MESSAGE(
-			"lim [-v] [-h [help-arg]] [-V] [-r] <src-name> [-nh] [-us < 1 - 5 >] [-n <dest-name>]"
+			"lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-us <1-5>] [-n <out>] ]"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
 		MESSAGE(
 			"-v  --version     -> lim {-v | --version}",
 			"-h  --help        -> lim {-h | --help} [arg]",
-			"-V  --verbose     -> lim {-V | --verbose} <source-name>",
-			"-n  --name        -> lim <source-name> {-n | --name} <destine-name>",
-			"-r  --replace     -> lim {-r | --replace} <source-name>",
-			"-nh --no-header   -> lim <source> {-nh | --no-header} <source-name>",
-			"-us --until-stage -> lim <source-name> {-us | --until-stage} < 1 - 5 >"
+			"-V  --verbose     -> lim {-V | --verbose} <input>.lua",
+			"-n  --name        -> lim <input>.lua {-n | --name} <output>",
+			"-r  --replace     -> lim {-r | --replace} <input>.lua",
+			"-nh --no-header   -> lim <source> {-nh | --no-header} <input>.lua",
+			"-us --until-stage -> lim <input>.lua {-us | --until-stage} <1-5>"
 		);
 	}
 }
@@ -100,43 +130,43 @@ static void help_flag(char *flag){
 	}
 	if(flag_cmp(flag, FLAG_HELP)){
 		MESSAGE(
-			"lim {-h | --help} [flag]",
+			"lim {-h | --help} [arg]",
 			" ",
-			"Print informations about flags and other something."
+			"Print information about flags and other something."
 		);
 	}
 	if(flag_cmp(flag, FLAG_VERBOSE)){
 		MESSAGE(
-			"lim {-V | --verbose} <source-name>",
+			"lim {-V | --verbose} <input>.lua",
 			" ",
-			"Print informations about the compaction, during this process."
+			"Print information about the compaction, during this process."
 		);
 	}
 	if(flag_cmp(flag, FLAG_DEST_NAME)){
 		MESSAGE(
-			"lim <source-name> {-n | --name} <destine-name>",
+			"lim <input>.lua {-n | --name} <output>",
 			" ",
 			"Specify that the next flagument is the output file name."
 		);
 	}
 	if(flag_cmp(flag, FLAG_REPLACE)){
 		MESSAGE(
-			"lim {-r | --replace} <source-name>",
+			"lim {-r | --replace} <input>.lua",
 			" ",
-			"Specify that, if already exist a file with the same name of the",
-			"output file, it must be replaced."
+			"Specify that, if already exist a file with the same name of the,",
+			"output file must be replaced."
 		);
 	}
 	if(flag_cmp(flag, FLAG_NO_HEADER)){
 		MESSAGE(
-			"lim <source> {-nh | --no-header} <source-name>",
+			"lim <source> {-nh | --no-header} <input>.lua",
 			" ",
 			"Specific that the file \"header.lim\" must be ignored."
 		);
 	}
 	if(flag_cmp(flag, FLAG_UNTIL_STAGE)){
 		MESSAGE(
-			"lim <source-name> {-us | --until-stage} < 1 - 5 >",
+			"lim <input>.lua {-us | --until-stage} <1-5>",
 			" ",
 			"Specific that the compaction process must run until a specific stage."
 		);

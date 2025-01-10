@@ -8,7 +8,7 @@ _main=$(       read_file $ARG_TARGET/main.c   1 0)
 
 
 echo "$_main" > $MAIN
-gcc -g $_main_c_path $_files $_includes -o $EXE > /dev/null 2>&1
+gcc -g $_main_c_path $_files $_includes -o $EXE
 
 
 if [[ $? != "0" ]]; then
