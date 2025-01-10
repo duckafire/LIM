@@ -1,7 +1,5 @@
 # Error code list
 
-<br>
-
 | Code | Description                       |
 | :-:  |:--                                |
 | 0    | Process success                   |
