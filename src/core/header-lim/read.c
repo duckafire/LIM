@@ -191,7 +191,9 @@ static bool read_list(Queue **buf, bool is_this_found){
 
 	do{
 		if(isgraph(c)){
-			string_add(&cur, c);
+			if(isalnum(c) || c == '_')
+				string_add(&cur, c);
+
 			continue;
 		}
 
