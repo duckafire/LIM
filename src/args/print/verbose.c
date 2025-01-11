@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include "verbose.h"
-#include "../../master/lim-global-variables.h"
+#include "../../core/lim-global-variables.h"
 
 static va_list content;
 

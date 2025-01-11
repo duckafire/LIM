@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../../../src/master/lim-global-variables.h"
+#include "../../../src/core/lim-global-variables.h"
 #include "../../../src/args/rules/check-and-treat.h"
 
 static void lim_free(void);

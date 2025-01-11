@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lim-global-variables.h"
-#include "../args/rules/check-and-treat.h"
-#include "../core/buf-man/buf-man.h"
+#include "core/lim-global-variables.h"
+#include "args/rules/check-and-treat.h"
+#include "core/buf-man/buf-man.h"
 
 static void start_global_variables(void);
 static void lim_free(void);
@@ -61,5 +61,4 @@ static void lim_free(void){
 
 	qee_free_queue(lim.header_partitions.funct_list);
 	qee_free_queue(lim.header_partitions.table_list);
-
 }

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include "../../master/lim-global-variables.h"
+#include "../lim-global-variables.h"
 #include "../tools/string-plus.h"
 #include "../buf-man/buf-man.h"
 #include "out-status.h"

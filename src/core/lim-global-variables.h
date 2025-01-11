@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "../core/buf-man/buf-man.h"
+#include "buf-man/buf-man.h"
 
 struct Lim_Global_Variables{
 	struct{

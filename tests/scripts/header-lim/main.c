@@ -3,7 +3,7 @@
 #include "../debug-common.h"
 #include "../../../src/core/buf-man/buf-man.h"
 #include "../../../src/core/header-lim/read.h"
-#include "../../../src/master/lim-global-variables.h"
+#include "../../../src/core/lim-global-variables.h"
 
 // (little) BUG:
 // wrong "individual status" after use the
