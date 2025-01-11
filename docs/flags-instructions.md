@@ -22,7 +22,7 @@
 
 <h3 id="overview">Overview</h3>
 
-&emsp;Flag is the name gived to the reserved words that, when used like argument to Lim, allow turn on/off options or pass specific information. Like way of differentiate easily the flags from the other arguments, both are prefixed by `--` or `-`, where the first accompany the *long flags* (`--flag`; `--lim-flag`) and the second *short flags* (`-f`; `lf`). They can be divided in <a href="#info">information flags</a> and <a href="#action">action flags</a>.
+&emsp;Flag is the name gived to the reserved words that, when used like argument to Lim, allow turn on/off options or pass specific information. Like way of differentiate easily the flags from the other arguments, both are prefixed by `--` (*long flags*: `--flag`) or `-` (*short flags*: `-f`). They can be divided in <a href="#info">information flags</a> and <a href="#action">action flags</a>.
 
 <br>
 
@@ -35,10 +35,10 @@
 	<ul>
 		<li id="info-3-1"><code>h | header:</code> information about the <a href="https://github.com/duckafire/lim/blob/main/docs/the-header-lim.md" title="Official documentation"><i>header.lim</i></a>.</li>
 		<li id="info-3-2"><code>l | list</code>: show all Lim flags (short and long).</li>
-		<li id="info-3-3"><code>li | license</code>: show Lim <a href="https://github.com/duckafire/lim/blob/main/LICENSE">license</a>.</li>
+		<li id="info-3-3"><code>li | license</code>: show Lim <a href="https://github.com/duckafire/lim/blob/main/LICENSE" title="MIT">license</a>.</li>
 		<li id="info-3-4"><code>ls | list-syn</code>: show all Lim flags (short and long), with their recommended synopsis.</li>
 		<li id="info-3-5"><code>r | rules</code>: semantic rules to compaction.</li>
-		<li id="info-3-6"><code>s | synopsis</code>: recommended <i>global</i> synopsis to all Lim flags.</li>
+		<li id="info-3-6"><code>s | synopsis</code>: recommended <i>global</i> synopsis.</li>
 	</ul>
 </ul>
 

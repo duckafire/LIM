@@ -1,4 +1,4 @@
-# The "header.lim"
+# The *"header.lim"*
 
 * <a href="#overview">Overview</a>
 * <a href="#file-cont">File content</a>
@@ -17,13 +17,13 @@
 
 <h3 id="overview">Overview</h3>
 
-&emsp;Every that the flags `--no-header` (`-nh`) and `--until-stage` (`-us`) are not used, Lim will be to seek, in the current directory, a file named like *header.lim*. If this file is found, its content will be read and separated in memory buffers. Else, the compaction process will be continue normally.
+&emsp;Every that the flags `--no-header` (`-nh`) and `--until-stage` (`-us`) are not used, Lim will be to seek, in the current directory, a file named like *header.lim*. If this file is found, its content will be read and separated in memory buffers, for future processes. Else, the compaction process will be continue normally.
 
 <br>
 
 <h3 id="file-cont">File content</h3>
 
-&emsp;Like way of organizate its content, the *header.lim* can contain until four partitions, each with a specific name and purpose. More information about are below:
+&emsp;Like way of organizate its content, the *header.lim* can contain until four partitions, each with one specific name and purpose. More information about are below:
 
 <br>
 
@@ -126,12 +126,12 @@ delay
 <br>
 
 > [!NOTE]
-> The buffers status are returned together (`1100`; `2212`; `0000`).
+> The buffers status are returned together (`1100`; `2212`; `0000`), in order: *top header*, *code scope*, *table list* and *function list*.
 
 <br>
 
 > [!NOTE]
-> Only in *top header* partition white spaces are valid, they will be descarted in other.
+> Only the *top header* not ignore white space.
 
 <br>
 

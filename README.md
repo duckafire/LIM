@@ -53,7 +53,7 @@ local libfoo=_
 
 ```
 # compact a file
-lim file-name.lua [--replace] [--name \<output-file-name>]
+lim <input>.lua [--replace] [--name <output>]
 
 # asking for help
 lim --help [flag-name | help-argument]
