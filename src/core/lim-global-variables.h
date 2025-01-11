@@ -27,8 +27,24 @@ struct Lim_Global_Variables{
 		Queue *funct_list;
 		Queue *table_list;
 	}header_partitions;
+
+	struct{
+		FILE *destine_file;
+
+		struct{
+			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
+			Queue *lib_func,    *lib_var_tab;
+			Queue *global_func, *global_var_tab;
+		}root;
+
+		// struct{
+		// }local;
+	}buffers;
 };
 
 extern struct Lim_Global_Variables lim;
+
+void lim_init_env(void);
+void lim_free_env(void);
 
 #endif

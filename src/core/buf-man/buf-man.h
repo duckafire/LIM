@@ -1,5 +1,5 @@
-#ifndef BUF_MAN_BUF_MAN
-#define BUF_MAN_BUF_MAN
+#ifndef CORE_BUF_MAN_BUF_MAN
+#define CORE_BUF_MAN_BUF_MAN
 
 #include <stdio.h>
 #include <stdbool.h>
