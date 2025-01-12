@@ -4,7 +4,7 @@
 #include <time.h>
 #include "../debug-common.h"
 #include "../../../src/core/tools/string-plus.h"
-#include "../../../src/core/tools/nickname.h"
+#include "../../../src/core/compaction-process/nickname.h"
 
 
 static void string_plus_c(void);
