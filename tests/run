@@ -7,7 +7,7 @@
 # -r - remove the ./lim-broken/lim IF none error occur during the tests
 
 
-declare -r TRY="./run < args | buf-man | header-lim | string+nickname > [ -g | -c | -r ]"
+declare -r TRY="./run < args | buf-man | header-lim > [ -g | -c | -r ]"
 
 if [[ $# -eq 0 ]]; then
 	echo -e "$TRY\n"
@@ -26,7 +26,7 @@ case $2 in
 esac
 
 function check_argument(){
-	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "header-lim" ]] && [[ $1 != "string+nickname" ]]
+	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "header-lim" ]]
 	return $?
 }
 
