@@ -1,4 +1,4 @@
 core/header-lim/read.c
-core/tools/string-plus.c
+core/string-plus.c
 core/buf-man/queue.c
 core/buf-man/bin-tree.c

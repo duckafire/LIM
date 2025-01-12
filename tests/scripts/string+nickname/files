@@ -1,2 +1,2 @@
-core/tools/string-plus.c
+core/string-plus.c
 core/compaction-process/nickname.c

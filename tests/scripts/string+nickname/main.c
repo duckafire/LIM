@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "../debug-common.h"
-#include "../../../src/core/tools/string-plus.h"
+#include "../../../src/core/string-plus.h"
 #include "../../../src/core/compaction-process/nickname.h"
 
 
