@@ -2,7 +2,8 @@
 #include <ctype.h>
 #include "../lim-global-variables.h"
 #include "process-master.h"
-#include "check-content.h"
+#include "check-content/const.h"
+#include "check-content/ident.h"
 
 // debug
 #include <stdio.h>
@@ -21,7 +22,7 @@ void read_source_file(void){
 			printfc(&tmp);
 		
 		if(is_identifier(c, &tmp)){
-			if(!is_lua_keyword(tmp))
+			if(!is_lua_keyword(tmp)) // TODO: it will be static
 				printfi(&tmp);
 
 			continue;

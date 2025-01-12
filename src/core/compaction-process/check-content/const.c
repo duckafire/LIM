@@ -1,12 +1,8 @@
-#include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
 #include <ctype.h>
-#include "../lim-global-variables.h"
-#include "../tools/string-plus.h"
-#include "check-content.h"
-
-static const char *lua_kw[] = {"do","if","in","or","and","end","for","nil","not","else","then","true","break","false","local","until","while","elseif","repeat","return","function", NULL};
+#include "../../lim-global-variables.h"
+#include "../../tools/string-plus.h"
+#include "const.h"
 
 #define FGETC (c = fgetc(lim.files.source))
 #define FSEEK fseek(lim.files.source, -1, SEEK_CUR)
@@ -15,21 +11,6 @@ bool clear_white_spaces(char *c){
 	while(!isgraph(*c) && (*c = fgetc(lim.files.source)) != EOF);
 
 	return (*c == EOF);
-}
-
-bool is_identifier(char c, char **tmp){
-	if(!isalpha(c) && c != '_')
-		return false;
-
-	string_set(tmp, STR_START);
-
-	do{
-		string_add(tmp, c);
-	}while(FGETC != EOF && (isalnum(c) || c == '_' || c == '.' || c == ':'));
-
-
-	FSEEK;
-	return true;
 }
 
 bool is_number(char c, char **tmp){
@@ -147,12 +128,4 @@ static bool clear_single_line_commentary(char c){
 void is_special_char(char c, char **tmp){
 	string_set(tmp, STR_START);
 	string_add(tmp, c);
-}
-
-bool is_lua_keyword(char *ident){
-	for(short i = 0; lua_kw[i] != NULL; i++)
-		if(strcmp(ident, lua_kw[i]) == 0)
-			return true;
-
-	return false;
 }
