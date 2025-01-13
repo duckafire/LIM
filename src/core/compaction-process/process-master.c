@@ -2,14 +2,8 @@
 #include <ctype.h>
 #include "../lim-global-variables.h"
 #include "process-master.h"
-#include "check-content/const.h"
-#include "check-content/ident.h"
-
-// debug
-#include <stdio.h>
-#include "../tools/string-plus.h"
-static void printfc(char **s){printf("C - %s\n", *s); string_set(s, STR_END); *s = NULL;}
-static void printfi(char **s){printf("I -- %s\n", *s); string_set(s, STR_END); *s = NULL;}
+#include "check-content/check-content.h"
+#include "treat.h"
 
 void read_source_file(void){
 	char c, *tmp = NULL;
@@ -19,14 +13,12 @@ void read_source_file(void){
 			break;
 
 		if(tmp != NULL)
-			printfc(&tmp);
+			treat_const(&tmp);
 		
-		if(is_identifier(c, &tmp)){
-			if(!is_lua_keyword(tmp)) // TODO: it will be static
-				printfi(&tmp);
-
+		// NOTE: single from "ident.h"
+		// send its content to `treat.c`
+		if(is_identifier(c))
 			continue;
-		}
 
 		if(is_number(c, &tmp))
 			continue;
@@ -44,4 +36,7 @@ void read_source_file(void){
 	}
 
 	string_set(&tmp, STR_END);
+	build_destine_file();
 }
+
+static void build_destine_file(void){}

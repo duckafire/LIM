@@ -23,6 +23,7 @@ void lim_init_env(void){
 	lim.header_partitions.table_list = NULL;
 
 	lim.buffers.destine_file = NULL;
+	lim.buffers.source_file_line = 1;
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;
 	lim.buffers.root.scope_var_tab      = NULL;

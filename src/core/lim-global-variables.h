@@ -30,15 +30,18 @@ struct Lim_Global_Variables{
 
 	struct{
 		FILE *destine_file;
+		unsigned long source_file_line;
 
 		struct{
 			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
-			Queue *lib_func,    *lib_var_tab;
 			Queue *global_func, *global_var_tab;
 		}root;
 
-		// struct{
-		// }local;
+		struct{
+			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
+			Queue *global_func, *global_var_tab;
+			Queue *its_parameter, *aligned_parameter;
+		}local;
 	}buffers;
 };
 

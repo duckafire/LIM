@@ -1,14 +1,19 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "../../lim-global-variables.h"
-#include "../../tools/string-plus.h"
-#include "const.h"
+#include "../../string-plus.h"
+#include "check-content.h"
 
 #define FGETC (c = fgetc(lim.files.source))
 #define FSEEK fseek(lim.files.source, -1, SEEK_CUR)
 
 bool clear_white_spaces(char *c){
-	while(!isgraph(*c) && (*c = fgetc(lim.files.source)) != EOF);
+	if(*c == '\n')
+		lim.buffers.source_file_line++;
+
+	while(!isgraph(*c) && (*c = fgetc(lim.files.source)) != EOF)
+		if(*c == '\n')
+			lim.buffers.source_file_line++;
 
 	return (*c == EOF);
 }
@@ -25,9 +30,6 @@ bool is_number(char c, char **tmp){
 
 	FSEEK;
 	return true;
-}
-
-static void build_alnum_string(char c, char **tmp){
 }
 
 bool is_string(char c, char **tmp){
