@@ -27,10 +27,14 @@ void lim_init_env(void){
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;
 	lim.buffers.root.scope_var_tab      = NULL;
-	lim.buffers.root.lib_func           = NULL;
-	lim.buffers.root.lib_var_tab        = NULL;
 	lim.buffers.root.global_func        = NULL;
+	lim.buffers.root.func_from_lua      = NULL;
+	lim.buffers.root.table_from_lua     = NULL;
+	lim.buffers.root.func_from_header   = NULL;
+	lim.buffers.root.table_from_header  = NULL;
 	lim.buffers.root.global_var_tab     = NULL;
+	lim.buffers.local.top               = NULL;
+	lim.buffers.local.bottom            = NULL;
 }
 
 void lim_free_env(void){
@@ -74,8 +78,21 @@ void lim_free_env(void){
 	if(lim.buffers.root.scope_var_tab != NULL)
 		fclose(lim.buffers.root.scope_var_tab);
 
-	qee_free_queue(lim.buffers.root.lib_func);
-	qee_free_queue(lim.buffers.root.lib_var_tab);
 	qee_free_queue(lim.buffers.root.global_func);
 	qee_free_queue(lim.buffers.root.global_var_tab);
+	qee_free_queue(lim.buffers.root.func_from_lua);
+	qee_free_queue(lim.buffers.root.table_from_lua);
+	qee_free_queue(lim.buffers.root.func_from_header);
+	qee_free_queue(lim.buffers.root.table_from_header);
+
+	Func_Env_Stack *cur, *below;
+	for(cur = lim.buffers.local.top; cur != NULL; cur = below){
+		qee_free_queue(cur->local_func);
+		qee_free_queue(cur->local_var_tab);
+		qee_free_queue(cur->parameter);
+
+		below = cur->below;
+		free(cur);
+	}
+
 }

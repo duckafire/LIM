@@ -5,6 +5,15 @@
 #include <stdbool.h>
 #include "buf-man/buf-man.h"
 
+typedef struct Func_Env_Stack{
+	FILE *content;
+	FILE *scope_var_tab;
+	Queue *local_func;
+	Queue *local_var_tab;
+	Queue *parameter;
+	struct Func_Env_Stack *below;
+}Func_Env_Stack;
+
 struct Lim_Global_Variables{
 	struct{
 		FILE *source;
@@ -35,12 +44,14 @@ struct Lim_Global_Variables{
 		struct{
 			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
 			Queue *global_func, *global_var_tab;
+			Queue *func_from_lua, *table_from_lua;
+			Queue *func_from_header, *table_from_header;
 		}root;
 
 		struct{
-			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
-			Queue *global_func, *global_var_tab;
-			Queue *its_parameter, *aligned_parameter;
+			// Queue *local_func, *local_var_tab, *parameter;
+			Func_Env_Stack *top;
+			Func_Env_Stack *bottom;
 		}local;
 	}buffers;
 };

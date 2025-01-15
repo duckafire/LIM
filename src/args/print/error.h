@@ -35,7 +35,7 @@
 #define ERROR_dest_file_already_exist(dest) \
 	LIM_ERROR(9, "<LIM> The destine/output file already exist: \"%s\".\n\n", dest)
 
-#define ERROR_invalid_file_extension(name)  \
-	LIM_ERROR(10, "<LIM> Invalid file extension: \"%s\"\n\tExpected \"*.lua\".\n\n", name);
+#define ERROR_invalid_file_extension(name) \
+	LIM_ERROR(10, "<LIM> Invalid file extension: \"%s\"\n\tExpected \"*.lua\".\n\n", name)
 
 #endif

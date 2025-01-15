@@ -4,6 +4,7 @@
 #include "core/lim-global-variables.h"
 #include "args/rules/check-and-treat.h"
 #include "core/buf-man/buf-man.h"
+#include "core/compaction-process/process-master.h"
 
 // TODO:
 // check lua sintaxe with lua-c api
@@ -14,5 +15,6 @@ int main(int argc, char *argv[]){
 	atexit(lim_free_env);
 
 	check_program_arguments(argc, argv);
+	read_source_file();
 	return 0;
 }

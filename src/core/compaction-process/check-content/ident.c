@@ -37,32 +37,32 @@ bool is_identifier(char c){
 
 	if(table != NULL){
 		if(is_from_lua(table, lua_std_table))
-			treat_lua_std_table(table, buf);
+			treat_std_hdr_ident(table, buf, false, true);
 
 		else if(is_from_header(table, lim.header_partitions.table_list))
-			treat_header_table(table, buf);
+			treat_std_hdr_ident(table, buf, false, false);
 
 		else
-			treat_source_file_ident(table, buf);
+			treat_ident(table, buf);
 
 	}else{
 		if(is_from_lua(buf, lua_kw))
 			treat_const(&buf);
 
 		else if(is_from_lua(buf, lua_std_func))
-			treat_lua_std_func(buf);
+			treat_std_hdr_ident(buf, NULL, true, true);
 
 		else if(is_from_lua(buf, lua_std_table))
-			treat_lua_std_table(buf, NULL);
+			treat_std_hdr_ident(buf, NULL, false, true);
 
 		else if(is_from_header(buf, lim.header_partitions.funct_list))
-			treat_header_func(buf);
+			treat_std_hdr_ident(buf, NULL, true, false);
 
 		else if(is_from_header(buf, lim.header_partitions.table_list))
-			treat_header_table(buf, NULL);
+			treat_std_hdr_ident(buf, NULL, false, false);
 
 		else
-			treat_source_file_ident(buf, NULL);
+			treat_ident(table, buf);
 	}
 
 
