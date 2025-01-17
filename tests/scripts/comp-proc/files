@@ -1,0 +1,8 @@
+core/compaction-process/ident-man.c
+core/compaction-process/treat.c
+core/compaction-process/check-content/const.c
+core/compaction-process/check-content/ident.c
+core/compaction-process/process-master.c
+core/string-plus.c
+core/lim-global-variables.c
+core/buf-man/queue.c

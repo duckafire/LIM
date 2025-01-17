@@ -7,10 +7,10 @@
 # -r - remove the ./lim-broken/lim IF none error occur during the tests
 
 
-declare -r TRY="./run < args | buf-man | header-lim > [ -g | -c | -r ]"
+declare -r TRY="./run < args | buf-man | header-lim | comp-proc > [ -g | -c | -r ]"
 
 if [[ $# -eq 0 ]]; then
-	echo -e "$TRY\n"
+	echo -e "None arguments.\n\n$TRY\n"
 	exit 0
 fi
 
@@ -18,15 +18,19 @@ fi
 declare -r ARG_TARGET=$1
 declare -i ARG_BROKEN
 
-case $2 in
-	"-r") ARG_BROKEN=3 ;;
-	"-c") ARG_BROKEN=2 ;;
-	"-g") ARG_BROKEN=1 ;;
-	*)    ARG_BROKEN=0 ;;
-esac
+if [[ $# -ge 2 ]]; then
+	case $2 in
+		"-r") ARG_BROKEN=3 ;;
+		"-c") ARG_BROKEN=2 ;;
+		"-g") ARG_BROKEN=1 ;;
+		*)    echo -e "The 2th arg. is invalid.\n\n$TRY\n"; exit 0 ;;
+	esac
+else
+	ARG_BROKEN=0
+fi
 
 function check_argument(){
-	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "header-lim" ]]
+	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "header-lim" ]] && [[ $1 != "comp-proc" ]]
 	return $?
 }
 
@@ -99,6 +103,7 @@ function debug_exe(){
 
 	if [[ $ARG_BROKEN -eq 1 ]] || [[ $1 -eq 0 ]]; then
 		[[ ! -d $BROK ]] && mkdir $BROK
+		[[ -f $BROK/lim ]] && rm $BROK/lim
 		[[ -f $TMP/exe ]] && cp $TMP/exe $BROK/lim
 	fi
 }

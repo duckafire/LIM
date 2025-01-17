@@ -28,7 +28,8 @@ bool is_number(char c, char **tmp){
 		string_add(tmp, c);
 	}while(FGETC != EOF && (isalnum(c) || c == '_' || c == '.'));
 
-	FSEEK;
+	if(c != EOF)
+		FSEEK;
 	return true;
 }
 
@@ -99,7 +100,8 @@ bool is_commentary(char c){
 		return clear_single_line_commentary(c);
 	}
 
-	FSEEK;
+	if(c != EOF)
+		FSEEK;
 	return false;
 }
 

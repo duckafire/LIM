@@ -91,7 +91,7 @@ static FILE* write_and_print_header_lim(short code){
 	file = fopen("header.lim", "w");
 
 	if(content[code] != NULL)
-		fprintf(file, "%s", content[code]);
+		fputs(content[code], file);
 
 	fclose(file);
 	file = fopen("header.lim", "r");

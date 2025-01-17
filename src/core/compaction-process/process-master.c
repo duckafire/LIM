@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include "../lim-global-variables.h"
@@ -16,8 +17,8 @@ void read_source_file(void){
 		if(clear_white_spaces(&c))
 			break;
 
-		//if(tmp != NULL)
-			//treat_const(&tmp);
+		if(tmp != NULL)
+			treat_const(&tmp);
 		
 		// NOTE: single from "ident.h"
 		// send its content to `treat.c`
@@ -39,6 +40,9 @@ void read_source_file(void){
 		is_special_char(c, &tmp);
 	}
 
+	declare_var_tab();
+	//declare_function();
+
 	free_nickname_buffers();
 	string_set(&tmp, STR_END);
 	build_destine_file();
@@ -47,8 +51,8 @@ void read_source_file(void){
 static void build_destine_file(void){
 	char c;
 
-	fseek(lim.files.source, 0, SEEK_SET);
+	fseek(lim.buffers.destine_file, 0, SEEK_SET);
 	
-	while( (c = fgetc(lim.files.source)) != EOF)
+	while( (c = fgetc(lim.buffers.destine_file)) != EOF)
 		putchar(c);
 }

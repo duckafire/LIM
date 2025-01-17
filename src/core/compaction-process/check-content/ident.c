@@ -12,7 +12,6 @@ static const char *lua_std_func[]={"print","tonumber","tostring","ipairs","type"
 static const char *lua_std_table[]={"courotine","debug","io","math","os","package","string","table","utf8",NULL};
 
 #define FGETC (c = fgetc(lim.files.source))
-#define FSEEK fseek(lim.files.source, -1, SEEK_CUR)
 
 bool is_identifier(char c){
 	if(!isalpha(c) && c != '_')
@@ -37,10 +36,10 @@ bool is_identifier(char c){
 
 	if(table != NULL){
 		if(is_from_lua(table, lua_std_table))
-			treat_std_hdr_ident(table, buf, false, true);
+			putchar(0);//treat_std_hdr_ident(table, buf, false, true);
 
 		else if(is_from_header(table, lim.header_partitions.table_list))
-			treat_std_hdr_ident(table, buf, false, false);
+			putchar(0);//treat_std_hdr_ident(table, buf, false, false);
 
 		else
 			treat_ident(table, buf);
@@ -50,23 +49,24 @@ bool is_identifier(char c){
 			treat_const(&buf);
 
 		else if(is_from_lua(buf, lua_std_func))
-			treat_std_hdr_ident(buf, NULL, true, true);
+			putchar(0);//treat_std_hdr_ident(buf, NULL, true, true);
 
 		else if(is_from_lua(buf, lua_std_table))
-			treat_std_hdr_ident(buf, NULL, false, true);
+			putchar(0);//treat_std_hdr_ident(buf, NULL, false, true);
 
 		else if(is_from_header(buf, lim.header_partitions.funct_list))
-			treat_std_hdr_ident(buf, NULL, true, false);
+			putchar(0);//treat_std_hdr_ident(buf, NULL, true, false);
 
 		else if(is_from_header(buf, lim.header_partitions.table_list))
-			treat_std_hdr_ident(buf, NULL, false, false);
+			putchar(0);//treat_std_hdr_ident(buf, NULL, false, false);
 
 		else
-			treat_ident(table, buf);
+			treat_ident(buf, NULL);
 	}
 
 
-	FSEEK;
+	if(c != EOF)
+		fseek(lim.files.source, -1, SEEK_CUR);
 	string_set(&buf, STR_END);
 	string_set(&table, STR_END);
 	return true;
