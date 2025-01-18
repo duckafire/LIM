@@ -16,45 +16,66 @@
 static char *ident_nick;
 static unsigned short layer;
 
-static bool local_prefix = false;
-static bool local_attribute = false;
+static bool local_prefix       = false;
+static bool local_attribute    = false;
 static bool local_expect_comma = false;
-static Queue *local_buf_ident = NULL;
-static Queue *local_buf_value = NULL;
+static Queue *local_buf_ident  = NULL;
+static Queue *local_buf_value  = NULL;
 static unsigned short local_qtt_ident = 0;
 static unsigned short local_qtt_value = 0;
+
+static unsigned short local_funct_argum   = 0;
+static unsigned short local_table_index = 0;
 
 #define IS_ROOT (layer == 0)
 #define CUR_CTT_BUF ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
 
 void treat_const(char **tmp){
 #define END string_set(tmp, STR_END); return
+#define IS_C(c) ((*tmp[0]) == c)
 	const bool is_local = strcmp(*tmp, "local") == 0;
 
 	// "variable chain declaration",
 	if(local_prefix){
 
+		// only ident.; '='; ',' are valid
 		if(!local_attribute){
 			
-			if((*tmp)[0] == '='){
+			if(IS_C('=')){
 				local_attribute = true;
 				local_expect_comma = false;
 
 			}else if(local_expect_comma){
-				if((*tmp)[0] == ',')
+				if(IS_C(','))
 					local_expect_comma = false;
 				else
 					declare_var_tab();
 
 			}else{
+				// identifier
 				var_tab_update_declaration(*tmp);
 			}
+			
+		// all the code is inside these function
+		//}else if(var_tab_paren_content(*tmp, local_table_index, '[', ']')){
+		//}else if(var_tab_paren_content(*tmp, local_funct_argum, '(', ')')){
+		//}else if(var_tab_open_close_paren((*tmp)[0], &local_table_index, '[', ']', "[", "]")){
+		//}else if(var_tab_open_close_paren((*tmp)[0], &local_funct_argum, '(', ')', "(", ")")){
 
-		}else if(local_expect_comma && (*tmp)[0] != ','){
-			declare_var_tab();
+		}else if(local_expect_comma){
+			if(IS_C(','))
+				local_expect_comma = false;
+			else
+				declare_var_tab();
 
-		}else if(isalnum((*tmp)[0]) || (*tmp)[0] == '_' || (*tmp)[0] == '"' || (*tmp)[0] == '\'' || (*tmp)[0] == '{'){
+		// valid values: ident.; '_'; strings; table env;
+		// func. arg.; table index;
+		}else if(isalnum((*tmp)[0]) || IS_C('_') || IS_C('"') || IS_C('\'') || IS_C('{')){
+			local_expect_comma = true;
 			var_tab_update_declaration(*tmp);
+
+		}else{
+			declare_var_tab();
 		}
 
 		END;
@@ -62,14 +83,14 @@ void treat_const(char **tmp){
 
 	if(is_local){
 		local_prefix = true;
-		local_qtt_ident = 0;
-		local_qtt_value = 0;
 		local_expect_comma = false;
+		local_qtt_ident = local_qtt_value = local_funct_argum = local_table_index = 0;
 		END;
 	}
 
 	END;
 #undef END
+#undef IS_C
 }
 
 void treat_ident(char *ident, char *table_key){
@@ -89,6 +110,10 @@ void treat_ident(char *ident, char *table_key){
 	fprintf(CUR_CTT_BUF, ((table_key == NULL) ? "%s" : "%s%s"), ident_nick, table_key);
 }
 
+void treat_end(void){
+	declare_var_tab();
+}
+
 static void var_tab_update_declaration(char *ident){
 	Queue **buf;
 	unsigned short *qtt;
@@ -102,6 +127,7 @@ static void var_tab_update_declaration(char *ident){
 		qtt = &local_qtt_value;
 	}
 
+	qee_bigger_to_lower(false);
 
 	if(*buf == NULL){
 		*buf = qee_create(NULL, ident);
@@ -111,9 +137,11 @@ static void var_tab_update_declaration(char *ident){
 		if(qee_add_item(buf, NULL, ident, false))
 			(*qtt)++;
 	}
+
+	qee_bigger_to_lower(true);
 }
 
-void declare_var_tab(void){
+static void declare_var_tab(void){
 	if(local_attribute){
 		Queue *buf, *cur;
 		unsigned int i;
@@ -134,7 +162,8 @@ void declare_var_tab(void){
 					fputc(',', CUR_CTT_BUF);
 				}
 				
-				if(buf == local_buf_ident || (buf != local_buf_ident && isalnum(cur->content[1][0]))){
+				// TODO: if is it "function"?
+				if(buf == local_buf_ident || (buf != local_buf_ident && isalpha(cur->content[1][0]) && strcmp(cur->content[1], "true") != 0 && strcmp(cur->content[1], "false") != 0)){
 					if(IS_ROOT)
 						ident_nick = save_ident_in_buffer(cur->content[1], true,  SCOPE_IDENT, &(lim.buffers.root.global_var_tab));
 					else
@@ -158,4 +187,34 @@ void declare_var_tab(void){
 
 	local_buf_ident = local_buf_value = NULL;
 	local_prefix    = local_attribute = false;
+}
+
+static bool var_tab_paren_content(char *ctt, unsigned short qtt, char fc, char ec){
+	if(qtt > 0 && ctt[0] != fc && ctt[0] != ec){
+		var_tab_update_declaration(ctt);
+		return true;
+	}
+
+	return false;
+}
+
+static bool var_tab_open_close_paren(char fc_tmp, unsigned short *qtt, char fc, char ec, char *fs, char *es){
+	const bool is_fc = (fc_tmp == fc);
+
+	if(is_fc || (*qtt > 0 && fc_tmp == ec)){
+		if(is_fc){
+			local_expect_comma = false;
+			(*qtt)++;
+		}else{
+			(*qtt)--;
+
+			if(*qtt == 0)
+				local_expect_comma = true;
+		}
+
+		var_tab_update_declaration( ((is_fc) ? fs : es) );
+		return true;
+	}
+
+	return false;
 }

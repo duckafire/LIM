@@ -40,6 +40,7 @@ static Queue* ordenate_queue(Queue *item);
 Queue *qee_get_item(Queue *item, char *content1);
 void qee_free_queue(Queue *item);
 static void free_item(Queue *item);
+void qee_bigger_to_lower(bool allow);
 
 Queue* convert_bin3_to_qee(BinNode *tree, bool upQtt);
 static void build_bin3_to_qee(BinNode *node);

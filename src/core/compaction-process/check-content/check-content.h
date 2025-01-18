@@ -18,7 +18,7 @@ void is_special_char(char c, char **tmp);
 
 #include "../../buf-man/buf-man.h"
 
-bool is_identifier(char c);
+bool is_identifier(char c, char **tmp);
 static bool is_from_lua(char *ident, const char *array[]);
 static bool is_from_header(char *ident, Queue *buf);
 

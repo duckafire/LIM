@@ -8,6 +8,11 @@
 #define FSEEK fseek(lim.files.source, -1, SEEK_CUR)
 
 bool clear_white_spaces(char *c){
+	// this, if true, indicate that
+	// a word need to be writed
+	if(*c == EOF)
+		return false;
+
 	if(*c == '\n')
 		lim.buffers.source_file_line++;
 

@@ -13,7 +13,7 @@ static const char *lua_std_table[]={"courotine","debug","io","math","os","packag
 
 #define FGETC (c = fgetc(lim.files.source))
 
-bool is_identifier(char c){
+bool is_identifier(char c, char **tmp){
 	if(!isalpha(c) && c != '_')
 		return false;
 
@@ -46,7 +46,7 @@ bool is_identifier(char c){
 
 	}else{
 		if(is_from_lua(buf, lua_kw))
-			treat_const(&buf);
+			*tmp = string_copy(buf);
 
 		else if(is_from_lua(buf, lua_std_func))
 			putchar(0);//treat_std_hdr_ident(buf, NULL, true, true);

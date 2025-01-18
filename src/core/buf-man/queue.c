@@ -8,6 +8,7 @@ static bool qee_add_item_status;
 static bool update_item_quantity;
 static Queue *new_item;
 static Queue *tmp_item;
+static bool bigger_to_lower_is_allow = true;
 
 #define CK_QTT_AND_LEN(n0, n1) \
 	(n0->quantity < n1->quantity || (n0->quantity == n1->quantity && string_length(n0->content[1]) < string_length(n1->content[1])))
@@ -29,7 +30,9 @@ bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt){
 	update_item_quantity = upQtt;
 	qee_add_item_status = false;
 	*head = insert_item(*head);
-	*head = ordenate_queue(*head);
+
+	if(bigger_to_lower_is_allow)
+		*head = ordenate_queue(*head);
 
 	return qee_add_item_status;
 }
@@ -40,16 +43,19 @@ static Queue* insert_item(Queue *item){
 		return new_item;
 	}
 
-	if(CK_QTT_AND_LEN(item, new_item)){
-		qee_add_item_status = true;
-		new_item->next = item;
-		return new_item;
-	}else if(string_compare(item->content[1], new_item->content[1])){
-		if(update_item_quantity)
-			(item->quantity)++;
+	if(bigger_to_lower_is_allow){
+		if(CK_QTT_AND_LEN(item, new_item)){
+			qee_add_item_status = true;
+			new_item->next = item;
+			return new_item;
 
-		free_item(new_item);
-		return item;
+		}else if(string_compare(item->content[1], new_item->content[1])){
+			if(update_item_quantity)
+				(item->quantity)++;
+
+			free_item(new_item);
+			return item;
+		}
 	}
 
 	item->next = insert_item(item->next);
@@ -93,4 +99,8 @@ static void free_item(Queue *item){
 	free(item->content[0]);
 	free(item->content[1]);
 	free(item);
+}
+
+void qee_bigger_to_lower(bool allow){
+	bigger_to_lower_is_allow = allow;
 }
