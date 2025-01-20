@@ -18,8 +18,15 @@ void is_special_char(char c, char **tmp);
 
 #include "../../buf-man/buf-man.h"
 
+// ChecK Ident Array InDex
+typedef enum{
+	CKIA_LUA_KW,
+	CKIA_LUA_STD_FUNC,
+	CKIA_LUA_STD_TABLE,
+}CKIA_ID;
+
 bool is_identifier(char c, char **tmp);
-static bool is_from_lua(char *ident, const char *array[]);
+bool is_from_lua(char *ident, CKIA_ID id);
 static bool is_from_header(char *ident, Queue *buf);
 
 #endif

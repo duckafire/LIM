@@ -35,7 +35,7 @@ bool is_identifier(char c, char **tmp){
 
 
 	if(table != NULL){
-		if(is_from_lua(table, lua_std_table))
+		if(is_from_lua(table, CKIA_LUA_STD_TABLE))
 			putchar(0);//treat_std_hdr_ident(table, buf, false, true);
 
 		else if(is_from_header(table, lim.header_partitions.table_list))
@@ -45,13 +45,13 @@ bool is_identifier(char c, char **tmp){
 			treat_ident(table, buf);
 
 	}else{
-		if(is_from_lua(buf, lua_kw))
+		if(is_from_lua(buf, CKIA_LUA_KW))
 			*tmp = string_copy(buf);
 
-		else if(is_from_lua(buf, lua_std_func))
+		else if(is_from_lua(buf, CKIA_LUA_STD_FUNC))
 			putchar(0);//treat_std_hdr_ident(buf, NULL, true, true);
 
-		else if(is_from_lua(buf, lua_std_table))
+		else if(is_from_lua(buf, CKIA_LUA_STD_TABLE))
 			putchar(0);//treat_std_hdr_ident(buf, NULL, false, true);
 
 		else if(is_from_header(buf, lim.header_partitions.funct_list))
@@ -72,7 +72,15 @@ bool is_identifier(char c, char **tmp){
 	return true;
 }
 
-static bool is_from_lua(char *ident, const char *array[]){
+bool is_from_lua(char *ident, CKIA_ID id){
+	const char **array;
+
+	switch(id){
+		case CKIA_LUA_KW:        array = lua_kw;        break;
+		case CKIA_LUA_STD_FUNC:  array = lua_std_func;  break;
+		case CKIA_LUA_STD_TABLE: array = lua_std_table; break;
+	}
+
 	for(short i = 0; array[i] != NULL; i++)
 		if(strcmp(ident, array[i]) == 0)
 			return true;

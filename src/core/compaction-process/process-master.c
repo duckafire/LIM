@@ -12,13 +12,16 @@ void read_source_file(void){
 	char c, *tmp = NULL;
 
 	start_nickname_buffers();
+	start_treatment();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
 		if(clear_white_spaces(&c))
 			break;
 
 		if(tmp != NULL){
-			treat_const(&tmp);
+			treat_const(tmp);
+
+			string_set(&tmp, STR_END);
 
 			if(c == EOF)
 				break;
@@ -44,7 +47,7 @@ void read_source_file(void){
 		is_special_char(c, &tmp);
 	}
 
-	treat_end();
+	finish_treatment();
 	free_nickname_buffers();
 	string_set(&tmp, STR_END);
 	build_destine_file();

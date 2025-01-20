@@ -6,102 +6,96 @@
 #include "../buf-man/buf-man.h"
 #include "../lim-global-variables.h"
 #include "../string-plus.h"
+#include "check-content/check-content.h"
 #include "treat.h"
 #include "ident-man.h"
 
-// NOTE: if any syntax or semantic error occurr,
-// Lim will pretend that none is occurr and
-// continue normally :D
+/* NOTE:
+ *******************************************************
+ * if any syntax or semantic error occurr, Lim will
+ * pretend that none is occurr and continue normally :D
+ *******************************************************
+ * vt = var_tab -> variable and table
+ * f  = func[t] -> function
+ *******************************************************
+*/
 
 static char *ident_nick;
 static unsigned short layer;
-
-static bool local_prefix       = false;
-static bool local_attribute    = false;
-static bool local_expect_comma = false;
-static Queue *local_buf_ident  = NULL;
-static Queue *local_buf_value  = NULL;
-static unsigned short local_qtt_ident = 0;
-static unsigned short local_qtt_value = 0;
-
-static unsigned short local_funct_argum   = 0;
-static unsigned short local_table_index = 0;
+static Declaration_Env *denv_bottom = NULL, *denv_top = NULL;
 
 #define IS_ROOT (layer == 0)
 #define CUR_CTT_BUF ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
 
-void treat_const(char **tmp){
-#define END string_set(tmp, STR_END); return
-#define IS_C(c) ((*tmp[0]) == c)
-	const bool is_local = strcmp(*tmp, "local") == 0;
+#define VT_IDENT  NULL
+#define VT_NIDENT "\0"
+#define IS_VT_IDENT(is_ident) ((is_ident) ? VT_IDENT : VT_NIDENT)
 
-	// "variable chain declaration",
-	if(local_prefix){
 
-		// only ident.; '='; ',' are valid
-		if(!local_attribute){
-			
-			if(IS_C('=')){
-				local_attribute = true;
-				local_expect_comma = false;
+void start_treatment(void){
+	new_treat_env(true);
+}
 
-			}else if(local_expect_comma){
-				if(IS_C(','))
-					local_expect_comma = false;
-				else
-					declare_var_tab();
+void finish_treatment(void){
+	while(denv_top != NULL)
+		put_vt_declaration();
+}
 
-			}else{
-				// identifier
-				var_tab_update_declaration(*tmp);
-			}
-			
-		// all the code is inside these function
-		//}else if(var_tab_paren_content(*tmp, local_table_index, '[', ']')){
-		//}else if(var_tab_paren_content(*tmp, local_funct_argum, '(', ')')){
-		//}else if(var_tab_open_close_paren((*tmp)[0], &local_table_index, '[', ']', "[", "]")){
-		//}else if(var_tab_open_close_paren((*tmp)[0], &local_funct_argum, '(', ')', "(", ")")){
+static void new_treat_env(bool is_bottom){
+	Declaration_Env *new;
 
-		}else if(local_expect_comma){
-			if(IS_C(','))
-				local_expect_comma = false;
-			else
-				declare_var_tab();
+	new = malloc(sizeof(Declaration_Env));
+	new->below = NULL;
 
-		// valid values: ident.; '_'; strings; table env;
-		// func. arg.; table index;
-		}else if(isalnum((*tmp)[0]) || IS_C('_') || IS_C('"') || IS_C('\'') || IS_C('{')){
-			local_expect_comma = true;
-			var_tab_update_declaration(*tmp);
+	new->local.prefix       = !is_bottom;
+	new->local.sign_found   = false;
+	new->local.expect_comma = false;
 
-		}else{
-			declare_var_tab();
-		}
+	new->local.bident = NULL;
+	new->local.bvalue = NULL;
+	
+	new->local.qident = 0;
+	new->local.qvalue = 0;
 
-		END;
+	new->local.ifunct = 0;
+	new->local.itable = 0;
+
+	if(denv_bottom == NULL){
+		denv_bottom = new;
+		denv_top    = new;
+		return;
 	}
 
-	if(is_local){
-		local_prefix = true;
-		local_expect_comma = false;
-		local_qtt_ident = local_qtt_value = local_funct_argum = local_table_index = 0;
-		END;
-	}
+	new->below = denv_top;
+	denv_top   = new;
+}
 
-	END;
-#undef END
-#undef IS_C
+static void drop_treat_env(void){
+	Declaration_Env *below;
+	below = denv_top->below;
+	
+	qee_free_queue(denv_top->local.bident);
+	qee_free_queue(denv_top->local.bvalue);
+	free(denv_top);
+
+	denv_top = below;
+}
+
+
+void treat_const(char *tmp){
+	const bool is_local = strcmp(tmp, "local")    == 0;
+	const bool is_funct = strcmp(tmp, "function") == 0;
+
+	if(denv_top->local.prefix)
+		build_vt_declaration(tmp[0], tmp, false);
+
+	else if(is_local)
+		new_treat_env(false);
 }
 
 void treat_ident(char *ident, char *table_key){
-	if(local_prefix){
-		if(!local_expect_comma){
-			var_tab_update_declaration(ident);
-			local_expect_comma = true;
-		}else{
-			declare_var_tab();
-		}
-
+	if(denv_top->local.prefix){
+		build_vt_declaration(ident[0], ident, true);
 		return;
 	}
 
@@ -110,51 +104,103 @@ void treat_ident(char *ident, char *table_key){
 	fprintf(CUR_CTT_BUF, ((table_key == NULL) ? "%s" : "%s%s"), ident_nick, table_key);
 }
 
-void treat_end(void){
-	declare_var_tab();
+
+static void build_vt_declaration(char c, char *str, bool expect_ident){
+	if(expect_ident && !denv_top->local.sign_found){
+		if(!denv_top->local.expect_comma){
+			up_vt_declaration(str, false);
+			denv_top->local.expect_comma = true;
+
+			return;
+		}
+
+		put_vt_declaration();
+		return;
+	}
+
+	// local ident0{,} ident1 {= }
+	if(!denv_top->local.sign_found){
+		
+		if(c == '='){
+			denv_top->local.sign_found = true;
+			denv_top->local.expect_comma = false;
+
+		}else if(denv_top->local.expect_comma){
+			if(c == ',')
+				denv_top->local.expect_comma = false;
+			else
+				put_vt_declaration();
+
+		}else{
+			up_vt_declaration(str, false);
+		}
+		
+		return;
+	}
+
+	if(denv_top->local.expect_comma){
+		if(c == ',')
+			denv_top->local.expect_comma = false;
+		else
+			put_vt_declaration();
+
+		return;
+	}
+
+	if(isalnum(c) || c == '_' || c == '"' || c == '\'' || c == '{'){
+		denv_top->local.expect_comma = true;
+		up_vt_declaration( str, (isalpha(c) && !is_from_lua(str, CKIA_LUA_KW)) );
+
+		return;
+	}
+
+	put_vt_declaration();
 }
 
-static void var_tab_update_declaration(char *ident){
+static void up_vt_declaration(char *ident, bool is_ident){
 	Queue **buf;
 	unsigned short *qtt;
 
 
-	if(!local_attribute){
-		buf = &local_buf_ident;
-		qtt = &local_qtt_ident;
+	if(!denv_top->local.sign_found){
+		buf = &denv_top->local.bident;
+		qtt = &denv_top->local.qident;
 	}else{
-		buf = &local_buf_value;
-		qtt = &local_qtt_value;
+		buf = &denv_top->local.bvalue;
+		qtt = &denv_top->local.qvalue;
 	}
 
 	qee_bigger_to_lower(false);
 
 	if(*buf == NULL){
-		*buf = qee_create(NULL, ident);
+		*buf = qee_create(IS_VT_IDENT(is_ident), ident);
 		(*qtt)++;
 
 	}else{
-		if(qee_add_item(buf, NULL, ident, false))
+		if(qee_add_item(buf, IS_VT_IDENT(is_ident), ident, false))
 			(*qtt)++;
 	}
 
 	qee_bigger_to_lower(true);
 }
 
-static void declare_var_tab(void){
-	if(local_attribute){
+static void put_vt_declaration(void){
+	if(denv_top->local.sign_found){
 		Queue *buf, *cur;
 		unsigned int i;
-		const unsigned int min_qtt = ((local_qtt_ident < local_qtt_value) ? local_qtt_ident : local_qtt_value);
+		const unsigned int min_qtt = ((denv_top->local.qident < denv_top->local.qvalue) ? denv_top->local.qident : denv_top->local.qvalue);
+		bool is_bident;
+		Queue **bdest;
 
-		for(buf = local_buf_ident; true; buf = local_buf_value){
+		for(buf = denv_top->local.bident; true; buf = denv_top->local.bvalue){
 			cur = NULL;
+			is_bident = (buf == denv_top->local.bident);
 			
 			for(i = 0; i < min_qtt; i++){
 				if(cur == NULL){
 					cur = buf;
 					
-					if(buf == local_buf_value)
+					if(!is_bident)
 						fputc('=', CUR_CTT_BUF);
 
 				}else{
@@ -162,59 +208,28 @@ static void declare_var_tab(void){
 					fputc(',', CUR_CTT_BUF);
 				}
 				
-				// TODO: if is it "function"?
-				if(buf == local_buf_ident || (buf != local_buf_ident && isalpha(cur->content[1][0]) && strcmp(cur->content[1], "true") != 0 && strcmp(cur->content[1], "false") != 0)){
-					if(IS_ROOT)
-						ident_nick = save_ident_in_buffer(cur->content[1], true,  SCOPE_IDENT, &(lim.buffers.root.global_var_tab));
-					else
-						ident_nick = save_ident_in_buffer(cur->content[1], false, SCOPE_IDENT, &(lim.buffers.local.top->local_var_tab));
+				if(buf == denv_top->local.bident || (buf != denv_top->local.bident && string_compare(cur->content[0], VT_IDENT))){
+
+					if(is_bident){
+						bdest = (IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab);
+
+						ident_nick = save_ident_in_buffer(cur->content[1], IS_ROOT, SCOPE_IDENT, bdest);
+					}else{
+						ident_nick = get_nickname_of(cur->content[1], IS_ROOT);
+					}
 
 					fprintf(CUR_CTT_BUF, "%s", ident_nick);
-				}else{
-					fprintf(CUR_CTT_BUF, "%s", cur->content[1]);
+					continue;
 				}
+
+				fprintf(CUR_CTT_BUF, "%s", cur->content[1]);
 			}
 
-			if(buf == local_buf_value)
+			if(buf == denv_top->local.bvalue)
 				break;
 		}
 
-		return;
 	}
 
-	qee_free_queue(local_buf_ident);
-	qee_free_queue(local_buf_value);
-
-	local_buf_ident = local_buf_value = NULL;
-	local_prefix    = local_attribute = false;
-}
-
-static bool var_tab_paren_content(char *ctt, unsigned short qtt, char fc, char ec){
-	if(qtt > 0 && ctt[0] != fc && ctt[0] != ec){
-		var_tab_update_declaration(ctt);
-		return true;
-	}
-
-	return false;
-}
-
-static bool var_tab_open_close_paren(char fc_tmp, unsigned short *qtt, char fc, char ec, char *fs, char *es){
-	const bool is_fc = (fc_tmp == fc);
-
-	if(is_fc || (*qtt > 0 && fc_tmp == ec)){
-		if(is_fc){
-			local_expect_comma = false;
-			(*qtt)++;
-		}else{
-			(*qtt)--;
-
-			if(*qtt == 0)
-				local_expect_comma = true;
-		}
-
-		var_tab_update_declaration( ((is_fc) ? fs : es) );
-		return true;
-	}
-
-	return false;
+	drop_treat_env();
 }

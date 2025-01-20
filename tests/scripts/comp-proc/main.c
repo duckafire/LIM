@@ -19,6 +19,10 @@ int main(int argc, char *argv[]){
 	}
 
 	lim.buffers.destine_file = tmpfile();
+	lim.buffers.root.scope_func_pointer = tmpfile();
+	lim.buffers.root.scope_func_address = tmpfile();
+	lim.buffers.root.scope_var_tab = tmpfile();
+
 	lim.files.source = write_and_print_source_file(code);
 	puts("[ SOURCE.LIM ]");
 	read_source_file();
@@ -34,11 +38,11 @@ FILE* write_and_print_source_file(short code){
 		"local strstr, c4r_, f00 = 'Hello world!', 29",
 		"local str = 'Hello world!', 29",
 		"local strstr, c4r_, f00 = 'Hello world!', 29, false",
-		"local strstr, c4r_, f00 = 'Hello world!', 29",
+		"local strstr, c4r_, f00 = f00, 29",
 		"local strstr, c4r_, f00",
 		"local strstr, car = 'Hello world!', 29",
 		"local str = 'Hello world!'",
-		"local strstr, c4r_, f00 = 'Hello world!', 29",
+		"local strstr, c4r_, f00 = 'Hello world!', 29, c4r_",
 		"local str = 'Hello world!', 29",
 		"local strstr, c4r_, f00 = 'Hello world', 29, false",
 		"local strstr, c4r_, f00 = 'Hello world', 29",
@@ -47,9 +51,14 @@ FILE* write_and_print_source_file(short code){
 		"local str = 'Hello world'",
 		"local 0 = 12",
 		"local str, 0 = 'Hello world!'",
-		"local strstr, f00 = false, true, 14, 29",
+		"local strstr, f00 = false, strstr, 14, 29",
 		"local strstr, f00, it, n = false, true, 14, 29",
-		"local strstr, f00, it, 0 = false, true, 14, 29",
+		"local strstr, f00, it, 0 = vrum, true, 14, 29",
+		"local strstr, f00, 0, n = false, true, 14, 29",
+
+		"local str, f00, 0, n = vrum, 13 ",
+		"local f00, n, n = 0xabc",
+		"local 0, n = 'cow', cow",
 		"local strstr, f00, 0, n = false, true, 14, 29",
 	};
 	
