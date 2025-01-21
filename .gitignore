@@ -4,6 +4,7 @@ bin-alpha/
 *.lim
 
 void
+todo
 
 tests/scripts/.tmp
 tests/lim-broken

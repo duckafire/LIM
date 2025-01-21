@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
-#include "../../core/lim-global-variables.h"
+#include "../../core/tools/lim-global-variables.h"
 #include "../print/flags-in-define.h"
 #include "../print/help.h"
 #include "../print/error.h"

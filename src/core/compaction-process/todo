@@ -1,7 +1,0 @@
-Os "valores grandes" estão valendo mais de 1: "29+1" = 3
-logo:
-local a, b, c = 29 + 1 => a,b,c=29+1
-
-Para contornar isso, basta que "valores grandes" não agrescente no tamanho, entretanto
-isso gera conflito durante a impressão da declaração, por causa disso, a melhor abordagem
-será concatenar o novo conteúdo com o antigo.

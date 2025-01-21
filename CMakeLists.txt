@@ -15,26 +15,28 @@ project(lim
 
 # set files
 
-set(MASTER  ${CMAKE_BINARY_DIR}/src/master.c)
-set(ARULES  ${CMAKE_BINARY_DIR}/src/args/rules)
-set(APRINT  ${CMAKE_BINARY_DIR}/src/args/print)
-set(CBUFMAN ${CMAKE_BINARY_DIR}/src/core/buf-man)
-set(CHEADER ${CMAKE_BINARY_DIR}/src/core/header-lim)
-set(CCOMPAC ${CMAKE_BINARY_DIR}/src/core/compaction-process)
+set(MAIN ${CMAKE_BINARY_DIR}/src/main.c)
+set(ARULES ${CMAKE_BINARY_DIR}/src/args/rules)
+set(APRINT ${CMAKE_BINARY_DIR}/src/args/print)
+set(CORE   ${CMAKE_BINARY_DIR}/src/core)
+set(CCHECK ${CMAKE_BINARY_DIR}/src/core/check-content)
+set(CTOOLS ${CMAKE_BINARY_DIR}/src/core/tools)
 
 add_executable(lim
-	${MASTER}
+	${MAIN}
 	${ARULES}/check-and-treat.c
 	${ARULES}/flag-man.c
 	${APRINT}/help.c
 	${APRINT}/verbose.c
-	${CBUFMAN}/queue.c
-	${CHEADER}/read.c
-	${CCOMPAC}/check-content/const.c
-	${CCOMPAC}/check-content/ident.c
-	${CCOMPAC}/process-master.c
-	${CCOMPAC}/ident-man.c
-	${CCOMPAC}/treat.c
+	${CORE}/ident-man.c
+	${CORE}/process-master.c
+	${CORE}/treat.c
+	${CCHECK}/const.c
+	${CCHECK}/ident.c
+	${CTOOLS}/queue.c
+	${CTOOLS}/lim-global-variables.c
+	${CTOOLS}/read-header-lim.c
+	${CTOOLS}/string-plus.c
 )
 
 # create dinamic header files

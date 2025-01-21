@@ -15,7 +15,7 @@ while read cur_args; do
 		is_error=$?
 	fi
 
-	if [[ $ARG_BROKEN -ne 3 ]] || [[ $is_error -eq 1 ]]; then
+	if [[ $ARG_BROKEN -ne 3 ]] || [[ $is_error -ne 0 ]]; then
 		cat $LOG
 	fi
 

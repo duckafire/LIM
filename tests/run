@@ -8,7 +8,7 @@
 # -a - auto run tests. Stop after a error ocurr and wait use to continue
 
 
-declare -r TRY="./run < args | buf-man | header-lim | comp-proc | -r > [ -g | -c | -a ]"
+declare -r TRY="./run < args | queue | header | compact | -r > [ -g | -c | -a ]"
 declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 if [[ $# -eq 0 ]]; then
@@ -43,7 +43,7 @@ else
 fi
 
 function check_argument(){
-	[[ $1 != "args" ]] && [[ $1 != "buf-man" ]] && [[ $1 != "header-lim" ]] && [[ $1 != "comp-proc" ]]
+	[[ $1 != "args" ]] && [[ $1 != "queue" ]] && [[ $1 != "header" ]] && [[ $1 != "compact" ]]
 	return $?
 }
 
