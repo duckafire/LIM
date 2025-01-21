@@ -47,12 +47,14 @@ static void new_treat_env(bool is_bottom){
 	new = malloc(sizeof(Declaration_Env));
 	new->below = NULL;
 
-	new->local.prefix       = !is_bottom;
-	new->local.sign_found   = false;
-	new->local.expect_comma = false;
+	new->local.prefix         = !is_bottom;
+	new->local.sign_found     = false;
+	new->local.expect_comma   = false;
+	new->local.special_cvalue = false;
 
 	new->local.bident = NULL;
 	new->local.bvalue = NULL;
+	new->local.bvtail = NULL;
 	
 	new->local.qident = 0;
 	new->local.qvalue = 0;
@@ -105,6 +107,47 @@ void treat_ident(char *ident, char *table_key){
 }
 
 
+static bool is_special_cvalue(char first){
+	char *tmp;
+	tmp = strchr("+-*/^#=:.;()[]{}\"'", first);
+
+	return (tmp != NULL);
+}
+
+static void merge_cur_str_with_bvtail(char *str, bool special_cvalue, bool expect_comma){
+	denv_top->local.special_cvalue = special_cvalue;
+	denv_top->local.expect_comma   = expect_comma;
+
+	char *stmp, **cont1;
+
+	cont1 = &(denv_top->local.bvtail->content[1]);
+	stmp = malloc(strlen(*cont1) + strlen(str) + sizeof(char));
+	strcpy(stmp, *cont1);
+	strcat(stmp, str);
+
+	free(*cont1);
+	*cont1 = stmp;
+}
+
+static void vt_comma_or_cvalue(char c, char *str){
+	if(denv_top->local.special_cvalue && !is_special_cvalue(c)){
+		merge_cur_str_with_bvtail(str, false, true);
+		return;
+	}
+
+	if(c == ','){
+		denv_top->local.expect_comma = false;
+		return;
+	}
+
+	if(is_special_cvalue(c)){
+		merge_cur_str_with_bvtail(str, true, false);
+		return;
+	}
+
+	put_vt_declaration();
+}
+
 static void build_vt_declaration(char c, char *str, bool expect_ident){
 	if(expect_ident && !denv_top->local.sign_found){
 		if(!denv_top->local.expect_comma){
@@ -117,7 +160,7 @@ static void build_vt_declaration(char c, char *str, bool expect_ident){
 		put_vt_declaration();
 		return;
 	}
-
+	
 	// local ident0{,} ident1 {= }
 	if(!denv_top->local.sign_found){
 		
@@ -125,11 +168,8 @@ static void build_vt_declaration(char c, char *str, bool expect_ident){
 			denv_top->local.sign_found = true;
 			denv_top->local.expect_comma = false;
 
-		}else if(denv_top->local.expect_comma){
-			if(c == ',')
-				denv_top->local.expect_comma = false;
-			else
-				put_vt_declaration();
+		}else if(denv_top->local.expect_comma || denv_top->local.special_cvalue){
+			vt_comma_or_cvalue(c, str);
 
 		}else{
 			up_vt_declaration(str, false);
@@ -138,12 +178,8 @@ static void build_vt_declaration(char c, char *str, bool expect_ident){
 		return;
 	}
 
-	if(denv_top->local.expect_comma){
-		if(c == ',')
-			denv_top->local.expect_comma = false;
-		else
-			put_vt_declaration();
-
+	if(denv_top->local.expect_comma || denv_top->local.special_cvalue){
+		vt_comma_or_cvalue(c, str);
 		return;
 	}
 
@@ -181,6 +217,11 @@ static void up_vt_declaration(char *ident, bool is_ident){
 			(*qtt)++;
 	}
 
+	Queue *p;
+	for(p = *buf; p->next != NULL; p = p->next);
+	denv_top->local.bvtail = p;
+
+
 	qee_bigger_to_lower(true);
 }
 
@@ -205,7 +246,9 @@ static void put_vt_declaration(void){
 
 				}else{
 					cur = cur->next;
-					fputc(',', CUR_CTT_BUF);
+
+					if(!is_special_cvalue(cur->content[1][0]))
+						fputc(',', CUR_CTT_BUF);
 				}
 				
 				if(buf == denv_top->local.bident || (buf != denv_top->local.bident && string_compare(cur->content[0], VT_IDENT))){

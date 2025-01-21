@@ -6,10 +6,10 @@
 
 typedef struct Declaration_Env{
 	struct{
-		bool prefix, sign_found, expect_comma;
-		Queue *bident, *bvalue;        // buffer
-		unsigned short qident, qvalue; // quantity
-		unsigned short ifunct, itable; // index
+		bool prefix, sign_found, expect_comma, special_cvalue;
+		Queue *bident, *bvalue, *bvtail; // buffer
+		unsigned short qident, qvalue;   // quantity
+		unsigned short ifunct, itable;   // index
 	}local;
 
 	struct Declaration_Env *below;
@@ -23,6 +23,9 @@ static void drop_treat_env(void);
 void treat_const(char *tmp);
 void treat_ident(char *ident, char *table_key);
 
+static bool is_special_cvalue(char first);
+static void merge_cur_str_with_bvtail(char *str, bool special_cvalue, bool expect_comma);
+static void vt_comma_or_cvalue(char c, char *str);
 static void build_vt_declaration(char c, char *str, bool expect_ident);
 static void up_vt_declaration(char *ident, bool is_ident);
 static void put_vt_declaration(void);

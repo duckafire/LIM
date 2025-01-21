@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
 	lim_init_env();
 	atexit(lim_free_env);
 
-	if(code < 0 || code > 20){
+	if(code < 0 || code > 100){
 		INVALID_ARG_TO_MAIN("values between 0-?");
 	}
 
@@ -35,7 +35,10 @@ FILE* write_and_print_source_file(short code){
 	char c;
 	FILE *file;
 	const char *content[] = {
-		"local strstr, c4r_, f00 = 'Hello world!', 29",
+		"local A, B = a[b]",
+		"local a, b, c, d, e = 1 * 1.0 + (1 - 1.00) / A ^ 10 // A[B]",
+		"local a, b, c, d, e = 1 - 1.0 - (1 - 1.00) / A - 10 - A[B]",
+		"local strstr, c4r_, f00 = 'Hello world!', 29 + 1",
 		"local str = 'Hello world!', 29",
 		"local strstr, c4r_, f00 = 'Hello world!', 29, false",
 		"local strstr, c4r_, f00 = f00, 29",
@@ -55,7 +58,6 @@ FILE* write_and_print_source_file(short code){
 		"local strstr, f00, it, n = false, true, 14, 29",
 		"local strstr, f00, it, 0 = vrum, true, 14, 29",
 		"local strstr, f00, 0, n = false, true, 14, 29",
-
 		"local str, f00, 0, n = vrum, 13 ",
 		"local f00, n, n = 0xabc",
 		"local 0, n = 'cow', cow",
