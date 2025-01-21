@@ -2,12 +2,14 @@
 
 
 # NOTE - arguments to #2 -
+# -r - remove the ./lim-broken/lim IF none error occur during the tests
 # -g - IF a error occur, create the ./lim-broken/lim, to debug with gdb
 # -c - only compile the ./lim-broken/lim, no execute none test
-# -r - remove the ./lim-broken/lim IF none error occur during the tests
+# -a - auto run tests. Stop after a error ocurr and wait use to continue
 
 
-declare -r TRY="./run < args | buf-man | header-lim | comp-proc > [ -g | -c | -r ]"
+declare -r TRY="./run < args | buf-man | header-lim | comp-proc | -r > [ -g | -c | -a ]"
+declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 if [[ $# -eq 0 ]]; then
 	echo -e "None arguments.\n\n$TRY\n"
@@ -18,9 +20,20 @@ fi
 declare -r ARG_TARGET=$1
 declare -i ARG_BROKEN
 
+if [[ $ARG_TARGET = "-r" ]]; then
+	if [[ -d "$ADDR/lim-broken" ]]; then
+		echo -e "./lim-broken/lim was deleted.\n"
+		rm -r "$ADDR/lim-broken"
+		exit 0
+	fi
+
+	echo -e "./lim-broken/lim don't exist.\n"
+	exit 1
+fi
+
 if [[ $# -ge 2 ]]; then
 	case $2 in
-		"-r") ARG_BROKEN=3 ;;
+		"-a") ARG_BROKEN=3 ;;
 		"-c") ARG_BROKEN=2 ;;
 		"-g") ARG_BROKEN=1 ;;
 		*)    echo -e "The 2th arg. is invalid.\n\n$TRY\n"; exit 0 ;;
@@ -34,33 +47,34 @@ function check_argument(){
 	return $?
 }
 
-
-declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 declare -r TMP="$ADDR/scripts/.tmp"
 declare -r BROK="$ADDR/lim-broken"
 declare -r MAIN="$TMP/main.c"
 declare -r EXE="$TMP/exe"
-declare -r BIN="../src/"
+declare -r LOG="$TMP/log"
+declare -r BIN="$ADDR/../src/"
 
 declare _files _includes _main _args _main_c_path
 
-[[ -d $TMP ]] && rm -r $TMP
-mkdir $TMP
-
-> $MAIN && > $EXE
-> "$TMP/a.lua" && > "$TMP/b.lua" && > "$TMP/b.lim"
+[[ ! -d $TMP ]] && mkdir $TMP
+[[ ! -f $MAIN ]] && > $MAIN
+[[ ! -f $EXE ]] && > $EXE
+[[ ! -f $EXE ]] && > $LOG
+[[ ! -f "$TMP/a.lua" ]] && > "$TMP/a.lua"
+[[ ! -f "$TMP/b.lua" ]] && > "$TMP/b.lua"
+[[ ! -f "$TMP/c.lua" ]] && > "$TMP/b.lim"
 
 
 function get_main_path(){
-	echo "./scripts/$1/main.c"
+	echo "$ADDR/scripts/$1/main.c"
 }
 
 function get_args_path(){
-	echo "./scripts/$1/args"
+	echo "$ADDR/scripts/$1/args"
 }
 
 function read_file(){
-	local -r file_name="./scripts/$1"
+	local -r file_name="$ADDR/scripts/$1"
 	local -r add_include=$2
 	local -r only_copy=$3
 
@@ -92,14 +106,9 @@ function rm_tmp_dir(){
 }
 
 function debug_exe(){
-	# 0: create after an error occur
-	# 1: force the creation
-	# 2: delete them, IF none error occur
-
-	if [[ $ARG_BROKEN -eq 3 ]] && [[ $1 -eq 2 ]]; then
-		[[ -d $BROK ]] && rm -r $BROK
-		return
-	fi
+	# -1; empty argument
+	#  0: create after an error occur
+	#  1: (from ARG_BROKEN) force the creation
 
 	if [[ $ARG_BROKEN -eq 1 ]] || [[ $1 -eq 0 ]]; then
 		[[ ! -d $BROK ]] && mkdir $BROK

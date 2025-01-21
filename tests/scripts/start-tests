@@ -2,7 +2,7 @@
 
 declare cur_arg
 
-declare -i is_first=0 an_error_occur=0
+declare -i is_first=0 is_error=0
 declare -i index=$(wc -l < $(get_args_path $ARG_TARGET))
 
 
@@ -11,24 +11,29 @@ while read cur_args; do
 	echo -e "$index) lim $cur_args\n"
 	
 	if [[ ! -z $cur_args ]] || [[ $is_first -eq 0 ]]; then
-		$TMP/exe $cur_args
+		$TMP/exe $cur_args > $LOG
+		is_error=$?
 	fi
 
-	if [[ $? -ne 0 ]]; then
+	if [[ $ARG_BROKEN -ne 3 ]] || [[ $is_error -eq 1 ]]; then
+		cat $LOG
+	fi
+
+	if [[ $is_error -ne 0 ]]; then
 		echo -e "\n[!] AN ERROR OCCUR [!]\n"
 
-		debug_exe 1
-		an_error_occur=1
+		debug_exe -1
 	fi
 
 	is_first=1
 	index=$index-1
 
-	read -p "Press [ENTER] to continue: " < /dev/tty
+	if [[ $ARG_BROKEN -ne 3 ]] || [[ $is_error -ne 0 ]]; then
+		read -p "Press [ENTER] to continue: " < /dev/tty
+	fi
+
 	clear
 done < $(get_args_path $ARG_TARGET)
 
 
-[[ $an_error_occur -eq 0 ]] && debug_exe 2
-
-unset cur_arg is_first index an_error_occur
+unset cur_arg is_first is_error index

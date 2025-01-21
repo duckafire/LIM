@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "../debug-common.h"
 #include "../../../src/core/lim-global-variables.h"
 #include "../../../src/core/compaction-process/process-master.h"
 
 FILE* write_and_print_source_file(short code);
+
+#define SOURCE_LUA "./scripts/.tmp/source.lua"
 
 int main(int argc, char *argv[]){
 	CHECK_PROGRAM_ARG_QUANTITY
@@ -65,10 +68,15 @@ FILE* write_and_print_source_file(short code){
 	};
 	
 
-	file = fopen("source.lua", "w");
+	file = fopen(SOURCE_LUA, "w");
+	if(errno == ENOENT){
+		puts("Impossible find " SOURCE_LUA "\nGo to ./tests/\n");
+		exit(1);
+	}
+
 	fputs(content[code], file);
 	fclose(file);
-	file = fopen("source.lua", "r");
+	file = fopen(SOURCE_LUA, "r");
 
 
 	puts("[ source.lua ]");
