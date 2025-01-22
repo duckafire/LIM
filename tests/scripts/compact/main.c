@@ -39,7 +39,7 @@ FILE* write_and_print_source_file(short code){
 	FILE *file;
 	const char *content[] = {
 		"local A, B = a[b]",
-		"local a, b, c, d, e = 1 * 1.0 + (1 - 1.00) / A ^ 10 // A[B]",
+		"local a, b, c, d, e = 1 * 1.0 + (1 - 1.00) - A.C / A ^ 10 // A[B]",
 		"local a, b, c, d, e = 1 - 1.0 - (1 - 1.00) / A - 10 - A[B]",
 		"local strstr, c4r_, f00 = 'Hello world!', 29 + 1",
 		"local str = 'Hello world!', 29",

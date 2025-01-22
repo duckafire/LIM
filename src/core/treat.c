@@ -126,7 +126,7 @@ static void merge_cur_str_with_bvtail(bool special_cvalue, bool expect_comma){
 	ident = &(denv_top->local.bvtail->ident);
 	stmp = malloc(strlen(*ident) + strlen(gident) + sizeof(char) + ((gtable_key == NULL) ? 0 : strlen(gtable_key)));
 	strcpy(stmp, *ident);
-	if(gtable_key == NULL)
+	if(gtable_key != NULL)
 		strcat(stmp, gtable_key);
 	strcat(stmp, gident);
 

@@ -27,6 +27,7 @@ bool is_identifier(char c, char **tmp){
 		if(table == NULL && (c == '.' || c == ':')){
 			table = string_copy(buf);
 			string_set(&buf, STR_RESTART);
+			string_add(&buf, c);
 			continue;
 		}
 
@@ -42,7 +43,7 @@ bool is_identifier(char c, char **tmp){
 			putchar(0);//treat_std_hdr_ident(table, buf, false, false);
 
 		else
-			treat_ident(table, buf);
+			treat_ident(buf, table);
 
 	}else{
 		if(is_from_lua(buf, CKIA_LUA_KW))
