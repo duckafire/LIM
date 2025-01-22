@@ -92,7 +92,7 @@ static bool is_from_header(char *ident, Queue *buf){
 	Queue *p;
 
 	for(p = buf; p != NULL; p = p->next)
-		if(strcmp(ident, p->content[1]) == 0)
+		if(strcmp(ident, p->ident) == 0)
 			return true;
 
 	return false;

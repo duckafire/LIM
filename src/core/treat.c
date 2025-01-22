@@ -23,13 +23,11 @@
 static char *ident_nick;
 static unsigned short layer;
 static Declaration_Env *denv_bottom = NULL, *denv_top = NULL;
+static char *gident, *gtable_key; // Global
 
 #define IS_ROOT (layer == 0)
 #define CUR_CTT_BUF ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
-
-#define VT_IDENT  NULL
-#define VT_NIDENT "\0"
-#define IS_VT_IDENT(is_ident) ((is_ident) ? VT_IDENT : VT_NIDENT)
+#define IFORMAT(t) ((t == NULL) ? "%s" : "%s%s")
 
 
 void start_treatment(void){
@@ -88,8 +86,11 @@ void treat_const(char *tmp){
 	const bool is_local = strcmp(tmp, "local")    == 0;
 	const bool is_funct = strcmp(tmp, "function") == 0;
 
-	if(denv_top->local.prefix)
-		build_vt_declaration(tmp[0], tmp, false);
+	if(denv_top->local.prefix){
+		gident = tmp;
+		gtable_key = NULL;
+		build_vt_declaration(false);
+	}
 
 	else if(is_local)
 		new_treat_env(false);
@@ -97,61 +98,65 @@ void treat_const(char *tmp){
 
 void treat_ident(char *ident, char *table_key){
 	if(denv_top->local.prefix){
-		build_vt_declaration(ident[0], ident, true);
+		gident = ident;
+		gtable_key = table_key;
+		build_vt_declaration(true);
 		return;
 	}
 
 	// use or call
 	ident_nick = get_nickname_of(ident, IS_ROOT);
-	fprintf(CUR_CTT_BUF, ((table_key == NULL) ? "%s" : "%s%s"), ident_nick, table_key);
+	fprintf(CUR_CTT_BUF, IFORMAT(table_key), ident_nick, table_key);
 }
 
 
-static bool is_special_cvalue(char first){
+static bool is_special_cvalue(void){
 	char *tmp;
-	tmp = strchr("+-*/^#=:.;()[]{}\"'", first);
+	tmp = strchr("+-*/^#=:.;()[]{}\"'", gident[0]);
 
 	return (tmp != NULL);
 }
 
-static void merge_cur_str_with_bvtail(char *str, bool special_cvalue, bool expect_comma){
+static void merge_cur_str_with_bvtail(bool special_cvalue, bool expect_comma){
 	denv_top->local.special_cvalue = special_cvalue;
 	denv_top->local.expect_comma   = expect_comma;
 
-	char *stmp, **cont1;
+	char *stmp, **ident;
 
-	cont1 = &(denv_top->local.bvtail->content[1]);
-	stmp = malloc(strlen(*cont1) + strlen(str) + sizeof(char));
-	strcpy(stmp, *cont1);
-	strcat(stmp, str);
+	ident = &(denv_top->local.bvtail->ident);
+	stmp = malloc(strlen(*ident) + strlen(gident) + sizeof(char) + ((gtable_key == NULL) ? 0 : strlen(gtable_key)));
+	strcpy(stmp, *ident);
+	if(gtable_key == NULL)
+		strcat(stmp, gtable_key);
+	strcat(stmp, gident);
 
-	free(*cont1);
-	*cont1 = stmp;
+	free(*ident);
+	*ident = stmp;
 }
 
-static void vt_comma_or_cvalue(char c, char *str){
-	if(denv_top->local.special_cvalue && !is_special_cvalue(c)){
-		merge_cur_str_with_bvtail(str, false, true);
+static void vt_comma_or_cvalue(void){
+	if(denv_top->local.special_cvalue && !is_special_cvalue()){
+		merge_cur_str_with_bvtail(false, true);
 		return;
 	}
 
-	if(c == ','){
+	if(gident[0] == ','){
 		denv_top->local.expect_comma = false;
 		return;
 	}
 
-	if(is_special_cvalue(c)){
-		merge_cur_str_with_bvtail(str, true, false);
+	if(is_special_cvalue()){
+		merge_cur_str_with_bvtail(true, false);
 		return;
 	}
 
 	put_vt_declaration();
 }
 
-static void build_vt_declaration(char c, char *str, bool expect_ident){
+static void build_vt_declaration(bool expect_ident){
 	if(expect_ident && !denv_top->local.sign_found){
 		if(!denv_top->local.expect_comma){
-			up_vt_declaration(str, false);
+			up_vt_declaration(false);
 			denv_top->local.expect_comma = true;
 
 			return;
@@ -164,28 +169,28 @@ static void build_vt_declaration(char c, char *str, bool expect_ident){
 	// local ident0{,} ident1 {= }
 	if(!denv_top->local.sign_found){
 		
-		if(c == '='){
+		if(gident[0] == '='){
 			denv_top->local.sign_found = true;
 			denv_top->local.expect_comma = false;
 
 		}else if(denv_top->local.expect_comma || denv_top->local.special_cvalue){
-			vt_comma_or_cvalue(c, str);
+			vt_comma_or_cvalue();
 
 		}else{
-			up_vt_declaration(str, false);
+			up_vt_declaration(false);
 		}
 		
 		return;
 	}
 
 	if(denv_top->local.expect_comma || denv_top->local.special_cvalue){
-		vt_comma_or_cvalue(c, str);
+		vt_comma_or_cvalue();
 		return;
 	}
 
-	if(isalnum(c) || c == '_' || c == '"' || c == '\'' || c == '{'){
+	if(isalnum(gident[0]) || gident[0] == '_' || gident[0] == '"' || gident[0] == '\'' || gident[0] == '{'){
 		denv_top->local.expect_comma = true;
-		up_vt_declaration( str, (isalpha(c) && !is_from_lua(str, CKIA_LUA_KW)) );
+		up_vt_declaration( (isalpha(gident[0]) && is_from_lua(gident, CKIA_LUA_KW)) );
 
 		return;
 	}
@@ -193,7 +198,7 @@ static void build_vt_declaration(char c, char *str, bool expect_ident){
 	put_vt_declaration();
 }
 
-static void up_vt_declaration(char *ident, bool is_ident){
+static void up_vt_declaration(bool is_const){
 	Queue **buf;
 	unsigned short *qtt;
 
@@ -209,11 +214,11 @@ static void up_vt_declaration(char *ident, bool is_ident){
 	qee_bigger_to_lower(false);
 
 	if(*buf == NULL){
-		*buf = qee_create(IS_VT_IDENT(is_ident), ident);
+		*buf = qee_create(gident, gtable_key, NULL, is_const);
 		(*qtt)++;
 
 	}else{
-		if(qee_add_item(buf, IS_VT_IDENT(is_ident), ident, false))
+		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, false))
 			(*qtt)++;
 	}
 
@@ -226,52 +231,54 @@ static void up_vt_declaration(char *ident, bool is_ident){
 }
 
 static void put_vt_declaration(void){
-	if(denv_top->local.sign_found){
-		Queue *buf, *cur;
-		unsigned int i;
-		const unsigned int min_qtt = ((denv_top->local.qident < denv_top->local.qvalue) ? denv_top->local.qident : denv_top->local.qvalue);
-		bool is_bident;
-		Queue **bdest;
+	if(!denv_top->local.sign_found){
+		drop_treat_env();
+		return;
+	}
 
-		for(buf = denv_top->local.bident; true; buf = denv_top->local.bvalue){
-			cur = NULL;
-			is_bident = (buf == denv_top->local.bident);
-			
-			for(i = 0; i < min_qtt; i++){
-				if(cur == NULL){
-					cur = buf;
-					
-					if(!is_bident)
-						fputc('=', CUR_CTT_BUF);
+	Queue *buf, *cur;
+	unsigned int i;
+	const unsigned int min_qtt = ((denv_top->local.qident < denv_top->local.qvalue) ? denv_top->local.qident : denv_top->local.qvalue);
+	bool is_bident;
+	Queue **bdest;
+	char format[5];
 
-				}else{
-					cur = cur->next;
-
-					if(!is_special_cvalue(cur->content[1][0]))
-						fputc(',', CUR_CTT_BUF);
-				}
+	for(buf = denv_top->local.bident; true; buf = denv_top->local.bvalue){
+		cur = NULL;
+		is_bident = (buf == denv_top->local.bident);
+		
+		for(i = 0; i < min_qtt; i++){
+			if(cur == NULL){
+				cur = buf;
 				
-				if(buf == denv_top->local.bident || (buf != denv_top->local.bident && string_compare(cur->content[0], VT_IDENT))){
+				if(!is_bident)
+					fputc('=', CUR_CTT_BUF);
 
-					if(is_bident){
-						bdest = (IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab);
+			}else{
+				cur = cur->next;
 
-						ident_nick = save_ident_in_buffer(cur->content[1], IS_ROOT, SCOPE_IDENT, bdest);
-					}else{
-						ident_nick = get_nickname_of(cur->content[1], IS_ROOT);
-					}
-
-					fprintf(CUR_CTT_BUF, "%s", ident_nick);
-					continue;
-				}
-
-				fprintf(CUR_CTT_BUF, "%s", cur->content[1]);
+				if(!is_special_cvalue())
+					fputc(',', CUR_CTT_BUF);
 			}
 
-			if(buf == denv_top->local.bvalue)
-				break;
+			if(buf == denv_top->local.bident || (buf != denv_top->local.bident && !cur->is_const)){
+				if(is_bident){
+					bdest = (IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab);
+
+					ident_nick = save_ident_in_buffer(cur->ident, NULL, IS_ROOT, SCOPE_IDENT, bdest);
+				}else{
+					ident_nick = get_nickname_of(cur->ident, IS_ROOT);
+				}
+
+				fprintf(CUR_CTT_BUF, IFORMAT(gtable_key), ident_nick, cur->table_key);
+				continue;
+			}
+
+			fprintf(CUR_CTT_BUF, IFORMAT(gtable_key), ident_nick, cur->table_key);
 		}
 
+		if(buf == denv_top->local.bvalue)
+			break;
 	}
 
 	drop_treat_env();

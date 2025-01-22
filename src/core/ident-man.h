@@ -21,7 +21,7 @@ static void free_nick_buf(char *nick_buf[]);
 
 void new_local_environment(void);
 void drop_local_environment(void);
-char* save_ident_in_buffer(char *ident, bool is_root, SCOPE_ID id, Queue **buf);
+char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf);
 char* get_nickname_of(char *ident, bool is_root);
 
 #endif

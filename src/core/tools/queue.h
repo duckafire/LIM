@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 typedef struct Queue{
+	char *nick;
 	char *ident;
 	char *table_key;
 	unsigned short quantity;
@@ -12,8 +13,8 @@ typedef struct Queue{
 	struct Queue *next;
 }Queue;
 
-Queue* qee_create(char *ident, char *table_key, bool is_const);
-bool qee_add_item(Queue **head, char *ident, char *table_key, bool is_const, bool upQtt);
+Queue* qee_create(char *nick, char *ident, char *table_key, bool is_const);
+bool qee_add_item(Queue **head, char *nick, char *ident, char *table_key, bool is_const, bool upQtt);
 static Queue* insert_item(Queue *item);
 static Queue* ordenate_queue(Queue *item);
 Queue *qee_get_item(Queue *item, char *ident);

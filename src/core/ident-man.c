@@ -132,7 +132,7 @@ void drop_local_environment(void){
 	free(top);
 }
 
-char* save_ident_in_buffer(char *ident, bool is_root, SCOPE_ID id, Queue **buf){
+char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf){
 	// get a new nickname to "ident"
 	char *nick_tmp, **nick_buf;
 
@@ -192,9 +192,9 @@ char* save_ident_in_buffer(char *ident, bool is_root, SCOPE_ID id, Queue **buf){
 
 
 	if(*buf == NULL)
-		*buf = qee_create(nick_tmp, ident);
+		*buf = qee_create(ident, table_key, nick_tmp, false);
 	else
-		qee_add_item(buf, nick_tmp, ident, false);
+		qee_add_item(buf, ident, table_key, nick_tmp, false, false);
 
 	return nick_tmp;
 }
@@ -211,10 +211,12 @@ char* get_nickname_of(char *ident, bool is_root){
 			bufs[1] = env->local_var_tab;
 			bufs[2] = env->parameter;
 
-			for(short i = 0; i < 3; i++)
-				for(cur = bufs[i]; cur != NULL; cur = cur->next)
-					if(strcmp(ident, cur->content[1]) == 0)
-						return cur->content[0];
+			for(short i = 0; i < 3; i++){
+				cur = qee_get_item(bufs[i], ident);
+
+				if(cur != NULL)
+					return cur->nick;
+			}
 		}
 	}
 
@@ -222,10 +224,12 @@ char* get_nickname_of(char *ident, bool is_root){
 	bufs[0] = lim.buffers.root.global_func;
 	bufs[1] = lim.buffers.root.global_var_tab;
 
-	for(short i = 0; i < 2; i++)
-		for(cur = bufs[i]; cur != NULL; cur = cur->next)
-			if(strcmp(ident, cur->content[1]) == 0)
-				return cur->content[0];
+	for(short i = 0; i < 2; i++){
+		cur = qee_get_item(bufs[i], ident);
+
+		if(cur != NULL)
+			return cur->nick;
+	}
 
 
 	// here should have an error ;)

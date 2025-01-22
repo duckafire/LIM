@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
 	srand(time(NULL));
 
 
-	head = qee_create(RANIDENTC, NULL, false);
+	head = qee_create(RANIDENTC, NULL, NULL, false);
 	PACK("Create a queue with one item");
 
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 	short i, j, max;
 
 	for(i = 0; i < 4; i++)
-		qee_add_item(&head, RANIDENTC, NULL, false, false);
+		qee_add_item(&head, RANIDENTC, NULL, NULL, false, false);
 	PACK("Add new items to queue (udate: off)");
 
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
 		max = 1 + rand() % 5;
 
 		for(j = 0; j < max; j++)
-			qee_add_item(&head, RANIDENTC, NULL, false, true);
+			qee_add_item(&head, RANIDENTC, NULL, NULL, false, true);
 	}
 	PACK("Add new items to queue (udate: on)");
 
@@ -82,6 +82,7 @@ static void pitem(Queue *item){
 	printf("\"This\" (Queue):  %p\n",  item);
 	printf("Identifier:     \"%s\"\n", item->ident);
 	printf("Table key:      \"%s\"\n", item->table_key);
+	printf("Nickname:       \"%s\"\n", item->nick);
 	printf("Is constant(?):  %d\n",    item->is_const);
 	printf("Quantity:        %d\n",    item->quantity);
 	printf("Next (Queue):    %p\n",    item->next);

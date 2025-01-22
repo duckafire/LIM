@@ -62,7 +62,7 @@ static bool is_empty_list(Queue **list){
 	if(*list == NULL)
 		return true;
 
-	if((*list)->content[1] != NULL)
+	if((*list)->ident != NULL)
 		return false;
 
 	qee_free_queue(*list);
@@ -170,7 +170,7 @@ static bool read_code_scope(void){
 static bool read_list(Queue **buf, bool is_this_found){
 	if(c == EOF){
 		if(is_this_found)
-			*buf = qee_create(NULL, NULL);
+			*buf = qee_create(NULL, NULL, NULL, false);
 
 		return false;
 	}
@@ -180,11 +180,11 @@ static bool read_list(Queue **buf, bool is_this_found){
 	string_set(&cur, STR_START);
 
 
-	#define ADD_CUR                       \
-		if(*buf == NULL)                  \
-			*buf = qee_create(NULL, cur); \
-		else                              \
-			qee_add_item(buf, NULL, cur, false)
+	#define ADD_CUR                                     \
+		if(*buf == NULL)                                \
+			*buf = qee_create(cur, NULL, NULL, false);  \
+		else                                            \
+			qee_add_item(buf, cur, NULL, NULL, false, false)
 	//#enddef
 	
 
@@ -229,7 +229,7 @@ static bool read_list(Queue **buf, bool is_this_found){
 	
 	}else if(*buf == NULL){
 		// set "EMPTY status" (it will be clean)
-		*buf = qee_create(NULL, NULL);
+		*buf = qee_create(NULL, NULL, NULL, false);
 	}
 
 	string_set(&cur, STR_END);

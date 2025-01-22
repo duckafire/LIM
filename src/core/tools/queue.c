@@ -17,11 +17,12 @@ static bool bigger_to_lower_is_allow = true;
 		) \
 	)
 
-Queue* qee_create(char *ident, char *table_key, bool is_const){
+Queue* qee_create(char *ident, char *table_key, char *nick, bool is_const){
 	new_item = malloc(sizeof(Queue));
 
 	new_item->ident     = string_copy(ident);
 	new_item->table_key = string_copy(table_key);
+	new_item->nick      = string_copy(nick);
 	new_item->quantity  = 0;
 	new_item->is_const  = is_const;
 	new_item->next      = NULL;
@@ -29,8 +30,8 @@ Queue* qee_create(char *ident, char *table_key, bool is_const){
 	return new_item;
 }
 
-bool qee_add_item(Queue **head, char *ident, char *table_key, bool is_const, bool upQtt){
-	new_item = qee_create(ident, table_key, is_const);
+bool qee_add_item(Queue **head, char *ident, char *table_key, char *nick, bool is_const, bool upQtt){
+	new_item = qee_create(ident, table_key, nick, is_const);
 
 	update_item_quantity = upQtt;
 	qee_add_item_status = false;
@@ -104,6 +105,7 @@ void qee_free_queue(Queue *item){
 static void free_item(Queue *item){
 	free(item->ident);
 	free(item->table_key);
+	free(item->nick);
 	free(item);
 }
 
