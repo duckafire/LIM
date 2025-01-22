@@ -10,22 +10,27 @@ static Queue *new_item;
 static Queue *tmp_item;
 static bool bigger_to_lower_is_allow = true;
 
-#define CK_QTT_AND_LEN(n0, n1) \
-	(n0->quantity < n1->quantity || (n0->quantity == n1->quantity && string_length(n0->content[1]) < string_length(n1->content[1])))
+#define CK_QTT_AND_LEN(n0, n1)        ( \
+	n0->quantity < n1->quantity ||    ( \
+		n0->quantity == n1->quantity && \
+		string_length(n0->ident) < string_length(n1->ident) \
+		) \
+	)
 
-Queue* qee_create(char *content0, char *content1){
+Queue* qee_create(char *ident, char *table_key, bool is_const){
 	new_item = malloc(sizeof(Queue));
 
-	new_item->quantity = 0;
-	new_item->content[0] = string_copy(content0);
-	new_item->content[1] = string_copy(content1);
-	new_item->next = NULL;
+	new_item->ident     = string_copy(ident);
+	new_item->table_key = string_copy(table_key);
+	new_item->quantity  = 0;
+	new_item->is_const  = is_const;
+	new_item->next      = NULL;
 
 	return new_item;
 }
 
-bool qee_add_item(Queue **head, char *content0, char *content1, bool upQtt){
-	new_item = qee_create(content0, content1);
+bool qee_add_item(Queue **head, char *ident, char *table_key, bool is_const, bool upQtt){
+	new_item = qee_create(ident, table_key, is_const);
 
 	update_item_quantity = upQtt;
 	qee_add_item_status = false;
@@ -43,19 +48,17 @@ static Queue* insert_item(Queue *item){
 		return new_item;
 	}
 
-	if(bigger_to_lower_is_allow){
-		if(CK_QTT_AND_LEN(item, new_item)){
-			qee_add_item_status = true;
-			new_item->next = item;
-			return new_item;
+	if(bigger_to_lower_is_allow && CK_QTT_AND_LEN(item, new_item)){
+		qee_add_item_status = true;
+		new_item->next = item;
+		return new_item;
 
-		}else if(string_compare(item->content[1], new_item->content[1])){
-			if(update_item_quantity)
-				(item->quantity)++;
+	}else if(string_compare(item->ident, new_item->ident)){
+		if(update_item_quantity)
+			(item->quantity)++;
 
-			free_item(new_item);
-			return item;
-		}
+		free_item(new_item);
+		return item;
 	}
 
 	item->next = insert_item(item->next);
@@ -79,11 +82,14 @@ static Queue* ordenate_queue(Queue *item){
 	return item;
 }
 
-Queue* qee_get_item(Queue *item, char *content1){
-	if(string_compare(content1, item->content[1]))
+Queue* qee_get_item(Queue *item, char *ident){
+	if(item == NULL)
+		return NULL;
+
+	if(string_compare(ident, item->ident))
 		return item;
 	
-	qee_get_item(item->next, content1);
+	qee_get_item(item->next, ident);
 }
 
 void qee_free_queue(Queue *item){
@@ -96,8 +102,8 @@ void qee_free_queue(Queue *item){
 }
 
 static void free_item(Queue *item){
-	free(item->content[0]);
-	free(item->content[1]);
+	free(item->ident);
+	free(item->table_key);
 	free(item);
 }
 
