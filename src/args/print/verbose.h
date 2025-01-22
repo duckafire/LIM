@@ -15,6 +15,7 @@ enum{
 	V_BREAK_PROCESS,
 };
 
+void set_verbose(bool flag);
 void print_verbose(short tag, ...);
 static void normal(char *text);
 static void title( char *text);
