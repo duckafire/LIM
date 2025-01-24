@@ -17,59 +17,68 @@ bool is_identifier(char c, char **tmp){
 	if(!isalpha(c) && c != '_')
 		return false;
 
-	char *buf;
-	char *table = NULL;
+	char *buf, *ident, *table_key;
 
+	ident = table_key = NULL;
 	string_set(&buf, STR_START);
 
 
 	do{
-		if(table == NULL && (c == '.' || c == ':')){
-			table = string_copy(buf);
+		if(ident == NULL && strchr(".:", c) != NULL){
+			ident = string_copy(buf);
 			string_set(&buf, STR_RESTART);
 			string_add(&buf, c);
 			continue;
 		}
 
 		string_add(&buf, c);
-	}while(FGETC != EOF && (isalnum(c) || c == '_' || c == '.' || c == ':'));
+	}while(FGETC != EOF && (isalnum(c) || strchr("_.:", c) != NULL));
+
+	if(ident == NULL)
+		ident = buf;
+	else
+		table_key = buf;
 
 
-	if(table != NULL){
-		if(is_from_lua(table, CKIA_LUA_STD_TABLE))
-			putchar(0);//treat_std_hdr_ident(table, buf, false, true);
+	if(table_key != NULL){
+		treat_ident(ident, table_key);
+		//if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+		//	putchar(0);
 
-		else if(is_from_header(table, lim.header_partitions.table_list))
-			putchar(0);//treat_std_hdr_ident(table, buf, false, false);
+		//else if(is_from_header(ident, lim.header_partitions.table_list))
+		//	putchar(0);
 
-		else
-			treat_ident(buf, table);
+		//else
+		//	treat_ident(ident, table_key);
 
 	}else{
-		if(is_from_lua(buf, CKIA_LUA_KW))
-			*tmp = string_copy(buf);
-
-		else if(is_from_lua(buf, CKIA_LUA_STD_FUNC))
-			putchar(0);//treat_std_hdr_ident(buf, NULL, true, true);
-
-		else if(is_from_lua(buf, CKIA_LUA_STD_TABLE))
-			putchar(0);//treat_std_hdr_ident(buf, NULL, false, true);
-
-		else if(is_from_header(buf, lim.header_partitions.funct_list))
-			putchar(0);//treat_std_hdr_ident(buf, NULL, true, false);
-
-		else if(is_from_header(buf, lim.header_partitions.table_list))
-			putchar(0);//treat_std_hdr_ident(buf, NULL, false, false);
-
+		if(is_from_lua(ident, CKIA_LUA_KW))
+			*tmp = string_copy(ident); // it will be treat in "read_source_file"
 		else
-			treat_ident(buf, NULL);
+			treat_ident(ident, NULL);
+
+		//else if(is_from_lua(ident, CKIA_LUA_STD_FUNC))
+		//	putchar(0);
+
+		//else if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+		//	putchar(0);
+
+		//else if(is_from_header(ident, lim.header_partitions.funct_list))
+		//	putchar(0);
+
+		//else if(is_from_header(ident, lim.header_partitions.table_list))
+		//	putchar(0);
+
+		//else
+		//	treat_ident(ident, NULL);
 	}
 
 
 	if(c != EOF)
 		fseek(lim.files.source, -1, SEEK_CUR);
-	string_set(&buf, STR_END);
-	string_set(&table, STR_END);
+
+	string_set(&ident, STR_END);
+	string_set(&table_key, STR_END);
 	return true;
 }
 

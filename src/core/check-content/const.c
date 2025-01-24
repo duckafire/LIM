@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 #include <ctype.h>
 #include "../tools/lim-global-variables.h"
 #include "../tools/string-plus.h"
@@ -137,4 +138,26 @@ static bool clear_single_line_commentary(char c){
 void is_special_char(char c, char **tmp){
 	string_set(tmp, STR_START);
 	string_add(tmp, c);
+
+	while(FGETC != EOF){
+		if(clear_white_spaces(&c))
+			break;
+
+		if(isalnum(c) || strchr("_'\"{,", c) != NULL)
+			break;
+
+		if(c == '-'){
+			if(FGETC == '-'){
+				fseek(lim.files.source, -2, SEEK_CUR);
+				return;
+			}
+			c = '-';
+			FSEEK;
+		}
+
+		string_add(tmp, c);
+	}
+
+	if(c != EOF)
+		FSEEK;
 }
