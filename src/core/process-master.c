@@ -12,7 +12,6 @@ void read_source_file(void){
 	char c, *tmp = NULL;
 
 	start_nickname_buffers();
-	start_treatment();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
 		if(clear_white_spaces(&c))

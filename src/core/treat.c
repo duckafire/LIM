@@ -22,10 +22,11 @@
 */
 
 static char *gident_nick, *gident, *gtable_key; // Global
-static unsigned short layer;
-static Declaration_Env *denv_bottom = NULL, *denv_top = NULL;
+static unsigned short layer = 0;
 static const char* lua_operator_kw[3] = {"and","not","or"};
 static const char* lua_boolean_kw[3] = {"false","nil","true"};
+static ENV_TOKEN token;
+static Stack_Env *locald = NULL; // LOCAL Declaration
 
 #define IS_ROOT     (layer == 0)
 #define BUF_FUNC    ((IS_ROOT) ? &(lim.buffers.root.global_func) : &(lim.buffers.local.top->local_func))
@@ -34,72 +35,34 @@ static const char* lua_boolean_kw[3] = {"false","nil","true"};
 #define FORMAT(tk)  ((tk == NULL) ? "%s" : "%s%s")
 #define MIN(a, b)   ((a < b) ? a : b)
 #define IS_LUA_KW   (isalpha(gident[0]) && is_from_lua(gident, CKIA_LUA_KW))
-
-void start_treatment(void){
-	new_treat_env(true);
-}
+#define LOCALD_ON   (locald != NULL && locald->start_declare)
 
 void finish_treatment(void){
-	while(denv_top != NULL)
+	while(locald != NULL){
 		print_local_declare(PLD_FORCED_END);
-}
 
-static void new_treat_env(bool is_bottom){
-	Declaration_Env *new;
-
-	new = malloc(sizeof(Declaration_Env));
-	new->below = NULL;
-
-	new->local.start_declare = !is_bottom;
-	new->local.attrib_start  = false;
-	new->local.expect_comma  = false;
-	new->local.special_char  = false;
-	new->local.compound_val  = false;
-
-	new->local.token = LT_NULL;
-
-	new->local.bident = NULL;
-	new->local.bvalue = NULL;
-	new->local.bvtail = NULL;
-	
-	new->local.qident = 0;
-	new->local.qvalue = 0;
-
-	if(denv_bottom == NULL){
-		denv_bottom = new;
-		denv_top    = new;
-		return;
+		Stack_Env *below;
+		below = locald->below;
+		
+		free(locald);
+		locald = below;
 	}
-
-	new->below = denv_top;
-	denv_top   = new;
-}
-
-static void drop_treat_env(void){
-	Declaration_Env *below;
-	below = denv_top->below;
-	
-	qee_free_queue(denv_top->local.bident);
-	qee_free_queue(denv_top->local.bvalue);
-	free(denv_top);
-
-	denv_top = below;
 }
 
 void treat_const(char *str){
 	const bool is_local = (strcmp(str, "local") == 0);
 
-	if(denv_top->local.start_declare){
+	if(LOCALD_ON){
 		gident     = str;
 		gtable_key = NULL;
 
-		if(!denv_top->local.attrib_start)
+		if(!locald->attrib_start)
 			treat_local_declare_BEFORE_comma(NULL);
 		else
 			treat_local_declare_AFTER_comma(false);
 
 	}else if(is_local){
-		new_treat_env(false);
+		man_treat_env(true);
 	}
 }
 
@@ -107,8 +70,8 @@ void treat_ident(char *_ident, char *_table_key){
 	gident     = _ident;
 	gtable_key = _table_key;
 
-	if(denv_top->local.start_declare){
-		if(!denv_top->local.attrib_start)
+	if(LOCALD_ON){
+		if(!locald->attrib_start)
 			treat_local_declare_BEFORE_comma(BUF_VAR_TAB);
 		else
 			treat_local_declare_AFTER_comma(true);
@@ -117,139 +80,28 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 }
 
-static void merge_compound_value(char *lident){ // Local
-	char **ident, *tmp;
-
-	ident = &(denv_top->local.bvtail->ident);
-	tmp = malloc( sizeof(char) + strlen(*ident) + strlen(lident) + ((gtable_key == NULL) ? 0 : strlen(gtable_key)) );
-
-	strcpy(tmp, *ident);
-	strcat(tmp, lident);
-	if(gtable_key != NULL)
-		strcat(tmp, gtable_key);
-
-	free(*ident);
-	*ident = tmp;
-}
-
-static void update_local_declare(bool is_const){
-	Queue **buf;
-	unsigned short *qtt;
-	
-	
-	if(!denv_top->local.attrib_start){
-		buf = &(denv_top->local.bident);
-		qtt = &(denv_top->local.qident);
-	}else{
-		buf = &(denv_top->local.bvalue);
-		qtt = &(denv_top->local.qvalue);
-	}
-
-	
-	const bool is_value = (*buf == denv_top->local.bvalue);
-	qee_bigger_to_lower(false);
-	
-	if(*buf == NULL){
-		*buf = qee_create(gident, gtable_key, NULL, is_const);
-		(*qtt)++;
-
-		if(is_value)
-			denv_top->local.bvtail = *buf;
-
-	}else{
-		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, false)){
-			(*qtt)++;
-
-			if(is_value && denv_top->local.bvtail->next != NULL)
-				denv_top->local.bvtail = denv_top->local.bvtail->next;
-		}
-	}
-
-	qee_bigger_to_lower(true);
-}
-
-static void print_local_declare(PLD_ID id){
-	if(!denv_top->local.attrib_start){
-		drop_treat_env();
-
-		// recycle
-		if(id == PLD_FAIL_CONST)
-			treat_const(gident);
-		else if(id == PLD_FAIL_IDENT)
-			treat_ident(gident, gtable_key);
-
-		return;
-	}
-
-	bool is_ident_buf;
-	Queue *cur_buf, *cur_item, **dest_buf;
-	unsigned short i;
-	const unsigned short low_length = MIN(denv_top->local.qident, denv_top->local.qvalue);
-
-	for(cur_buf = denv_top->local.bident; true; cur_buf = denv_top->local.bvalue){
-		cur_item = NULL;
-		is_ident_buf = (cur_buf == denv_top->local.bident);
-
-		for(i = 0; i < low_length; i++){
-			if(cur_item == NULL){
-				cur_item = cur_buf;
-
-				if(!is_ident_buf)
-					fputc('=', CTT_BUF);
-			}else{
-				cur_item = cur_item->next;
-
-				fputc(',', CTT_BUF);
-			}
-
-			if(is_ident_buf || !cur_item->is_const){
-				if(is_ident_buf)
-					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
-				else
-					gident_nick = get_nickname_of(cur_item->ident, IS_ROOT);
-
-				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
-				continue;
-			}
-
-			fprintf(CTT_BUF, FORMAT(cur_item->table_key), cur_item->ident, cur_item->table_key);
-		}
-
-		if(cur_buf == denv_top->local.bvalue)
-			break;
-	}
-
-
-	drop_treat_env();
-
-	// recycle
-	if(id == PLD_FAIL_CONST)
-		treat_const(gident);
-	else if(id == PLD_FAIL_IDENT)
-		treat_ident(gident, gtable_key);
-}
 
 static void treat_local_declare_BEFORE_comma(Queue **buf){
 	if(buf != NULL){
-		if(denv_top->local.expect_comma){
+		if(locald->expect_comma){
 			print_local_declare(PLD_FAIL_IDENT);
 			return;
 		}
 
-		denv_top->local.expect_comma = true;
+		locald->expect_comma = true;
 		update_local_declare(false);
 		return;
 	}
 
-	if(denv_top->local.expect_comma){
+	if(locald->expect_comma){
 		if(gident[0] == '='){
-			denv_top->local.attrib_start = true;
-			denv_top->local.expect_comma = false;
+			locald->attrib_start = true;
+			locald->expect_comma = false;
 
-			denv_top->local.token = LT_COMMA;
+			locald->token = LT_COMMA;
 		
 		}else if(gident[0] == ','){
-			denv_top->local.expect_comma = false;
+			locald->expect_comma = false;
 		
 		}else{
 			print_local_declare(PLD_FAIL_CONST);
@@ -262,7 +114,7 @@ static void treat_local_declare_BEFORE_comma(Queue **buf){
 }
 
 static bool compare_token(LOCAL_TOKEN norepeat, va_list *to_copy, ...){
-	if(denv_top->local.token == norepeat)
+	if(locald->token == norepeat)
 		return true;
 
 	va_list options;
@@ -274,7 +126,7 @@ static bool compare_token(LOCAL_TOKEN norepeat, va_list *to_copy, ...){
 
 	LOCAL_TOKEN cur;
 	while( (cur = va_arg(options, LOCAL_TOKEN)) != LT_NULL ){
-		if(denv_top->local.token == cur){
+		if(locald->token == cur){
 			va_end(options);
 			return true;
 		}
@@ -317,16 +169,16 @@ static bool common_token_test(char first, char *str, LOCAL_TOKEN norepeat, LOCAL
 			return false;
 		}
 
-		if(check_comma == 1 && denv_top->local.token == LT_COMMA)
+		if(check_comma == 1 && locald->token == LT_COMMA)
 			update_local_declare( PLD_FAIL_CONST );
 		else if(first != ',')
 			merge_compound_value(gident);
 
 		const char lastc = gident[strlen(gident) - 1];
 		if((first != 0 && lastc == first) || (str != NULL && strchr(str, lastc) != NULL))
-			denv_top->local.token = new_token_id;
+			locald->token = new_token_id;
 		else
-			denv_top->local.token = get_true_token(lastc);
+			locald->token = get_true_token(lastc);
 
 		return true;
 	}
@@ -336,7 +188,7 @@ static bool common_token_test(char first, char *str, LOCAL_TOKEN norepeat, LOCAL
 
 static void treat_local_declare_AFTER_comma(bool is_ident){
 	LOCAL_TOKEN *token;
-	token = &(denv_top->local.token);
+	token = &(locald->token);
 
 	if(is_ident){
 		if(!compare_token(LT_USEORCALL, NULL, LT_COMMA, LT_MOPERATOR, LT_LOPERATOR, LT_PARENO, LT_BRACKETO, LT_NULL)){
@@ -429,6 +281,157 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 	if(common_token_test('[', NULL, LT_NULL,      LT_BRACKETO,  0, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(']', NULL, LT_BRACKETO,  LT_BRACKETC,  0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 
-	if(denv_top->local.start_declare)
+	if(LOCALD_ON)
 		print_local_declare(PLD_FAIL_CONST);
+}
+
+
+static void man_treat_env(bool new){
+	if(new){
+		Stack_Env *new;
+		new = malloc(sizeof(Stack_Env));
+
+		if(locald == NULL){
+			locald = new;
+
+		}else{
+			new->below = locald;
+			locald       = new;
+		}
+
+	}else if(locald == NULL){
+		return;
+	
+	}else{
+		qee_free_queue(locald->bident);
+		qee_free_queue(locald->bvalue);
+	}
+
+	// set new / reset
+	locald->below = NULL;
+
+	locald->start_declare = new;
+	locald->attrib_start  = false;
+	locald->expect_comma  = false;
+
+	locald->token = LT_NULL;
+
+	locald->bident = NULL;
+	locald->bvalue = NULL;
+	locald->bvtail = NULL;
+
+	locald->qident = 0;
+	locald->qvalue = 0;
+}
+
+static void merge_compound_value(char *lident){ // Local
+	char **ident, *tmp;
+
+	ident = &(locald->bvtail->ident);
+	tmp = malloc( sizeof(char) + strlen(*ident) + strlen(lident) + ((gtable_key == NULL) ? 0 : strlen(gtable_key)) );
+
+	strcpy(tmp, *ident);
+	strcat(tmp, lident);
+	if(gtable_key != NULL)
+		strcat(tmp, gtable_key);
+
+	free(*ident);
+	*ident = tmp;
+}
+
+static void update_local_declare(bool is_const){
+	Queue **buf;
+	unsigned short *qtt;
+	
+	
+	if(!locald->attrib_start){
+		buf = &(locald->bident);
+		qtt = &(locald->qident);
+	}else{
+		buf = &(locald->bvalue);
+		qtt = &(locald->qvalue);
+	}
+
+	
+	const bool is_value = (*buf == locald->bvalue);
+	qee_bigger_to_lower(false);
+	
+	if(*buf == NULL){
+		*buf = qee_create(gident, gtable_key, NULL, is_const);
+		(*qtt)++;
+
+		if(is_value)
+			locald->bvtail = *buf;
+
+	}else{
+		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, false)){
+			(*qtt)++;
+
+			if(is_value && locald->bvtail->next != NULL)
+				locald->bvtail = locald->bvtail->next;
+		}
+	}
+
+	qee_bigger_to_lower(true);
+}
+
+static void print_local_declare(PLD_ID id){
+	if(!locald->attrib_start){
+		man_treat_env(false);
+
+		// recycle
+		if(id == PLD_FAIL_CONST)
+			treat_const(gident);
+		else if(id == PLD_FAIL_IDENT)
+			treat_ident(gident, gtable_key);
+
+		return;
+	}
+
+	bool is_ident_buf;
+	Queue *cur_buf, *cur_item, **dest_buf;
+	unsigned short i;
+	const unsigned short low_length = MIN(locald->qident, locald->qvalue);
+
+	for(cur_buf = locald->bident; true; cur_buf = locald->bvalue){
+		cur_item = NULL;
+		is_ident_buf = (cur_buf == locald->bident);
+
+		for(i = 0; i < low_length; i++){
+			if(cur_item == NULL){
+				cur_item = cur_buf;
+
+				if(!is_ident_buf)
+					fputc('=', CTT_BUF);
+			}else{
+				cur_item = cur_item->next;
+
+				fputc(',', CTT_BUF);
+			}
+
+			if(is_ident_buf || !cur_item->is_const){
+				if(is_ident_buf)
+					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+				else
+					gident_nick = get_nickname_of(cur_item->ident, IS_ROOT);
+
+				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
+				continue;
+			}
+
+			fprintf(CTT_BUF, FORMAT(cur_item->table_key), cur_item->ident, cur_item->table_key);
+		}
+
+		if(cur_buf == locald->bvalue)
+			break;
+	}
+
+
+	man_treat_env(false);
+
+	// recycle
+	if(id == PLD_FAIL_CONST)
+		treat_const(gident);
+	else if(id == PLD_FAIL_IDENT)
+		treat_ident(gident, gtable_key);
 }
