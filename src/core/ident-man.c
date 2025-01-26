@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "tools/lim-global-variables.h"
 #include "tools/queue.h"
+#include "tools/string-plus.h"
 #include "ident-man.h"
 
 // #0: nickname to lua standard and header identifiers;
@@ -104,7 +105,7 @@ void new_local_environment(void){
 	lim.buffers.local.top = new;
 }
 
-void drop_local_environment(void){
+void drop_local_environment(char **anony_func_to_local_declare){
 	char c = 0, d = 0;
 	Func_Env_Stack *top;
 
@@ -114,12 +115,25 @@ void drop_local_environment(void){
 	fseek(top->content,       0, SEEK_SET);
 	fseek(top->scope_var_tab, 0, SEEK_SET);
 
-	while( (c = fgetc(top->content)) != EOF ){
-		fputc(c, lim.buffers.destine_file);
+	if(anony_func_to_local_declare != NULL){
+		string_set(anony_func_to_local_declare, STR_START);
 
-		if(d != EOF && c == ')')
-			while( (d = fgetc(top->scope_var_tab)) != EOF)
-				fputc(d, lim.buffers.destine_file);
+		while( (c = fgetc(top->content)) != EOF ){
+			string_add(anony_func_to_local_declare, c);
+
+			if(d != EOF && c == ')')
+				while( (d = fgetc(top->scope_var_tab)) != EOF)
+					string_add(anony_func_to_local_declare, d);
+		}
+
+	}else{
+		while( (c = fgetc(top->content)) != EOF ){
+			fputc(c, lim.buffers.destine_file);
+
+			if(d != EOF && c == ')')
+				while( (d = fgetc(top->scope_var_tab)) != EOF)
+					fputc(d, lim.buffers.destine_file);
+		}
 	}
 
 	fclose(top->content);
@@ -136,19 +150,27 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	// get a new nickname to "ident"
 	char *nick_tmp, **nick_buf;
 
-	if(id == SCOPE_IDENT){
-		if(is_root)
-			nick_buf = nick_global_ident;
-		else
-			nick_buf = nick_local_ident;
+	if(ident[0] != '_'){
 
-	}else if(id == SCOPE_STD_HDR)
-		nick_buf = nick_std_hdr;
+		if(id == SCOPE_IDENT){
+			if(is_root)
+				nick_buf = nick_global_ident;
+			else
+				nick_buf = nick_local_ident;
 
-	else if(id == SCOPE_PARAM)
-		nick_buf = nick_parameter;
+		}else if(id == SCOPE_STD_HDR)
+			nick_buf = nick_std_hdr;
 
-	nick_tmp = get_and_update_nick(nick_buf);
+		else if(id == SCOPE_PARAM)
+			nick_buf = nick_parameter;
+
+		nick_tmp = get_and_update_nick(nick_buf);
+
+	}else{
+		// identifier that start with
+		// '_' will not be compact
+		nick_tmp = NULL;
+	}
 
 
 	// write identifier nickname to scope buffer
@@ -202,6 +224,8 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 char* get_nickname_of(char *ident, bool is_root){
 	Queue *cur, *bufs[3];
 
+	if(ident[0] == '_')
+		return ident;
 
 	if(!is_root){
 		Func_Env_Stack *env;

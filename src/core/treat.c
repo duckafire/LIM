@@ -16,17 +16,17 @@
  * if any syntax or semantic error occurr, Lim will
  * pretend that none is occurr and continue normally :D
  *******************************************************
- * vt = var_tab -> variable and table
- * f  = func[t] -> function
- *******************************************************
 */
 
 static char *gident_nick, *gident, *gtable_key; // Global
 static unsigned short layer = 0;
 static const char* lua_operator_kw[3] = {"and","not","or"};
 static const char* lua_boolean_kw[3] = {"false","nil","true"};
-static ENV_TOKEN token;
+static char *anony_func_to_local_declare = NULL;
+static DECLARE_TOKEN dtoken = DT_NULL;
 static Stack_Env *locald = NULL; // LOCAL Declaration
+
+struct{ bool start_declare; bool parameter_end; }functd = {false, false};
 
 #define IS_ROOT     (layer == 0)
 #define BUF_FUNC    ((IS_ROOT) ? &(lim.buffers.root.global_func) : &(lim.buffers.local.top->local_func))
@@ -40,29 +40,85 @@ static Stack_Env *locald = NULL; // LOCAL Declaration
 void finish_treatment(void){
 	while(locald != NULL){
 		print_local_declare(PLD_FORCED_END);
-
-		Stack_Env *below;
-		below = locald->below;
-		
-		free(locald);
-		locald = below;
+		drop_var_tab_declare_env();
 	}
 }
 
 void treat_const(char *str){
 	const bool is_local = (strcmp(str, "local") == 0);
+	const bool is_funct = (strcmp(str, "function") == 0);
 
-	if(LOCALD_ON){
-		gident     = str;
-		gtable_key = NULL;
+	gident     = str;
+	gtable_key = NULL;
 
+	if(layer > 0){
+		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0)
+			layer++;
+		else if(strcmp(str, "end") == 0)
+			layer--;
+
+		if(layer == 0){
+			const bool is_anony = (locald == NULL) ? false : locald->is_anony_func;
+
+			if(locald != NULL && locald->is_anony_func){
+				drop_var_tab_declare_env();
+
+				if(LOCALD_ON)
+					locald->token = LT_FUNCTION;
+			}
+
+			drop_local_environment( ((locald != NULL && is_anony) ? &anony_func_to_local_declare : NULL) );
+
+			if(anony_func_to_local_declare != NULL){
+				gident = anony_func_to_local_declare;
+				update_local_declare(true);
+				merge_compound_value("end");
+				string_set(&anony_func_to_local_declare, STR_END);
+				return;
+			}
+		}
+	}
+
+	if(functd.start_declare && !functd.parameter_end){
+		fprintf(CTT_BUF, "%s", gident);
+
+		for(short i = 0; gident[i] != '\0'; i++){
+			if(gident[i] == ')'){
+				functd.parameter_end = true;
+				break;
+			}
+		}
+
+		return;
+	}
+
+
+	if(dtoken == DT_LOCAL){
+		if(is_funct){
+			dtoken = DT_LIB_FUNC;
+		}else{
+			fprintf(CTT_BUF, "local");
+			dtoken = DT_NULL;
+		}
+
+	}else if(LOCALD_ON){
 		if(!locald->attrib_start)
 			treat_local_declare_BEFORE_comma(NULL);
 		else
 			treat_local_declare_AFTER_comma(false);
 
+	}else if(is_funct){
+		dtoken = DT_FUNCTION;
+
 	}else if(is_local){
-		man_treat_env(true);
+		dtoken = DT_LOCAL;
+
+	}else if(dtoken != DT_NULL){
+		dtoken = DT_NULL;
+		fprintf(CTT_BUF, "%s", str);
+
+	}else if(dtoken == DT_NULL){
+		fprintf(CTT_BUF, "%s", str);
 	}
 }
 
@@ -70,7 +126,29 @@ void treat_ident(char *_ident, char *_table_key){
 	gident     = _ident;
 	gtable_key = _table_key;
 
-	if(LOCALD_ON){
+	if(dtoken == DT_LOCAL){
+		man_var_tab_declare_env(true, true, false);
+		dtoken = DT_NULL;
+
+	}else if(dtoken == DT_FUNCTION || dtoken == DT_LIB_FUNC){
+		start_function_declaration(false);
+		dtoken = DT_NULL;
+		return;
+	}
+
+	if(functd.start_declare && !functd.parameter_end){
+		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_PARAM, BUF_VAR_TAB);
+		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
+		return;
+
+	}else if(LOCALD_ON){
+		if(locald->token == LT_FUNCTION){
+			print_local_declare(PLD_FORCED_END);
+			dtoken = DT_LIB_FUNC;
+			start_function_declaration(false);
+			return;
+		}
+
 		if(!locald->attrib_start)
 			treat_local_declare_BEFORE_comma(BUF_VAR_TAB);
 		else
@@ -242,14 +320,16 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 			}
 		}
 
-		// function -- TODO
-		//if(strcmp(gident, "function") == 0){
-		//	if(*token != LT_COMMA){
-		//		print_local_declare( PLD_FAIL_CONST );
-		//		return;
-		//	}
-		//	return;
-		//}
+		// function
+		if(strcmp(gident, "function") == 0){
+			if(*token != LT_COMMA){
+				print_local_declare( PLD_FAIL_CONST );
+				return;
+			}
+
+			*token = LT_FUNCTION;
+			return;
+		}
 
 		print_local_declare( PLD_FAIL_CONST );
 		return;
@@ -270,12 +350,30 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 		return;
 	}
 
+	if(*token == LT_FUNCTION){
+		if(gident[0] != '('){
+			print_local_declare(PLD_FAIL_CONST);
+			return;
+		}
+
+		start_function_declaration(true);
+
+		for(short i = 1; gident[i] != '\0'; i++){
+			if(gident[i] == ')'){
+				functd.parameter_end = true;
+				break;
+			}
+		}
+
+		return;
+	}
+
 	if(common_token_test(0,"=><~",  LT_LOPERATOR, LT_LOPERATOR, 0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(0,"+-*/%^",LT_MOPERATOR, LT_MOPERATOR, 0, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('.', NULL, LT_NULL,      LT_CONCAT,    0, LT_STRING, LT_NULL)) return;
 	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     0, LT_BRACKETO, LT_COMMA, LT_NULL)) return;
 	if(common_token_test(0,   "'\"",LT_STRING,    LT_STRING,    1, LT_BRACKETO, LT_COMMA, LT_CONCAT, LT_LOPERATOR, LT_NULL)) return;
-	if(common_token_test(',', NULL, LT_COMMA,     LT_COMMA,     1, LT_BOOLEAN, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
+	if(common_token_test(',', NULL, LT_COMMA,     LT_COMMA,     1, LT_BOOLEAN, LT_FUNCTION, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('(', NULL, LT_NULL,      LT_PARENO,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(')', NULL, LT_NULL,      LT_PARENC,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('[', NULL, LT_NULL,      LT_BRACKETO,  0, LT_USEORCALL, LT_NULL)) return;
@@ -286,13 +384,14 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 }
 
 
-static void man_treat_env(bool new){
+static void man_var_tab_declare_env(bool new, bool startl, bool is_anony){
 	if(new){
 		Stack_Env *new;
 		new = malloc(sizeof(Stack_Env));
 
 		if(locald == NULL){
 			locald = new;
+			locald->below = NULL;
 
 		}else{
 			new->below = locald;
@@ -308,11 +407,10 @@ static void man_treat_env(bool new){
 	}
 
 	// set new / reset
-	locald->below = NULL;
-
-	locald->start_declare = new;
-	locald->attrib_start  = false;
-	locald->expect_comma  = false;
+	locald->start_declare = startl;
+	locald->is_anony_func = is_anony;
+	locald->attrib_start = false;
+	locald->expect_comma = false;
 
 	locald->token = LT_NULL;
 
@@ -322,6 +420,14 @@ static void man_treat_env(bool new){
 
 	locald->qident = 0;
 	locald->qvalue = 0;
+}
+
+static void drop_var_tab_declare_env(void){
+	Stack_Env *below;
+	below = locald->below;
+	
+	free(locald);
+	locald = below;
 }
 
 static void merge_compound_value(char *lident){ // Local
@@ -377,7 +483,7 @@ static void update_local_declare(bool is_const){
 
 static void print_local_declare(PLD_ID id){
 	if(!locald->attrib_start){
-		man_treat_env(false);
+		man_var_tab_declare_env(false, false, false);
 
 		// recycle
 		if(id == PLD_FAIL_CONST)
@@ -427,11 +533,29 @@ static void print_local_declare(PLD_ID id){
 	}
 
 
-	man_treat_env(false);
+	man_var_tab_declare_env(false, false, false);
 
 	// recycle
 	if(id == PLD_FAIL_CONST)
 		treat_const(gident);
 	else if(id == PLD_FAIL_IDENT)
 		treat_ident(gident, gtable_key);
+}
+
+static void start_function_declaration(bool is_anony){
+	layer++;
+	functd.start_declare = true;
+	functd.parameter_end = false;
+	new_local_environment();
+
+	if(is_anony){
+		fprintf(CTT_BUF, "function%s", gident);
+		man_var_tab_declare_env(true, false, true);
+
+	}else{
+		if(dtoken == DT_FUNCTION)
+			fprintf(CTT_BUF, "function _.%s", gident);
+		else
+			fprintf(CTT_BUF, "local function %s", gident);
+	}
 }
