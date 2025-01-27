@@ -101,10 +101,6 @@ function read_file(){
 	echo -e "$full_content"
 }
 
-function rm_tmp_dir(){
-	[[ -d $TMP ]] && rm -r $TMP
-}
-
 function debug_exe(){
 	# -1; empty argument
 	#  0: create after an error occur
@@ -121,7 +117,7 @@ function debug_exe(){
 export ARG_TARGET ARG_BROKEN
 export ADDR TMP BROK MAIN EXE LOG SRC BIN
 export _files _includes _main _args _main_c_path
-export -f read_file get_main_path get_args_path rm_tmp_dir debug_exe
+export -f read_file get_main_path get_args_path debug_exe
 
 
 if check_argument $ARG_TARGET; then
@@ -145,5 +141,4 @@ fi
 unset _files _includes _main _args _main_c_path
 unset -f read_file get_main_path get_args_path debug_exe
 
-rm_tmp_dir
 exit $CREATE_MAIN_STATUS
