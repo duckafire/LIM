@@ -59,6 +59,7 @@ void treat_const(char *str){
 			layer--;
 
 		if(layer == 0){
+			restart_local_parameter_nicknames();
 			const bool is_anony = (locald == NULL) ? false : locald->is_anony_func;
 
 			if(is_anony){

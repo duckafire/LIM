@@ -31,6 +31,14 @@ void start_nickname_buffers(void){
 	start_nick_buf(nick_parameter);
 }
 
+void restart_local_parameter_nicknames(void){
+	free_nick_buf(nick_local_ident);
+	free_nick_buf(nick_parameter);
+
+	start_nick_buf(nick_local_ident);
+	start_nick_buf(nick_parameter);
+}
+
 static void start_nick_buf(char *nick_buf[]){
 	NICK_CURRENT( nick_buf ) = malloc(LEN_2C);
 	strcpy(NICK_CURRENT( nick_buf ), NICK_FIRST( nick_buf ));
@@ -79,6 +87,8 @@ void free_nickname_buffers(void){
 static void free_nick_buf(char *nick_buf[]){
 	free( NICK_CURRENT(nick_buf) );
 	free( NICK_FORMAT(nick_buf) );
+	nick_buf[0] = NULL; // CURRENT
+	nick_buf[1] = NULL; // FORMAT
 }
 
 

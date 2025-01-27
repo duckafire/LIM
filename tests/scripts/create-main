@@ -13,6 +13,5 @@ gcc -g $_main_c_path $_files $_includes -o $EXE
 
 if [[ $? != "0" ]]; then
 	echo -e "\nCompilation error.\nThe tests process was sttoped."
-	rm_tmp_dir
 	exit 1
 fi

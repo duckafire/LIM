@@ -13,6 +13,7 @@ typedef enum{
 // this is only to choose it nickname
 
 void start_nickname_buffers(void);
+void restart_local_parameter_nicknames(void);
 static void start_nick_buf(char *nick_buf[]);
 static char* get_and_update_nick(char *nick_buf[]);
 static void update_nick_current(char *nick_buf[], const int last_char);
