@@ -216,7 +216,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	if(*buf == NULL)
 		*buf = qee_create(ident, table_key, nick_tmp, false);
 	else
-		qee_add_item(buf, ident, table_key, nick_tmp, false, false);
+		qee_add_item(buf, ident, table_key, nick_tmp, false, QEE_DROP);
 
 	return nick_tmp;
 }

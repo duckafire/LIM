@@ -467,7 +467,7 @@ static void update_local_declare(bool is_const){
 			locald->bvtail = *buf;
 
 	}else{
-		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, false)){
+		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, ((*buf == locald->bvalue) ? QEE_INSERT : QEE_DROP))){
 			(*qtt)++;
 
 			if(is_value && locald->bvtail->next != NULL)

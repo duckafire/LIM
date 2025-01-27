@@ -5,10 +5,10 @@
 #include "queue.h"
 
 static bool qee_add_item_status;
-static bool update_item_quantity;
 static Queue *new_item;
 static Queue *tmp_item;
 static bool bigger_to_lower_is_allow = true;
+static IS_DUPLIC treat_duplicated_item;
 
 #define CK_QTT_AND_LEN(n0, n1)        ( \
 	n0->quantity < n1->quantity ||    ( \
@@ -30,10 +30,10 @@ Queue* qee_create(char *ident, char *table_key, char *nick, bool is_const){
 	return new_item;
 }
 
-bool qee_add_item(Queue **head, char *ident, char *table_key, char *nick, bool is_const, bool upQtt){
+bool qee_add_item(Queue **head, char *ident, char *table_key, char *nick, bool is_const, IS_DUPLIC treat){
 	new_item = qee_create(ident, table_key, nick, is_const);
 
-	update_item_quantity = upQtt;
+	treat_duplicated_item = treat;
 	qee_add_item_status = false;
 	*head = insert_item(*head);
 
@@ -55,11 +55,18 @@ static Queue* insert_item(Queue *item){
 		return new_item;
 
 	}else if(string_compare(item->ident, new_item->ident)){
-		if(update_item_quantity)
+		if(treat_duplicated_item == QEE_UP_QUANT || treat_duplicated_item == QEE_UP_AND_INS)
 			(item->quantity)++;
 
-		free_item(new_item);
-		return item;
+		if(treat_duplicated_item != QEE_INSERT && treat_duplicated_item != QEE_UP_AND_INS){
+			// treat_duplicated_item == QEE_DROP
+			free_item(new_item);
+			return item;
+		}
+
+		// NOTE: if the last condition are
+		// `true`, the item'll be inserted
+		// after the other clones
 	}
 
 	item->next = insert_item(item->next);
