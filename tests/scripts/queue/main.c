@@ -47,17 +47,17 @@ int main(int argc, char *argv[]){
 	short i, j, max;
 
 	for(i = 0; i < 4; i++)
-		qee_add_item(&head, RANIDENTC, NULL, NULL, false, false);
-	PACK("Add new items to queue (udate: off)");
+		qee_add_item(&head, RANIDENTC, NULL, NULL, false, QEE_DROP);
+	PACK("Add new items to queue (update: off)");
 
 
 	for(i = 0; i < 4; i++){
 		max = 1 + rand() % 5;
 
 		for(j = 0; j < max; j++)
-			qee_add_item(&head, RANIDENTC, NULL, NULL, false, true);
+			qee_add_item(&head, RANIDENTC, NULL, NULL, false, QEE_UP_QUANT);
 	}
-	PACK("Add new items to queue (udate: on)");
+	PACK("Add new items to queue (update: on)");
 
 
 	WARN("Get 5-9 random items");
