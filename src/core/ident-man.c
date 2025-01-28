@@ -179,7 +179,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	}else{
 		// identifier that start with
 		// '_' will not be compact
-		nick_tmp = NULL;
+		nick_tmp = ident;
 	}
 
 

@@ -11,11 +11,16 @@
 void read_source_file(void){
 	char c, *tmp = NULL;
 
+	lim.buffers.destine_file            = tmpfile();
+	lim.buffers.root.scope_func_pointer = tmpfile();
+	lim.buffers.root.scope_func_address = tmpfile();
+	lim.buffers.root.scope_var_tab      = tmpfile();
 	start_nickname_buffers();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
 		if(clear_white_spaces(&c))
-			break;
+			if(tmp == NULL)
+				break;
 
 		if(tmp != NULL){
 			treat_const(tmp);
@@ -59,4 +64,6 @@ static void build_destine_file(void){
 	
 	while( (c = fgetc(lim.buffers.destine_file)) != EOF)
 		putchar(c);
+
+	putchar('\n');
 }

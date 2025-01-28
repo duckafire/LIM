@@ -153,6 +153,10 @@ void treat_ident(char *_ident, char *_table_key){
 
 		return;
 	}
+
+	// use or call
+	gident_nick = get_nickname_of(gident, IS_ROOT);
+	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 }
 
 
