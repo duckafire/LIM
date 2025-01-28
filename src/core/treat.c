@@ -25,6 +25,7 @@ static const char* lua_boolean_kw[3] = {"false","nil","true"};
 static char *anony_func_to_local_declare = NULL;
 static DECLARE_TOKEN dtoken = DT_NULL;
 static Stack_Env *locald = NULL; // LOCAL Declaration
+static bool space_is_mandatory = false;
 
 struct{ bool start_declare; bool parameter_end; }functd = {false, false};
 
@@ -59,17 +60,18 @@ void treat_const(char *str){
 			layer--;
 
 		if(layer == 0){
+			set_if_space_is_mandatory("d"); // not affect anony. func.
 			restart_local_parameter_nicknames();
-			const bool is_anony = (locald == NULL) ? false : locald->is_anony_func;
+			const bool in_ident_declare = (locald == NULL) ? false : locald->is_anony_func;
 
-			if(is_anony){
+			if(in_ident_declare){
 				drop_var_tab_declare_env();
 
 				if(LOCALD_ON)
 					locald->token = LT_FUNC_END;
 			}
 
-			drop_local_environment( ((locald != NULL && is_anony) ? &anony_func_to_local_declare : NULL) );
+			drop_local_environment( ((locald != NULL && in_ident_declare) ? &anony_func_to_local_declare : NULL) );
 
 			if(anony_func_to_local_declare != NULL){
 				gident = anony_func_to_local_declare;
@@ -89,13 +91,8 @@ void treat_const(char *str){
 		start_function_declaration(true);
 		search_func_param_end();
 
-	}else if(dtoken == DT_LOCAL){
-		if(is_funct){
-			dtoken = DT_FUNCTION;
-		}else{
-			fprintf(CTT_BUF, "local");
-			dtoken = DT_NULL;
-		}
+	}else if(dtoken == DT_LOCAL && is_funct){
+		dtoken = DT_FUNCTION;
 
 	}else if(LOCALD_ON){
 		if(!locald->attrib_start)
@@ -109,11 +106,11 @@ void treat_const(char *str){
 	}else if(is_local){
 		dtoken = DT_LOCAL;
 
-	}else if(dtoken != DT_NULL){
-		dtoken = DT_NULL;
-		fprintf(CTT_BUF, "%s", str);
+	}else{
+		check_if_space_is_need(str);
+		set_if_space_is_mandatory(str);
 
-	}else if(dtoken == DT_NULL){
+		dtoken = DT_NULL;
 		fprintf(CTT_BUF, "%s", str);
 	}
 }
@@ -130,6 +127,7 @@ void treat_ident(char *_ident, char *_table_key){
 		if(dtoken == DT_FUNCTION)
 			gident = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
 
+		check_if_space_is_need("f");
 		start_function_declaration(false);
 		return;
 	}
@@ -155,6 +153,9 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	// use or call
+	check_if_space_is_need(gident);
+	set_if_space_is_mandatory(gident);
+
 	gident_nick = get_nickname_of(gident, IS_ROOT);
 	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 }
@@ -358,6 +359,8 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 		}
 
 		start_function_declaration(true);
+		man_var_tab_declare_env(true, false, true);
+		set_if_space_is_mandatory("!"); // set to FALSE
 
 		for(short i = 1; gident[i] != '\0'; i++){
 			if(gident[i] == ')'){
@@ -495,44 +498,50 @@ static void print_local_declare(PLD_ID id){
 		return;
 	}
 
+
 	bool is_ident_buf;
 	Queue *cur_buf, *cur_item, **dest_buf;
 	unsigned short i;
 	const unsigned short low_length = MIN(locald->qident, locald->qvalue);
 
-	for(cur_buf = locald->bident; true; cur_buf = locald->bvalue){
-		cur_item = NULL;
-		is_ident_buf = (cur_buf == locald->bident);
+	if(low_length > 0){
+		check_if_space_is_need("a");
 
-		for(i = 0; i < low_length; i++){
-			if(cur_item == NULL){
-				cur_item = cur_buf;
+		for(cur_buf = locald->bident; true; cur_buf = locald->bvalue){
+			cur_item = NULL;
+			is_ident_buf = (cur_buf == locald->bident);
 
-				if(!is_ident_buf)
-					fputc('=', CTT_BUF);
-			}else{
-				cur_item = cur_item->next;
+			for(i = 0; i < low_length; i++){
+				if(cur_item == NULL){
+					cur_item = cur_buf;
 
-				fputc(',', CTT_BUF);
+					if(!is_ident_buf)
+						fputc('=', CTT_BUF);
+				}else{
+					cur_item = cur_item->next;
+
+					fputc(',', CTT_BUF);
+				}
+
+				if(is_ident_buf || !cur_item->is_const){
+					if(is_ident_buf)
+						gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+					else
+						gident_nick = get_nickname_of(cur_item->ident, IS_ROOT);
+
+					fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
+					continue;
+				}
+
+				fprintf(CTT_BUF, FORMAT(cur_item->table_key), cur_item->ident, cur_item->table_key);
 			}
 
-			if(is_ident_buf || !cur_item->is_const){
-				if(is_ident_buf)
-					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
-				else
-					gident_nick = get_nickname_of(cur_item->ident, IS_ROOT);
-
-				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
-				continue;
-			}
-
-			fprintf(CTT_BUF, FORMAT(cur_item->table_key), cur_item->ident, cur_item->table_key);
+			if(cur_buf == locald->bvalue)
+				break;
 		}
 
-		if(cur_buf == locald->bvalue)
-			break;
+		set_if_space_is_mandatory( ((cur_item->is_const) ? cur_item->ident : cur_item->nick) );
 	}
-
 
 	man_var_tab_declare_env(false, false, false);
 
@@ -553,7 +562,6 @@ static void start_function_declaration(bool is_anony){
 
 	if(is_anony){
 		fprintf(CTT_BUF, "function%s", gident);
-		man_var_tab_declare_env(true, false, true);
 
 	}else{
 		if(dtoken == DT_LIB_FUNC)
@@ -572,4 +580,20 @@ static void search_func_param_end(void){
 			break;
 		}
 	}
+}
+
+
+static void check_if_space_is_need(char *str){
+	char firstc = str[0];
+
+	if(space_is_mandatory && (firstc == '_' || isalnum(firstc))){
+		fprintf(CTT_BUF, " ");
+		space_is_mandatory = false;
+	}
+}
+
+static void set_if_space_is_mandatory(char *str){
+	char lastc = str[ strlen(str) - 1 ];
+
+	space_is_mandatory = (lastc == '_' || isalnum(lastc));
 }

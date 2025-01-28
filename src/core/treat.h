@@ -71,4 +71,7 @@ static void print_local_declare(PLD_ID id);
 static void start_function_declaration(bool is_anony);
 static void search_func_param_end(void);
 
+static void check_if_space_is_need(char *str);
+static void set_if_space_is_mandatory(char *str);
+
 #endif
