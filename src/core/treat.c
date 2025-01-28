@@ -83,17 +83,15 @@ void treat_const(char *str){
 
 	if(is_func_param_declare){
 		fprintf(CTT_BUF, "%s", gident);
+		search_func_param_end();
 
-		for(short i = 0; gident[i] != '\0'; i++){
-			if(gident[i] == ')'){
-				functd.parameter_end = true;
-				break;
-			}
-		}
+	}else if(dtoken == DT_LIB_FUNC && gident[0] == '('){
+		start_function_declaration(true);
+		search_func_param_end();
 
 	}else if(dtoken == DT_LOCAL){
 		if(is_funct){
-			dtoken = DT_LIB_FUNC;
+			dtoken = DT_FUNCTION;
 		}else{
 			fprintf(CTT_BUF, "local");
 			dtoken = DT_NULL;
@@ -106,7 +104,7 @@ void treat_const(char *str){
 			treat_local_declare_AFTER_comma(false);
 
 	}else if(is_funct){
-		dtoken = DT_FUNCTION;
+		dtoken = DT_LIB_FUNC;
 
 	}else if(is_local){
 		dtoken = DT_LOCAL;
@@ -129,20 +127,21 @@ void treat_ident(char *_ident, char *_table_key){
 		dtoken = DT_NULL;
 
 	}else if(dtoken == DT_FUNCTION || dtoken == DT_LIB_FUNC){
+		if(dtoken == DT_FUNCTION)
+			gident = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+
 		start_function_declaration(false);
-		dtoken = DT_NULL;
 		return;
 	}
 
 	if(functd.start_declare && !functd.parameter_end){
-		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_PARAM, BUF_VAR_TAB);
+		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_PARAM, &(lim.buffers.local.top->parameter));
 		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 		return;
 
 	}else if(LOCALD_ON){
 		if(locald->token == LT_FUNC_START){
 			print_local_declare(PLD_FORCED_END);
-			dtoken = DT_LIB_FUNC;
 			start_function_declaration(false);
 			return;
 		}
@@ -540,8 +539,10 @@ static void print_local_declare(PLD_ID id){
 		treat_ident(gident, gtable_key);
 }
 
+
 static void start_function_declaration(bool is_anony){
 	layer++;
+
 	functd.start_declare = true;
 	functd.parameter_end = false;
 	new_local_environment();
@@ -551,9 +552,20 @@ static void start_function_declaration(bool is_anony){
 		man_var_tab_declare_env(true, false, true);
 
 	}else{
-		if(dtoken == DT_FUNCTION)
+		if(dtoken == DT_LIB_FUNC)
 			fprintf(CTT_BUF, "function _.%s", gident);
 		else
 			fprintf(CTT_BUF, "local function %s", gident);
+	}
+
+	dtoken = DT_NULL;
+}
+
+static void search_func_param_end(void){
+	for(short i = 0; gident[i] != '\0'; i++){
+		if(gident[i] == ')'){
+			functd.parameter_end = true;
+			break;
+		}
 	}
 }

@@ -69,5 +69,6 @@ static void update_local_declare(bool is_const);
 static void print_local_declare(PLD_ID id);
 
 static void start_function_declaration(bool is_anony);
+static void search_func_param_end(void);
 
 #endif

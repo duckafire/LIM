@@ -38,14 +38,15 @@ FILE* write_and_print_source_file(short code){
 	char c;
 	FILE *file;
 	const char *content[] = {
-"local foo0, stack1, cat2, var3 = 19",
-"local vrum0, var1, cat2, car3 = 19",
-"local java0, lang1, cat2, cat3, tbl4, script5, fish6, stack7, lang8, lang9 = car, 19, function()end",
-"local java0 = 'Hello-world', false, function(A0,A1,A2)end",
-"local foo0, foo1, var2, c3, car4, tab5, script6, cat7, car8",
-"local foo0, vrum1, lang2, lang3, tab4, cat5, tab6, car7, script8",
-"local lang0, stack1, stack2, c3, script4, var5, fish6 = 'hi'",
-"local cat0, c1, tab2, car3",
+"function foo() end",//"local foo0, stack1, cat2, var3 = 19",
+"local function foo() end",//"local vrum0, var1, cat2, car3 = 19",
+"function foo(z) end",//"local java0, lang1, cat2, cat3, tbl4, script5, fish6, stack7, lang8, lang9 = car, 19, function()end",
+"local function foo(z) end",//"local java0 = 'Hello-world', false, function(A0,A1,A2)end",
+"function() end",//"local foo0, foo1, var2, c3, car4, tab5, script6, cat7, car8",
+"local function() end",//"local foo0, vrum1, lang2, lang3, tab4, cat5, tab6, car7, script8",
+"function(z) end",//"local lang0, stack1, stack2, c3, script4, var5, fish6 = 'hi'",
+"local function(z) end",//"local cat0, c1, tab2, car3",
+
 "local tab0, foo1, stack2 = 12, 'lim', 19, false, 'lim'",
 "local vrum0, tbl1, foo2, var3, var4, script5, tab6, cat7, java8 = 'hi'",
 "local tbl0, tbl1, tab2, fish3, java4, script5, foo6, car7, tab8 = 'hi', 'hi', false, 'Hello-world'",
