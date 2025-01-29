@@ -62,7 +62,7 @@ void treat_const(char *str){
 		if(layer == 0){
 			set_if_space_is_mandatory("d"); // not affect anony. func.
 			restart_local_parameter_nicknames();
-			const bool in_ident_declare = (locald == NULL) ? false : locald->is_anony_func;
+			const bool in_ident_declare = (locald == NULL) ? false : locald->in_ident_decl;
 
 			if(in_ident_declare){
 				drop_var_tab_declare_env();
@@ -276,10 +276,12 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 			return;
 		}
 
-		if(*token == LT_COMMA)
+		if(*token == LT_COMMA){
+			gident = get_nickname_of(gident, IS_ROOT);
 			update_local_declare( ((gident[0] == '_') ? PLD_FAIL_CONST : PLD_FAIL_IDENT) );
-		else
-			merge_compound_value( ((gident[0] == '_') ? gident : get_nickname_of(gident, IS_ROOT)) );
+		}else{
+			merge_compound_value( get_nickname_of(gident, IS_ROOT) );
+		}
 
 		*token = LT_USEORCALL;
 		return;
@@ -388,7 +390,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 }
 
 
-static void man_var_tab_declare_env(bool new, bool startl, bool is_anony){
+static void man_var_tab_declare_env(bool new, bool startl, bool in_ident_decl){
 	if(new){
 		Stack_Env *new;
 		new = malloc(sizeof(Stack_Env));
@@ -412,7 +414,7 @@ static void man_var_tab_declare_env(bool new, bool startl, bool is_anony){
 
 	// set new / reset
 	locald->start_declare = startl;
-	locald->is_anony_func = is_anony;
+	locald->in_ident_decl = in_ident_decl;
 	locald->attrib_start = false;
 	locald->expect_comma = false;
 
@@ -523,17 +525,12 @@ static void print_local_declare(PLD_ID id){
 					fputc(',', CTT_BUF);
 				}
 
-				if(is_ident_buf || !cur_item->is_const){
-					if(is_ident_buf)
-						gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
-					else
-						gident_nick = get_nickname_of(cur_item->ident, IS_ROOT);
+				if(is_ident_buf)
+					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+				else
+					gident_nick = cur_item->ident;
 
-					fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
-					continue;
-				}
-
-				fprintf(CTT_BUF, FORMAT(cur_item->table_key), cur_item->ident, cur_item->table_key);
+				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
 			}
 
 			if(cur_buf == locald->bvalue)
