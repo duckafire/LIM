@@ -103,10 +103,8 @@ void new_local_environment(void){
 	new->parameter     = NULL;
 	new->below         = NULL;
 
-	if(lim.buffers.local.bottom == NULL)
+	if(lim.buffers.local.bottom == NULL){
 		lim.buffers.local.bottom = new;
-
-	if(lim.buffers.local.top == NULL){
 		lim.buffers.local.top = new;
 		return;
 	}
@@ -121,6 +119,9 @@ void drop_local_environment(char **anony_func_to_local_declare){
 
 	top = lim.buffers.local.top;
 	lim.buffers.local.top = top->below;
+
+	if(lim.buffers.local.top == NULL)
+		lim.buffers.local.bottom = NULL;
 
 	fseek(top->content,       0, SEEK_SET);
 	fseek(top->scope_var_tab, 0, SEEK_SET);

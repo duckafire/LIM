@@ -44,6 +44,7 @@ typedef enum{
 typedef struct Stack_Env{
 	bool start_declare; // local
 	bool in_ident_decl; // foo = function() end
+	bool spc_is_mandat; // before chain
 	bool attrib_start;  // =
 	bool expect_comma;  // ,
 	LOCAL_TOKEN token;

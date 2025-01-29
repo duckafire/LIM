@@ -139,6 +139,23 @@ void is_special_char(char c, char **tmp){
 	string_set(tmp, STR_START);
 	string_add(tmp, c);
 
+	if(c == ',')
+		return;
+
+	if(c == '='){
+		FGETC;
+
+		if(c == EOF){
+			return;
+
+		}else if(strchr("=><", c) == NULL){
+			FSEEK;
+			return;
+		}
+
+		FSEEK;
+	}
+
 	while(FGETC != EOF){
 		if(clear_white_spaces(&c))
 			break;

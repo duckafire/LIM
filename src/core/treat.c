@@ -11,13 +11,6 @@
 #include "treat.h"
 #include "ident-man.h"
 
-/* NOTE:
- *******************************************************
- * if any syntax or semantic error occurr, Lim will
- * pretend that none is occurr and continue normally :D
- *******************************************************
-*/
-
 static char *gident_nick, *gident, *gtable_key; // Global
 static unsigned short layer = 0;
 static const char* lua_operator_kw[3] = {"and","not","or"};
@@ -26,7 +19,6 @@ static char *anony_func_to_local_declare = NULL;
 static DECLARE_TOKEN dtoken = DT_NULL;
 static Stack_Env *locald = NULL; // LOCAL Declaration
 static bool space_is_mandatory = false;
-
 struct{ bool start_declare; bool parameter_end; }functd = {false, false};
 
 #define IS_ROOT     (layer == 0)
@@ -60,7 +52,6 @@ void treat_const(char *str){
 			layer--;
 
 		if(layer == 0){
-			set_if_space_is_mandatory("d"); // not affect anony. func.
 			restart_local_parameter_nicknames();
 			const bool in_ident_declare = (locald == NULL) ? false : locald->in_ident_decl;
 
@@ -415,6 +406,8 @@ static void man_var_tab_declare_env(bool new, bool startl, bool in_ident_decl){
 	// set new / reset
 	locald->start_declare = startl;
 	locald->in_ident_decl = in_ident_decl;
+	locald->spc_is_mandat = space_is_mandatory;
+
 	locald->attrib_start = false;
 	locald->expect_comma = false;
 
@@ -507,7 +500,8 @@ static void print_local_declare(PLD_ID id){
 	const unsigned short low_length = MIN(locald->qident, locald->qvalue);
 
 	if(low_length > 0){
-		check_if_space_is_need("a");
+		if(locald->spc_is_mandat)
+			fprintf(CTT_BUF, " ");
 
 		for(cur_buf = locald->bident; true; cur_buf = locald->bvalue){
 			cur_item = NULL;
@@ -532,6 +526,10 @@ static void print_local_declare(PLD_ID id){
 
 				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
 			}
+
+			if(is_ident_buf && cur_item != NULL)
+				while( (cur_item = cur_item->next) != NULL )
+					save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
 
 			if(cur_buf == locald->bvalue)
 				break;
