@@ -52,7 +52,6 @@ void treat_const(char *str){
 			layer--;
 
 		if(layer == 0){
-			restart_local_parameter_nicknames();
 			const bool in_ident_declare = (locald == NULL) ? false : locald->in_ident_decl;
 
 			if(in_ident_declare){
@@ -62,6 +61,10 @@ void treat_const(char *str){
 					locald->token = LT_FUNC_END;
 			}
 
+			if(locald != NULL && !locald->in_root_envir)
+				print_local_declare(PLD_FORCED_END);
+
+			restart_local_parameter_nicknames();
 			drop_local_environment( ((locald != NULL && in_ident_declare) ? &anony_func_to_local_declare : NULL) );
 
 			if(anony_func_to_local_declare != NULL){
@@ -111,7 +114,7 @@ void treat_ident(char *_ident, char *_table_key){
 	gtable_key = _table_key;
 
 	if(dtoken == DT_LOCAL){
-		man_var_tab_declare_env(true, true, false);
+		new_var_tab_declare_env(true, true, false);
 		dtoken = DT_NULL;
 
 	}else if(dtoken == DT_FUNCTION || dtoken == DT_LIB_FUNC){
@@ -352,7 +355,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 		}
 
 		start_function_declaration(true);
-		man_var_tab_declare_env(true, false, true);
+		new_var_tab_declare_env(true, false, true);
 		set_if_space_is_mandatory("!"); // set to FALSE
 
 		for(short i = 1; gident[i] != '\0'; i++){
@@ -381,7 +384,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 }
 
 
-static void man_var_tab_declare_env(bool new, bool startl, bool in_ident_decl){
+static void new_var_tab_declare_env(bool new, bool startl, bool in_ident_decl){
 	if(new){
 		Stack_Env *new;
 		new = malloc(sizeof(Stack_Env));
@@ -407,6 +410,7 @@ static void man_var_tab_declare_env(bool new, bool startl, bool in_ident_decl){
 	locald->start_declare = startl;
 	locald->in_ident_decl = in_ident_decl;
 	locald->spc_is_mandat = space_is_mandatory;
+	locald->in_root_envir = IS_ROOT;
 
 	locald->attrib_start = false;
 	locald->expect_comma = false;
@@ -482,7 +486,7 @@ static void update_local_declare(bool is_const){
 
 static void print_local_declare(PLD_ID id){
 	if(!locald->attrib_start){
-		man_var_tab_declare_env(false, false, false);
+		drop_var_tab_declare_env();
 
 		// recycle
 		if(id == PLD_FAIL_CONST)
@@ -499,9 +503,12 @@ static void print_local_declare(PLD_ID id){
 	unsigned short i;
 	const unsigned short low_length = MIN(locald->qident, locald->qvalue);
 
+	FILE *var_tab_ctt_buf;
+	var_tab_ctt_buf = ((locald->in_root_envir) ? lim.buffers.destine_file : lim.buffers.local.top->content);
+
 	if(low_length > 0){
 		if(locald->spc_is_mandat)
-			fprintf(CTT_BUF, " ");
+			fprintf(var_tab_ctt_buf, " ");
 
 		for(cur_buf = locald->bident; true; cur_buf = locald->bvalue){
 			cur_item = NULL;
@@ -512,33 +519,33 @@ static void print_local_declare(PLD_ID id){
 					cur_item = cur_buf;
 
 					if(!is_ident_buf)
-						fputc('=', CTT_BUF);
+						fputc('=', var_tab_ctt_buf);
 				}else{
 					cur_item = cur_item->next;
 
-					fputc(',', CTT_BUF);
+					fputc(',', var_tab_ctt_buf);
 				}
 
 				if(is_ident_buf)
-					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+					gident_nick = save_ident_in_buffer(cur_item->ident, cur_item->table_key, locald->in_root_envir, SCOPE_IDENT, BUF_VAR_TAB);
 				else
 					gident_nick = cur_item->ident;
 
-				fprintf(CTT_BUF, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
+				fprintf(var_tab_ctt_buf, FORMAT(cur_item->table_key), gident_nick, cur_item->table_key);
 			}
 
 			if(is_ident_buf && cur_item != NULL)
 				while( (cur_item = cur_item->next) != NULL )
-					save_ident_in_buffer(cur_item->ident, cur_item->table_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+					save_ident_in_buffer(cur_item->ident, cur_item->table_key, locald->in_root_envir, SCOPE_IDENT, BUF_VAR_TAB);
 
-			if(cur_buf == locald->bvalue)
+			if(cur_buf == locald->bvalue){
+				set_if_space_is_mandatory( ((cur_item->is_const) ? cur_item->ident : cur_item->nick) );
 				break;
+			}
 		}
-
-		set_if_space_is_mandatory( ((cur_item->is_const) ? cur_item->ident : cur_item->nick) );
 	}
 
-	man_var_tab_declare_env(false, false, false);
+	drop_var_tab_declare_env();
 
 	// recycle
 	if(id == PLD_FAIL_CONST)

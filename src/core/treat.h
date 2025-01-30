@@ -45,6 +45,7 @@ typedef struct Stack_Env{
 	bool start_declare; // local
 	bool in_ident_decl; // foo = function() end
 	bool spc_is_mandat; // before chain
+	bool in_root_envir; // save IS_ROOT state
 	bool attrib_start;  // =
 	bool expect_comma;  // ,
 	LOCAL_TOKEN token;
@@ -63,7 +64,7 @@ static LOCAL_TOKEN get_true_token(const char lastc);
 static bool common_token_test(char first, char *str, LOCAL_TOKEN norepeat, LOCAL_TOKEN new_token_id, short check_comma, ...);
 static void treat_local_declare_AFTER_comma(bool is_ident);
 
-static void man_var_tab_declare_env(bool new, bool startl, bool in_ident_decl);
+static void new_var_tab_declare_env(bool new, bool startl, bool in_ident_decl);
 static void drop_var_tab_declare_env(void);
 static void merge_compound_value(char *lident);
 static void update_local_declare(bool is_const);

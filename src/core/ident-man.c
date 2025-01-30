@@ -97,7 +97,7 @@ void new_local_environment(void){
 
 	new = malloc(sizeof(Func_Env_Stack));
 	new->content       = tmpfile();
-	new->scope_var_tab = tmpfile();
+	new->scope_var_tab = NULL;
 	new->local_func    = NULL;
 	new->local_var_tab = NULL;
 	new->parameter     = NULL;
@@ -132,18 +132,31 @@ void drop_local_environment(char **anony_func_to_local_declare){
 		while( (c = fgetc(top->content)) != EOF ){
 			string_add(anony_func_to_local_declare, c);
 
-			if(d != EOF && c == ')')
+			if(d != EOF && c == ')'){
+				char *e, *local = "local ";
+
+				for(e = local; *e != '\0'; e++)
+					string_add(anony_func_to_local_declare, *e);
+
 				while( (d = fgetc(top->scope_var_tab)) != EOF)
 					string_add(anony_func_to_local_declare, d);
+
+				string_add(anony_func_to_local_declare, ';');
+			}
 		}
 
 	}else{
 		while( (c = fgetc(top->content)) != EOF ){
 			fputc(c, lim.buffers.destine_file);
 
-			if(d != EOF && c == ')')
+			if(d != EOF && c == ')'){
+				fprintf(lim.buffers.destine_file, "local ");
+
 				while( (d = fgetc(top->scope_var_tab)) != EOF)
 					fputc(d, lim.buffers.destine_file);
+				
+				fputc(';', lim.buffers.destine_file);
+			}
 		}
 	}
 
@@ -185,23 +198,23 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 
 
 	// write identifier nickname to scope buffer
-	if(id == SCOPE_IDENT){
-		FILE *scope_var_tab;
+	if(id == SCOPE_IDENT){ // var/tab/func
+		FILE **scope_var_tab;
 
 		if(is_root)
-			scope_var_tab = lim.buffers.root.scope_var_tab;
+			scope_var_tab = &(lim.buffers.root.scope_var_tab);
 		else
-			scope_var_tab = lim.buffers.local.top->scope_var_tab;
+			scope_var_tab = &(lim.buffers.local.top->scope_var_tab);
 
-		if(scope_var_tab == NULL){
-			scope_var_tab = tmpfile();
+		if(*scope_var_tab == NULL){
+			*scope_var_tab = tmpfile();
 
-			fprintf(scope_var_tab , "local ");
+			fprintf(*scope_var_tab , "local ");
 		}else{
-			fputc(',', scope_var_tab);
+			fputc(',', *scope_var_tab);
 		}
 
-		fprintf(scope_var_tab , "%s", nick_tmp);
+		fprintf(*scope_var_tab , "%s", nick_tmp);
 
 	}else if(id == SCOPE_STD_HDR){
 		FILE **pointer, **address;

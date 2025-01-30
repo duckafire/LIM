@@ -11,10 +11,7 @@
 void read_source_file(void){
 	char c, *tmp = NULL;
 
-	lim.buffers.destine_file            = tmpfile();
-	lim.buffers.root.scope_func_pointer = tmpfile();
-	lim.buffers.root.scope_func_address = tmpfile();
-	lim.buffers.root.scope_var_tab      = tmpfile();
+	lim.buffers.destine_file = tmpfile();
 	start_nickname_buffers();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
