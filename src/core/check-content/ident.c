@@ -41,36 +41,33 @@ bool is_identifier(char c, char **tmp){
 
 
 	if(table_key != NULL){
-		treat_ident(ident, table_key);
-		//if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
-		//	putchar(0);
+		if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_lua));
 
-		//else if(is_from_header(ident, lim.header_partitions.table_list))
-		//	putchar(0);
+		else if(is_from_header(ident, lim.header_partitions.table_list))
+			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_header));
 
-		//else
-		//	treat_ident(ident, table_key);
+		else
+			treat_ident(ident, table_key);
 
 	}else{
 		if(is_from_lua(ident, CKIA_LUA_KW))
 			*tmp = string_copy(ident); // it will be treat in "read_source_file"
+
+		else if(is_from_lua(ident, CKIA_LUA_STD_FUNC))
+			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_lua));
+
+		else if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_lua));
+
+		else if(is_from_header(ident, lim.header_partitions.funct_list))
+			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_header));
+
+		else if(is_from_header(ident, lim.header_partitions.table_list))
+			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_header));
+
 		else
 			treat_ident(ident, NULL);
-
-		//else if(is_from_lua(ident, CKIA_LUA_STD_FUNC))
-		//	putchar(0);
-
-		//else if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
-		//	putchar(0);
-
-		//else if(is_from_header(ident, lim.header_partitions.funct_list))
-		//	putchar(0);
-
-		//else if(is_from_header(ident, lim.header_partitions.table_list))
-		//	putchar(0);
-
-		//else
-		//	treat_ident(ident, NULL);
 	}
 
 

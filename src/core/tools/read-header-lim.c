@@ -116,10 +116,19 @@ static bool check_partitions_separator(void){
 
 		if(FGETC == '\n'){
 			FGETC; // jump last separator char.
-			return true;
+
+			// if `true` a new
+			// partition was found
+			return (c != EOF);
+
+		}else if(c == EOF){
+			return false;
 		}
 
 		FSEEK;
+
+	}else if(c == EOF){
+		return false;
 	}
 
 	FSEEK;

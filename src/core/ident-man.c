@@ -251,7 +251,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 }
 
 char* get_nickname_of(char *ident, bool is_root){
-	Queue *cur, *bufs[3];
+	Queue *cur, *bufs[6];
 
 	if(ident[0] == '_')
 		return ident;
@@ -276,8 +276,12 @@ char* get_nickname_of(char *ident, bool is_root){
 
 	bufs[0] = lim.buffers.root.global_func;
 	bufs[1] = lim.buffers.root.global_var_tab;
+	bufs[2] = lim.buffers.root.func_from_lua;
+	bufs[3] = lim.buffers.root.table_from_lua;
+	bufs[4] = lim.buffers.root.func_from_header;
+	bufs[5] = lim.buffers.root.table_from_header;
 
-	for(short i = 0; i < 2; i++){
+	for(short i = 0; i < 5; i++){
 		cur = qee_get_item(bufs[i], ident);
 
 		if(cur != NULL)

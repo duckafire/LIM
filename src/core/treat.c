@@ -145,6 +145,49 @@ void treat_ident(char *_ident, char *_table_key){
 	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 }
 
+void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf){
+	bool allocad = true, sended = false;
+	char *full, *nick;
+
+
+	if(_table_key == NULL){
+		full = _ident;
+		allocad = false;
+
+	}else{
+		full = malloc( strlen(_ident) + strlen(_table_key) + sizeof(char) );
+		strcpy(full, _ident);
+		strcat(full, _table_key);
+	}
+
+	nick = get_nickname_of(full, IS_ROOT);
+	if(strcmp(nick, full) == 0)
+		nick = save_ident_in_buffer(full, NULL, IS_ROOT, SCOPE_STD_HDR, buf);
+
+
+	gident     = full;
+	gtable_key = NULL;
+
+	if(LOCALD_ON){
+		if(!locald->attrib_start){
+			print_local_declare(PLD_FAIL_IDENT);
+		}else{
+			treat_local_declare_AFTER_comma(true);
+			sended = true;
+		}
+	}
+
+	if(!sended){
+		check_if_space_is_need(nick);
+		set_if_space_is_mandatory(nick);
+
+		fprintf(CTT_BUF, "%s", nick);
+	}
+
+	if(allocad)
+		free(full);
+}
+
 
 static void update_layer(bool is_func){
 	layer.height++;
@@ -602,7 +645,7 @@ static void start_function_declaration(bool is_anony){
 		save_local_parameter_state();
 
 	if(is_anony){
-		fprintf(CTT_BUF, "function%s", gident);
+		fprintf(CTT_BUF, "%cfunction%s", ((space_is_mandatory && (locald == NULL || locald->token != LT_FUNC_START)) ? ' ' : '\0'), gident);
 
 	}else{
 		if(dtoken == DT_LIB_FUNC)

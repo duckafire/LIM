@@ -210,5 +210,5 @@ static void print_queue(Queue *item){
 
 	print_queue(item->next);
 
-	printf("%s\n", item->content[1]);
+	printf("%s\n", item->ident);
 }
