@@ -437,7 +437,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 	if(common_token_test(0,"=><~",  LT_LOPERATOR, LT_LOPERATOR, 0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(0,"+-*/%^",LT_MOPERATOR, LT_MOPERATOR, 0, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('.', NULL, LT_NULL,      LT_CONCAT,    0, LT_STRING, LT_NULL)) return;
-	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     0, LT_BRACKETO, LT_COMMA, LT_NULL)) return;
+	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     1, LT_BRACKETO, LT_COMMA, LT_NULL)) return;
 	if(common_token_test(0,   "'\"",LT_STRING,    LT_STRING,    1, LT_BRACKETO, LT_COMMA, LT_CONCAT, LT_LOPERATOR, LT_NULL)) return;
 	if(common_token_test(',', NULL, LT_COMMA,     LT_COMMA,     1, LT_BOOLEAN, LT_FUNC_END, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('(', NULL, LT_NULL,      LT_PARENO,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_USEORCALL, LT_NULL)) return;
@@ -536,7 +536,7 @@ static void update_local_declare(bool is_const){
 	}
 
 	
-	const bool is_value = (*buf == locald->bvalue);
+	const bool is_value = (locald->bvalue != NULL && *buf == locald->bvalue);
 	qee_bigger_to_lower(false);
 	
 	if(*buf == NULL){
@@ -649,11 +649,11 @@ static void start_function_declaration(bool is_anony){
 
 	}else{
 		if(dtoken == DT_LIB_FUNC)
-			fprintf(CTT_BUF, "function _.%s", gident);
+			fprintf(CTT_BUF, ((gtable_key == NULL) ? "function _.%s" : "function %s%s"), gident, gtable_key);
 		else if(IS_ROOT)
 			fprintf(CTT_BUF, "local function %s", gident);
 		else
-			fprintf(CTT_BUF, "%s=function", gident);
+			fprintf(CTT_BUF, ((gtable_key == NULL) ? "%s=function" : "%s%s=function"), save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_FUNC), gtable_key);
 	}
 
 	dtoken = DT_NULL;

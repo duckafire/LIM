@@ -70,14 +70,21 @@ bool is_table_env(char c, char **tmp){
 		return false;
 
 	unsigned short layer = 0;
+	bool lastc_is_alnum = false, space = false;
 
 	string_set(tmp, STR_START);
 	string_add(tmp, '{');
 
 	while(FGETC != EOF){
+		space = !isgraph(c);
+
 		if(clear_white_spaces(&c))
 			break;
+		else if(is_commentary(c))
+			continue;
 
+		if(lastc_is_alnum && space && isalnum(c))
+			string_add(tmp, ' ');
 		string_add(tmp, c);
 
 		if(c == '{'){
@@ -86,10 +93,11 @@ bool is_table_env(char c, char **tmp){
 		}else if(c == '}'){
 			if(layer > 0)
 				layer--;
-
-			if(layer == 0)
+			else
 				break;
 		}
+
+		lastc_is_alnum = (c == '_' || isalnum(c));
 	}
 
 	return true;
