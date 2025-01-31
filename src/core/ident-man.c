@@ -133,11 +133,6 @@ void drop_local_environment(char **anony_func_to_local_declare){
 			string_add(anony_func_to_local_declare, c);
 
 			if(d != EOF && c == ')'){
-				char *e, *local = "local ";
-
-				for(e = local; *e != '\0'; e++)
-					string_add(anony_func_to_local_declare, *e);
-
 				while( (d = fgetc(top->scope_var_tab)) != EOF)
 					string_add(anony_func_to_local_declare, d);
 
@@ -150,8 +145,6 @@ void drop_local_environment(char **anony_func_to_local_declare){
 			fputc(c, lim.buffers.destine_file);
 
 			if(d != EOF && c == ')'){
-				fprintf(lim.buffers.destine_file, "local ");
-
 				while( (d = fgetc(top->scope_var_tab)) != EOF)
 					fputc(d, lim.buffers.destine_file);
 				
