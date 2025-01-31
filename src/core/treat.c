@@ -12,7 +12,6 @@
 #include "ident-man.h"
 
 static char *gident_nick, *gident, *gtable_key; // Global
-static unsigned short layer = 0;
 static const char* lua_operator_kw[3] = {"and","not","or"};
 static const char* lua_boolean_kw[3] = {"false","nil","true"};
 static char *anony_func_to_local_declare = NULL;
@@ -20,8 +19,9 @@ static DECLARE_TOKEN dtoken = DT_NULL;
 static Stack_Env *locald = NULL; // LOCAL Declaration
 static bool space_is_mandatory = false;
 struct{ bool start_declare; bool parameter_end; }functd = {false, false};
+struct {unsigned short height; Layer_Type *type; }layer = {0, NULL};
 
-#define IS_ROOT     (layer == 0)
+#define IS_ROOT     (layer.height == 0)
 #define BUF_FUNC    ((IS_ROOT) ? &(lim.buffers.root.global_func) : &(lim.buffers.local.top->local_func))
 #define BUF_VAR_TAB ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab))
 #define CTT_BUF     ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
@@ -47,39 +47,21 @@ void treat_const(char *str){
 	gident     = str;
 	gtable_key = NULL;
 
-	if(!is_func_param_declare && layer > 0){
-		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0)
-			layer++;
-		else if(strcmp(str, "end") == 0)
-			layer--;
+	if(!is_func_param_declare && layer.height > 0){
+		bool popped = false;
 
-		if(layer == 0){
-			const bool in_ident_declare = (locald == NULL) ? false : locald->in_ident_decl;
+		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0){
+			update_layer(false);
 
-			if(locald != NULL && !locald->in_root_envir)
-				print_local_declare(PLD_FORCED_END);
+		}else if(strcmp(str, "end") == 0 && downdate_layer()){
+			popped = true;
 
-			if(in_ident_declare){
-				drop_var_tab_declare_env(true);
-
-				if(LOCALD_ON)
-					locald->token = LT_FUNC_END;
-			}
-
-			restart_local_parameter_nicknames();
-			drop_local_environment( ((locald != NULL && in_ident_declare) ? &anony_func_to_local_declare : NULL) );
-
-			if(anony_func_to_local_declare != NULL){
-				gident = anony_func_to_local_declare;
-				update_local_declare(true);
-
-				merge_compound_value( ((space_is_mandatory) ? " end" : "end") );
-				space_is_mandatory = true;
-
-				string_set(&anony_func_to_local_declare, STR_END);
+			if(pop_function_declaration())
 				return;
-			}
 		}
+
+		if(!popped && layer.height == 0 && pop_function_declaration())
+			return;
 	}
 
 	if(is_func_param_declare){
@@ -161,6 +143,38 @@ void treat_ident(char *_ident, char *_table_key){
 
 	gident_nick = get_nickname_of(gident, IS_ROOT);
 	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
+}
+
+
+static void update_layer(bool is_func){
+	layer.height++;
+
+	Layer_Type *new;
+
+	new = malloc(sizeof(Layer_Type));
+	new->is_func_layer = is_func;
+
+	if(layer.type == NULL){
+		new->below = NULL;
+		layer.type = new;
+		return;
+	}
+
+	new->below = layer.type;
+	layer.type = new;
+}
+
+static bool downdate_layer(void){
+	layer.height--;
+
+	Layer_Type *tmp;
+	tmp = layer.type;
+	layer.type = layer.type->below;
+
+	const bool is_func = tmp->is_func_layer;
+	free(tmp);
+
+	return is_func;
 }
 
 
@@ -578,7 +592,7 @@ static void print_local_declare(PLD_ID id){
 
 
 static void start_function_declaration(bool is_anony){
-	layer++;
+	update_layer(true);
 
 	functd.start_declare = true;
 	functd.parameter_end = false;
@@ -590,8 +604,10 @@ static void start_function_declaration(bool is_anony){
 	}else{
 		if(dtoken == DT_LIB_FUNC)
 			fprintf(CTT_BUF, "function _.%s", gident);
-		else
+		else if(IS_ROOT)
 			fprintf(CTT_BUF, "local function %s", gident);
+		else
+			fprintf(CTT_BUF, "%s=function", gident);
 	}
 
 	dtoken = DT_NULL;
@@ -604,6 +620,35 @@ static void search_func_param_end(void){
 			break;
 		}
 	}
+}
+
+static bool pop_function_declaration(void){
+	const bool in_ident_declare = (locald == NULL) ? false : locald->in_ident_decl;
+
+	if(locald != NULL && !locald->in_root_envir)
+		print_local_declare(PLD_FORCED_END);
+
+	if(in_ident_declare){
+		drop_var_tab_declare_env(true);
+
+		if(LOCALD_ON)
+			locald->token = LT_FUNC_END;
+	}
+
+	restart_local_parameter_nicknames();
+	drop_local_environment( ((locald != NULL && in_ident_declare) ? &anony_func_to_local_declare : NULL) );
+
+	if(anony_func_to_local_declare != NULL){
+		gident = anony_func_to_local_declare;
+		update_local_declare(true);
+
+		merge_compound_value( ((space_is_mandatory) ? " end" : "end") );
+		space_is_mandatory = true;
+
+		string_set(&anony_func_to_local_declare, STR_END);
+		return true;
+	}
+	return false;
 }
 
 

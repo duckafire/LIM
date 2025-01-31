@@ -18,6 +18,11 @@ typedef enum{
 	DT_LIB_FUNC, // local
 }DECLARE_TOKEN;
 
+typedef struct Layer_Type{
+	bool is_func_layer;
+	struct Layer_Type *below;
+}Layer_Type;
+
 typedef enum{
 	LT_NULL = -1,
 	LT_BOOLEAN,
@@ -58,6 +63,9 @@ void finish_treatment(void);
 void treat_const(char *str);
 void treat_ident(char *_ident, char *_table_key);
 
+static void update_layer(bool is_func);
+static bool downdate_layer(void);
+
 static void treat_local_declare_BEFORE_comma(Queue **buf);
 static bool compare_token(LOCAL_TOKEN norepeat, va_list *to_copy, ...);
 static LOCAL_TOKEN get_true_token(const char lastc);
@@ -72,6 +80,7 @@ static void print_local_declare(PLD_ID id);
 
 static void start_function_declaration(bool is_anony);
 static void search_func_param_end(void);
+static bool pop_function_declaration(void);
 
 static void check_if_space_is_need(char *str);
 static void set_if_space_is_mandatory(char *str);

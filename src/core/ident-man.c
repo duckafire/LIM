@@ -123,38 +123,31 @@ void drop_local_environment(char **anony_func_to_local_declare){
 	if(lim.buffers.local.top == NULL)
 		lim.buffers.local.bottom = NULL;
 
-	fseek(top->content,       0, SEEK_SET);
-	fseek(top->scope_var_tab, 0, SEEK_SET);
+	fseek(top->content, 0, SEEK_SET);
+	if(top->scope_var_tab != NULL)
+		fseek(top->scope_var_tab, 0, SEEK_SET);
 
-	if(anony_func_to_local_declare != NULL){
+	#define PUT(c) ((anony_func_to_local_declare != NULL) ? string_add(anony_func_to_local_declare, c) : fputc(c, ((lim.buffers.local.top == NULL) ? lim.buffers.destine_file : lim.buffers.local.top->content)))
+
+	if(anony_func_to_local_declare != NULL)
 		string_set(anony_func_to_local_declare, STR_START);
 
-		while( (c = fgetc(top->content)) != EOF ){
-			string_add(anony_func_to_local_declare, c);
+	while( (c = fgetc(top->content)) != EOF ){
+		PUT(c);
 
-			if(d != EOF && c == ')'){
-				while( (d = fgetc(top->scope_var_tab)) != EOF)
-					string_add(anony_func_to_local_declare, d);
+		if(top->scope_var_tab != NULL && d != EOF && c == ')'){
+			while( (d = fgetc(top->scope_var_tab)) != EOF)
+				PUT(d);
 
-				string_add(anony_func_to_local_declare, ';');
-			}
-		}
-
-	}else{
-		while( (c = fgetc(top->content)) != EOF ){
-			fputc(c, lim.buffers.destine_file);
-
-			if(d != EOF && c == ')'){
-				while( (d = fgetc(top->scope_var_tab)) != EOF)
-					fputc(d, lim.buffers.destine_file);
-				
-				fputc(';', lim.buffers.destine_file);
-			}
+			PUT(';');
 		}
 	}
 
+	#undef PUT
+
 	fclose(top->content);
-	fclose(top->scope_var_tab);
+	if(top->scope_var_tab != NULL)
+		fclose(top->scope_var_tab);
 	
 	qee_free_queue(top->local_func);
 	qee_free_queue(top->local_var_tab);
