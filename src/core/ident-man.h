@@ -14,11 +14,14 @@ typedef enum{
 
 void start_nickname_buffers(void);
 void restart_local_parameter_nicknames(void);
+static void restart_nickname_of(char *nick_buf[]);
+void save_local_parameter_state(void);
+static void save_state_of(char *nick_buf[]);
 static void start_nick_buf(char *nick_buf[]);
 static char* get_and_update_nick(char *nick_buf[]);
 static void update_nick_current(char *nick_buf[], const int last_char);
-void free_nickname_buffers(void);
-static void free_nick_buf(char *nick_buf[]);
+void free_nickname_buffers(bool saveds_included);
+static void free_nick_buf(char *nick_buf[], bool saveds_included);
 
 void new_local_environment(void);
 void drop_local_environment(char **anony_func_to_local_declare);

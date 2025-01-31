@@ -49,7 +49,7 @@ void read_source_file(void){
 	}
 
 	finish_treatment();
-	free_nickname_buffers();
+	free_nickname_buffers(true);
 	string_set(&tmp, STR_END);
 	build_destine_file();
 }

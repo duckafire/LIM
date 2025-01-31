@@ -8,11 +8,11 @@
 #include "ident-man.h"
 
 // #0: nickname to lua standard and header identifiers;
-// NICK_CURRENT, NICK_FORMAT, NICK_FIRST, NICK_LAST, NICK_PREFIX
+// NICK_CURRENT, NICK_FORMAT, NICK_FIRST, NICK_LAST, NICK_PREFIX, NICK_SAVEDS
 static char *nick_std_hdr[5]      = {NULL, NULL, "A", "Z", "\0"};
-static char *nick_global_ident[5] = {NULL, NULL, "a", "z", "G"};
-static char *nick_local_ident[5]  = {NULL, NULL, "a", "z", "L"};
-static char *nick_parameter[5]    = {NULL, NULL, "a", "z", "\0"};
+static char *nick_global_ident[5] = {NULL, NULL, "a", "z", "G",};
+static char *nick_local_ident[6]  = {NULL, NULL, "a", "z", "L",  NULL}; // nickname
+static char *nick_parameter[6]    = {NULL, NULL, "a", "z", "\0", NULL}; // ~
 
 static const short LEN_2C = sizeof(char) * 2;
 
@@ -23,6 +23,7 @@ static const short LEN_2C = sizeof(char) * 2;
 #define NICK_LASTC(n)   (n[3][0])
 #define NICK_LAST(n)    (n[3])
 #define NICK_PREFIX(n)  (n[4])
+#define NICK_SAVEDS(n)  (n[5])
 
 void start_nickname_buffers(void){
 	start_nick_buf(nick_std_hdr);
@@ -32,11 +33,25 @@ void start_nickname_buffers(void){
 }
 
 void restart_local_parameter_nicknames(void){
-	free_nick_buf(nick_local_ident);
-	free_nick_buf(nick_parameter);
+	restart_nickname_of(nick_local_ident);
+	restart_nickname_of(nick_parameter);
+}
 
-	start_nick_buf(nick_local_ident);
-	start_nick_buf(nick_parameter);
+static void restart_nickname_of(char *nick_buf[]){
+	free_nick_buf(nick_buf, false);
+	start_nick_buf(nick_buf);
+	NICK_CURRENT(nick_buf) = NICK_SAVEDS(nick_buf);
+	NICK_SAVEDS(nick_buf) = NULL;
+}
+
+void save_local_parameter_state(void){
+	save_state_of(nick_local_ident);
+	save_state_of(nick_parameter);
+}
+
+static void save_state_of(char *nick_buf[]){
+	NICK_SAVEDS(nick_buf) = malloc( strlen( NICK_CURRENT(nick_buf) + 1 ) );
+	strcpy(NICK_SAVEDS(nick_buf), NICK_CURRENT(nick_buf));
 }
 
 static void start_nick_buf(char *nick_buf[]){
@@ -77,18 +92,22 @@ static void update_nick_current(char *nick_buf[], const int last_char){
 	strcat(NICK_CURRENT(nick_buf), NICK_FIRST(nick_buf));
 }
 
-void free_nickname_buffers(void){
-	free_nick_buf(nick_std_hdr);
-	free_nick_buf(nick_global_ident);
-	free_nick_buf(nick_local_ident);
-	free_nick_buf(nick_parameter);
+void free_nickname_buffers(bool saveds_included){
+	free_nick_buf(nick_std_hdr,      saveds_included);
+	free_nick_buf(nick_global_ident, saveds_included);
+	free_nick_buf(nick_local_ident,  saveds_included);
+	free_nick_buf(nick_parameter,    saveds_included);
 }
 
-static void free_nick_buf(char *nick_buf[]){
+static void free_nick_buf(char *nick_buf[], bool saveds_included){
 	free( NICK_CURRENT(nick_buf) );
 	free( NICK_FORMAT(nick_buf) );
 	nick_buf[0] = NULL; // CURRENT
 	nick_buf[1] = NULL; // FORMAT
+
+	// call only in end of "read_source_file"
+	if(saveds_included)
+		free( NICK_SAVEDS(nick_buf) );
 }
 
 

@@ -598,6 +598,9 @@ static void start_function_declaration(bool is_anony){
 	functd.parameter_end = false;
 	new_local_environment();
 
+	if(layer.height > 1)
+		save_local_parameter_state();
+
 	if(is_anony){
 		fprintf(CTT_BUF, "function%s", gident);
 
