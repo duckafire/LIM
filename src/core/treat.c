@@ -163,6 +163,11 @@ void treat_ident(char *_ident, char *_table_key){
 	check_if_space_is_need(gident);
 	set_if_space_is_mandatory(gident);
 
+	if(strcmp(gident, "_G") == 0){
+		fprintf(CTT_BUF, "%s", &(gtable_key[1]) );
+		return;
+	}
+
 	gident_nick = get_nickname_of(gident, IS_ROOT);
 	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 }

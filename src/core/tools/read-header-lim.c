@@ -122,12 +122,14 @@ static bool check_partitions_separator(void){
 			return false;
 		}
 
+		c = '\n';
 		FSEEK;
 
 	}else if(c == EOF){
 		return false;
 	}
 
+	c = '\n';
 	FSEEK;
 	return false;
 }
@@ -152,13 +154,14 @@ static bool read_code_scope(void){
 	if(c == EOF)
 		return false;
 
+	bool space = false, lastc_is_alnum = false;
 	lim.header_partitions.code_scope = tmpfile();
 
 	do{
 		if(check_partitions_separator())
 			return true;
 
-		if(!isgraph(c)){
+		if( (space = !isgraph(c)) ){
 			while(FGETC != EOF && !isgraph(c))
 				if(check_partitions_separator())
 					return true;
@@ -167,7 +170,11 @@ static bool read_code_scope(void){
 				return false;
 		}
 
+		if(space && lastc_is_alnum && (c == '_' || isalnum(c)))
+			FPUTC(' ', code_scope);
+
 		FPUTC(c, code_scope);
+		lastc_is_alnum = (c == '_' || isalnum(c));
 	}while(FGETC != EOF);
 
 	return false;

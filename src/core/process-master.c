@@ -8,8 +8,10 @@
 #include "treat.h"
 #include "ident-man.h"
 
+static char c;
+
 void read_source_file(void){
-	char c, *tmp = NULL;
+	char *tmp = NULL;
 
 	lim.buffers.destine_file = tmpfile();
 	start_nickname_buffers();
@@ -54,13 +56,30 @@ void read_source_file(void){
 	build_destine_file();
 }
 
+static void get_and_put_from_buffer(FILE *buf, bool separator){
+	if(buf == NULL)
+		return;
+
+	fseek(buf, 0, SEEK_SET);
+
+	while( (c = fgetc(buf)) != EOF )
+		fputc(c, lim.files.destine);
+
+	if(separator)
+		fputc(';', lim.files.destine);
+}
+
 static void build_destine_file(void){
-	char c;
+	lim.files.destine = fopen(lim.files.destine_name, "w");
 
-	fseek(lim.buffers.destine_file, 0, SEEK_SET);
-	
-	while( (c = fgetc(lim.buffers.destine_file)) != EOF)
-		putchar(c);
+	get_and_put_from_buffer(lim.header_partitions.top_header, false);
+	fprintf(lim.files.destine, "\nlocal _={}\ndo ");
 
-	putchar('\n');
+	get_and_put_from_buffer(lim.header_partitions.code_scope,    true);
+	get_and_put_from_buffer(lim.buffers.root.scope_func_pointer, false);
+	get_and_put_from_buffer(lim.buffers.root.scope_func_address, true);
+	get_and_put_from_buffer(lim.buffers.root.scope_var_tab,      true);
+
+	get_and_put_from_buffer(lim.buffers.destine_file, false);
+	fprintf(lim.files.destine, " end\nlocal lim=_");
 }
