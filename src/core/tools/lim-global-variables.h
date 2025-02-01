@@ -29,7 +29,6 @@ struct Lim_Global_Variables{
 		bool verbose;
 		bool replace;
 		bool header_file;
-		char *until_stage;
 	}flags;
 
 	struct{

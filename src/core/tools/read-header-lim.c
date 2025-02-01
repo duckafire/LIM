@@ -17,15 +17,12 @@ HF_OUT_STATUS read_header_file(char **indiv_part_status){
 	if(!lim.flags.header_file)
 		return HF_READING_DISABLE;
 
-	if(lim.flags.until_stage != NULL)
-		return HF_DISABLED_FLAG;
-
 	lim.files.header_lim = fopen("header.lim", "r");
 	if(lim.files.header_lim == NULL)
-		return HF_HEADER_FILE_NOT_FOUND;
+		return HF_NOT_FOUND;
 
 	if(fgetc(lim.files.header_lim) == EOF)
-		return HF_HEADER_FILE_IS_EMPTY;
+		return HF_IS_EMPTY;
 	FSEEK;
 
 

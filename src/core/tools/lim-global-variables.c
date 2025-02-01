@@ -15,7 +15,6 @@ void lim_init_env(void){
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
 	lim.flags.header_file = true;
-	lim.flags.until_stage = NULL;
 
 	lim.header_partitions.top_header = NULL;
 	lim.header_partitions.code_scope = NULL;

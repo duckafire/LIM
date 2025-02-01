@@ -32,10 +32,10 @@ void check_program_arguments(int c, char *v[]){
 }
 
 static void is_it_information_flag(void){
-#define IGNORED(n) \
-	if(argc > n)   \
-		printf("[LIM] Arguments above %dth were ignored.\n\n", n)
-//#enddef
+	#define IGNORED(n) \
+		if(argc > n)   \
+			printf("[LIM] Arguments above %dth were ignored.\n\n", n)
+	//#enddef
 
 	if(argc == 0){
 		no_arguments_to_lim;
@@ -58,7 +58,7 @@ static void is_it_information_flag(void){
 		show_help_messages(argv[2]);
 	}
 
-#undef IGNORED
+	#undef IGNORED
 }
 
 static void search_and_set_source_file(void){
@@ -87,13 +87,13 @@ static bool read_other_arguments(void){
 		return true;
 
 
-#define REPETITION(cond)                 \
-	if(cond){                            \
-		ERROR_flag_repetititon(argv[i]); \
-	}
-//#enddef
-#define IS_NULL_NEXT_ARGV \
-	i == argc
+	#define REPETITION(cond)                 \
+		if(cond){                            \
+			ERROR_flag_repetititon(argv[i]); \
+		}
+	//#enddef
+	#define IS_NULL_NEXT_ARGV \
+		(i == argc)
 
 	for(short i = 2; i <= argc; i++){
 
@@ -119,47 +119,28 @@ static bool read_other_arguments(void){
 			continue;
 		}
 
-		if(flag_cmp(argv[i], FLAG_UNTIL_STAGE)){
-			REPETITION( (lim.flags.until_stage != NULL) )
 
-			// create ONE time, because repetition error
-			char *until_state = argv[i];
-
-			if(IS_NULL_NEXT_ARGV){
-				ERROR_suffix_expected_after_flag(argv[i]);
+		#define CMP_AND_SET(cond, var, val, ...) \
+			if(flag_cmp(argv[i], __VA_ARGS__)){  \
+				REPETITION( (cond) )             \
+				var = val;                       \
+				continue;                        \
 			}
-
-			i++;
-			if(strlen(argv[i]) > 1 && !(argv[i][0] > '1' && argv[i][0] < '5')){
-				ERROR_invalid_suffix_to_flag(until_state, "1-5", argv[i]);
-			}
-
-			lim.flags.until_stage = argv[i];
-			continue;
-		}
-
-
-#define CMP_AND_SET(cond, var, val, ...) \
-	if(flag_cmp(argv[i], __VA_ARGS__)){  \
-		REPETITION( (cond) )             \
-		var = val;                       \
-		continue;                        \
-	}
 
 		CMP_AND_SET(lim.flags.verbose,      lim.flags.verbose,     true,  FLAG_VERBOSE)
 		CMP_AND_SET(lim.flags.replace,      lim.flags.replace,     true,  FLAG_REPLACE)
 		CMP_AND_SET(!lim.flags.header_file, lim.flags.header_file, false, FLAG_NO_HEADER)
 
-		if(argv[i][0] == '-'){
+		if(argv[i][0] != '-'){
 			ERROR_unexpected_file_name(argv[i]);
 		}
 		ERROR_invalid_flag(argv[i]);
 	}
 
 
-#undef REPETITION
-#undef CMP_AND_SET
-#undef IS_NULL_NEXT_ARGV
+	#undef REPETITION
+	#undef CMP_AND_SET
+	#undef IS_NULL_NEXT_ARGV
 
 	return (lim.files.destine_name == NULL);
 }

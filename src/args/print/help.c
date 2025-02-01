@@ -33,8 +33,7 @@ static void help_with_arg(char *arg){
 			"-V  --verbose",
 			"-n  --name",
 			"-r  --replace",
-			"-nh --no-header",
-			"-us --until-stage"
+			"-nh --no-header"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LICENSE)){
@@ -95,8 +94,7 @@ static void help_with_arg(char *arg){
 			"foo_function_n",
 			"<<< FILE <<<",
 			" ",
-			"The \"header.lim\" will be ignored one of the flags (-nh) --no-header or (-us) --until-stage",
-			"is used.",
+			"The \"header.lim\" will be ignored if the flag (-nh) '--no-header' is used.",
 			" ",
 			"Access the official documentation for more information:",
 			"https://github.com/duckafire/lim/blob/main/docs/the-header-lim.md"
@@ -104,7 +102,7 @@ static void help_with_arg(char *arg){
 	}
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
 		MESSAGE(
-			"lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-us <1-5>] [-n <out>] ]"
+			"lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] ]"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
@@ -114,8 +112,7 @@ static void help_with_arg(char *arg){
 			"-V  --verbose     -> lim {-V | --verbose} <input>.lua",
 			"-n  --name        -> lim <input>.lua {-n | --name} <output>",
 			"-r  --replace     -> lim {-r | --replace} <input>.lua",
-			"-nh --no-header   -> lim <source> {-nh | --no-header} <input>.lua",
-			"-us --until-stage -> lim <input>.lua {-us | --until-stage} <1-5>"
+			"-nh --no-header   -> lim <source> {-nh | --no-header} <input>.lua"
 		);
 	}
 }
@@ -162,13 +159,6 @@ static void help_flag(char *flag){
 			"lim <source> {-nh | --no-header} <input>.lua",
 			" ",
 			"Specific that the file \"header.lim\" must be ignored."
-		);
-	}
-	if(flag_cmp(flag, FLAG_UNTIL_STAGE)){
-		MESSAGE(
-			"lim <input>.lua {-us | --until-stage} <1-5>",
-			" ",
-			"Specific that the compaction process must run until a specific stage."
 		);
 	}
 }

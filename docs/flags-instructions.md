@@ -15,7 +15,6 @@
 	* <a href="#action-1">--replace</a>
 	* <a href="#action-2">--name</a>
 	* <a href="#action-3">--no-header</a>
-	* <a href="#action-4">--until-stage</a>
 * <a href="#syn"><i>Global</i> recommended synopsis</a>
 
 <br>
@@ -50,7 +49,6 @@
 	<li id="action-1"><code>-r | --replace</code>: specify that, if already exist a file with the same name of the, output file must be replaced.</li>
 	<li id="action-2"><code>-n | --name</code>: specify that the next argument is the output file name. One argument (output file name) is required after it.</li>
 	<li id="action-3"><code>-nh | --no-header</code>: specific that the file "header.lim" must be ignored.</li>
-	<li id="action-4"><code>-us | --until-stage</code>: specific that the compaction process must run until a specific stage. One number between 1-5 is required after it.</li>
 </ul>
 
 <br>
@@ -60,7 +58,7 @@
 <br>
 
 ```
-lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-us <1-5>] [-n <out>] ]
+lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] ]
 ```
 
 <br>

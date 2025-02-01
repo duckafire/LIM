@@ -17,7 +17,7 @@
 
 <h3 id="overview">Overview</h3>
 
-&emsp;Every that the flags `--no-header` (`-nh`) and `--until-stage` (`-us`) are not used, Lim will be to seek, in the current directory, a file named like *header.lim*. If this file is found, its content will be read and separated in memory buffers, for future processes. Else, the compaction process will be continue normally.
+&emsp;Every that the flag `--no-header` (`-nh`) is not used, Lim will be to seek, in the current directory, a file named like *header.lim*. If this file is found, its content will be read and separated in memory buffers, for future processes. Else, the compaction process will be continue normally.
 
 <br>
 
@@ -91,7 +91,7 @@ trigonometry
 draw
 @
 printf
-table_cat
+tabcat
 delay
 ```
 
@@ -105,13 +105,12 @@ delay
 
 <h4 id="status-file">File</h4>
 
-| Index | Description                                                        |
-| :-:   | :--                                                                |
-| 0     | The reading was disable by use of the flag (`-nh`) `--no-header`   |
-| 1     | The reading was disable by use of the flag (`-us`) `--until-stage` |
-| 2     | The file was not found                                             |
-| 3     | The file is empty                                                  |
-| 4     | The file was readed with success                                   |
+| Index | Description                            |
+| :-:   | :--                                    |
+| 0     | Reading disabled by flag `--no-header` |
+| 1     | The file was not found                 |
+| 2     | The file is empty                      |
+| 3     | The file was readed with success       |
 
 <br>
 

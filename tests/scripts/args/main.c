@@ -19,7 +19,6 @@ int main(int argc, char *argv[]){
 	printf("  [-V ] Verbose messages:  %d\n",   lim.flags.verbose);
 	printf("  [-r ] Replace output:    %d\n",   lim.flags.replace);
 	printf("  [-nh] Header included:   %d\n",   lim.flags.header_file);
-	printf("  [-us] Last stage:        %s\n\n", lim.flags.until_stage);
 	return 0;
 }
 
@@ -32,7 +31,6 @@ static void start_global_variables(void){
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
 	lim.flags.header_file = true;
-	lim.flags.until_stage = NULL;
 }
 
 static void lim_free(void){

@@ -14,14 +14,8 @@
 ./scripts/.tmp/a.lua --name output
 ./scripts/.tmp/a.lua -nh
 ./scripts/.tmp/a.lua --no-header
-./scripts/.tmp/a.lua -us 1
-./scripts/.tmp/a.lua --until-stage 1
 ./scripts/.tmp/a.lua -n
 ./scripts/.tmp/a.lua --name
-./scripts/.tmp/a.lua -us
-./scripts/.tmp/a.lua --until-stage
-./scripts/.tmp/a.lua -us foo
-./scripts/.tmp/a.lua --until-stage foo
 ./scripts/.tmp/b.lua -x
 ./scripts/.tmp/b.lua
 ./scripts/.tmp/b.lua --foo
@@ -33,8 +27,6 @@
 ./scripts/.tmp/b.lua -r --name output
 ./scripts/.tmp/b.lua -r -nh
 ./scripts/.tmp/b.lua -r --no-header
-./scripts/.tmp/b.lua -r -us 1
-./scripts/.tmp/b.lua -r --until-stage 1
 ./scripts/.tmp/c.lua
 ./scripts/.tmp/main.c
 -v -x
@@ -68,4 +60,3 @@
 --help --name
 --help --replace
 --help --no-header
---help --until-stage
