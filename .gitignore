@@ -3,14 +3,16 @@ bin-alpha/
 *.lua
 *.lim
 
-void
+void/
 todo
 
-tests/scripts/.tmp
-tests/lim-broken
 tests/new
+tests/bin/
+tests/lim-broken/
+tests/scripts/.tmp/
 
+build/
 Makefile
+CMakeFiles/
 CMakeCache.txt
-CMakeFiles
 cmake_install.cmake

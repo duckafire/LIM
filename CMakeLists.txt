@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
-# define the executable destine
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin-alpha)
+
+option(DEBUG_VERSION ON "Turn on GDB bug flag ('-g') + move executable to '../tests/'")
+
+if(DEBUG_VERSION)
+	set(CMAKE_BUILD_TYPE "Debug")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../tests/bin/)
+else(DEBUG_VERSION)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin/)
+endif(DEBUG_VERSION)
+
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
@@ -13,33 +21,17 @@ project(lim
 	LANGUAGES    C
 )
 
-# set files
 
-set(MAIN ${CMAKE_BINARY_DIR}/src/main.c)
-set(ARULES ${CMAKE_BINARY_DIR}/src/args/rules)
-set(APRINT ${CMAKE_BINARY_DIR}/src/args/print)
-set(CORE   ${CMAKE_BINARY_DIR}/src/core)
-set(CCHECK ${CMAKE_BINARY_DIR}/src/core/check-content)
-set(CTOOLS ${CMAKE_BINARY_DIR}/src/core/tools)
+file(GLOB MAIN       ${CMAKE_BINARY_DIR}/../src/*.c)
+file(GLOB ARGS_PRINT ${CMAKE_BINARY_DIR}/../src/args/print/*.c)
+file(GLOB ARGS_RULES ${CMAKE_BINARY_DIR}/../src/args/rules/*.c)
+file(GLOB CORE       ${CMAKE_BINARY_DIR}/../src/core/*.c)
+file(GLOB CORE_TOOLS ${CMAKE_BINARY_DIR}/../src/core/tools/*.c)
+FILE(GLOB CORE_CKCTT ${CMAKE_BINARY_DIR}/../src/core/check-content/*.c)
 
-add_executable(lim
-	${MAIN}
-	${ARULES}/check-and-treat.c
-	${ARULES}/flag-man.c
-	${APRINT}/help.c
-	${APRINT}/verbose.c
-	${CORE}/ident-man.c
-	${CORE}/process-master.c
-	${CORE}/treat.c
-	${CCHECK}/const.c
-	${CCHECK}/ident.c
-	${CTOOLS}/queue.c
-	${CTOOLS}/lim-global-variables.c
-	${CTOOLS}/read-header-lim.c
-	${CTOOLS}/string-plus.c
-)
+add_executable(lim ${MAIN} ${ARGS_PRINT} ${ARGS_RULES} ${CORE} ${CORE_TOOLS} ${CORE_CKCTT})
 
-# create dinamic header files
-set(DIR_CMAKE_H ${CMAKE_CURRENT_SOURCE_DIR}/src/cmake-h)
 
-configure_file(${DIR_CMAKE_H}/version.h.in ${DIR_CMAKE_H}/version.h)
+set(HEADER_DIR ${CMAKE_BINARY_DIR}/../src/cmake-h)
+
+configure_file(${HEADER_DIR}/version.h.in ${HEADER_DIR}/version.h)
