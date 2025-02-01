@@ -111,7 +111,7 @@ static void free_nick_buf(char *nick_buf[], bool saveds_included){
 }
 
 
-void new_local_environment(void){
+void new_local_environment(bool is_method){
 	Func_Env_Stack *new;
 
 	new = malloc(sizeof(Func_Env_Stack));
@@ -120,16 +120,26 @@ void new_local_environment(void){
 	new->local_func    = NULL;
 	new->local_var_tab = NULL;
 	new->parameter     = NULL;
+	new->is_method     = is_method;
 	new->below         = NULL;
+
+	#define NICK_TO_SELF   \
+		if(new->is_method) \
+			save_ident_in_buffer("self", NULL, false, SCOPE_IDENT, &(new->local_var_tab))
 
 	if(lim.buffers.local.bottom == NULL){
 		lim.buffers.local.bottom = new;
 		lim.buffers.local.top = new;
+
+		NICK_TO_SELF;
 		return;
 	}
 
 	new->below = lim.buffers.local.top;
 	lim.buffers.local.top = new;
+	NICK_TO_SELF;
+
+	#undef NICK_TO_SELF
 }
 
 void drop_local_environment(char **anony_func_to_local_declare){
@@ -157,6 +167,13 @@ void drop_local_environment(char **anony_func_to_local_declare){
 		if(top->scope_var_tab != NULL && d != EOF && c == ')'){
 			while( (d = fgetc(top->scope_var_tab)) != EOF)
 				PUT(d);
+
+			if(top->is_method){
+				char *e, *self = "=self";
+
+				for(e = self; *e != '\0'; e++)
+					PUT(*e);
+			}
 
 			PUT(';');
 		}

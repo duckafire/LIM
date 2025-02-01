@@ -436,7 +436,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 
 	if(common_token_test(0,"=><~",  LT_LOPERATOR, LT_LOPERATOR, 0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(0,"+-*/%^",LT_MOPERATOR, LT_MOPERATOR, 0, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_USEORCALL, LT_NULL)) return;
-	if(common_token_test('.', NULL, LT_NULL,      LT_CONCAT,    0, LT_STRING, LT_NULL)) return;
+	if(common_token_test('.', NULL, LT_NULL,      LT_CONCAT,    0, LT_STRING, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     1, LT_BRACKETO, LT_COMMA, LT_NULL)) return;
 	if(common_token_test(0,   "'\"",LT_STRING,    LT_STRING,    1, LT_BRACKETO, LT_COMMA, LT_CONCAT, LT_LOPERATOR, LT_NULL)) return;
 	if(common_token_test(',', NULL, LT_COMMA,     LT_COMMA,     1, LT_BOOLEAN, LT_FUNC_END, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
@@ -536,21 +536,20 @@ static void update_local_declare(bool is_const){
 	}
 
 	
-	const bool is_value = (locald->bvalue != NULL && *buf == locald->bvalue);
 	qee_bigger_to_lower(false);
 	
 	if(*buf == NULL){
 		*buf = qee_create(gident, gtable_key, NULL, is_const);
 		(*qtt)++;
 
-		if(is_value)
+		if(locald->attrib_start)
 			locald->bvtail = *buf;
 
 	}else{
 		if(qee_add_item(buf, gident, gtable_key, NULL, is_const, ((*buf == locald->bvalue) ? QEE_INSERT : QEE_DROP))){
 			(*qtt)++;
 
-			if(is_value && locald->bvtail->next != NULL)
+			if(locald->attrib_start)
 				locald->bvtail = locald->bvtail->next;
 		}
 	}
@@ -639,7 +638,7 @@ static void start_function_declaration(bool is_anony){
 
 	functd.start_declare = true;
 	functd.parameter_end = false;
-	new_local_environment();
+	new_local_environment( (!is_anony && gtable_key != NULL && gtable_key[0] == ':') );
 
 	if(layer.height > 1)
 		save_local_parameter_state();

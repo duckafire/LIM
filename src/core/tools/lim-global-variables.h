@@ -11,6 +11,7 @@ typedef struct Func_Env_Stack{
 	Queue *local_func;
 	Queue *local_var_tab;
 	Queue *parameter;
+	bool is_method; // foo:method != foo.functi
 	struct Func_Env_Stack *below;
 }Func_Env_Stack;
 
