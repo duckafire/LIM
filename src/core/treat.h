@@ -63,6 +63,7 @@ void finish_treatment(void);
 void treat_const(char *str);
 void treat_ident(char *_ident, char *_table_key);
 void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf);
+static void default_const_treatment(char *str);
 
 static void update_layer(bool is_func);
 static bool downdate_layer(void);

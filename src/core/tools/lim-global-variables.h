@@ -10,6 +10,7 @@ typedef struct Func_Env_Stack{
 	FILE *scope_var_tab;
 	Queue *local_func;
 	Queue *local_var_tab;
+	Queue *local_for_loop;
 	Queue *parameter;
 	bool is_method; // foo:method != foo.functi
 	struct Func_Env_Stack *below;
@@ -40,11 +41,10 @@ struct Lim_Global_Variables{
 
 	struct{
 		FILE *destine_file;
-		unsigned long source_file_line;
 
 		struct{
 			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
-			Queue *global_func, *global_var_tab;
+			Queue *global_func, *global_var_tab, *global_for_loop;
 			Queue *func_from_lua, *table_from_lua;
 			Queue *func_from_header, *table_from_header;
 		}root;

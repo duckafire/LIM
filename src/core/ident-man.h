@@ -8,19 +8,29 @@ typedef enum{
 	SCOPE_STD_HDR,
 	SCOPE_IDENT,
 	SCOPE_PARAM,
+	SCOPE_FOR_LOOP,
+	// NOTE: there is not a PARAMETER or
+	// FOR_LOOP scope, this is only to
+	// choose it a nickname
 }SCOPE_ID;
-// NOTE: there is not a PARAMETER scope
-// this is only to choose it nickname
+
+typedef struct Nick_For_Loop_Stack{
+	char *save_state;
+	unsigned short layer_base;
+	struct Nick_For_Loop_Stack *below;
+}Nick_For_Loop_Stack;
 
 void start_nickname_buffers(void);
 void restart_local_parameter_nicknames(void);
-static void restart_nickname_of(char *nick_buf[]);
 void save_local_parameter_state(void);
-static void save_state_of(char *nick_buf[]);
+void new_nicknames_env_to_for_loop(unsigned short layer_base);
+static void restart_nickname_of(char *nick_buf[]);
 static void start_nick_buf(char *nick_buf[]);
 static char* get_and_update_nick(char *nick_buf[]);
 static void update_nick_current(char *nick_buf[], const int last_char);
-void free_nickname_buffers(bool saveds_included);
+void pop_nicknames_env_to_for_loop(unsigned short cur_layer);
+static void drop_nicknames_env_to_for_loop(void);
+void free_nickname_buffers(void);
 static void free_nick_buf(char *nick_buf[], bool saveds_included);
 
 void new_local_environment(bool is_method);

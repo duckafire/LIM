@@ -19,12 +19,14 @@ static DECLARE_TOKEN dtoken = DT_NULL;
 static Stack_Env *locald = NULL; // LOCAL Declaration
 static bool space_is_mandatory = false;
 struct{ bool start_declare; bool parameter_end; }functd = {false, false};
-struct {unsigned short height; Layer_Type *type; }layer = {0, NULL};
+struct { unsigned short height; Layer_Type *type; }layer = {0, NULL};
+struct { bool start_declare, expect_comma, kw_placed; } for_loop = {false, false};
 
-#define IS_ROOT     (layer.height == 0)
-#define BUF_FUNC    ((IS_ROOT) ? &(lim.buffers.root.global_func) : &(lim.buffers.local.top->local_func))
-#define BUF_VAR_TAB ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab))
-#define CTT_BUF     ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
+#define IS_ROOT      (layer.height == 0)
+#define BUF_FUNC     ((IS_ROOT) ? &(lim.buffers.root.global_func)    : &(lim.buffers.local.top->local_func))
+#define BUF_VAR_TAB  ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab))
+#define BUF_FOR_LOOP ((IS_ROOT) ? &(lim.buffers.root.global_for_loop): &(lim.buffers.local.top->local_for_loop))
+#define CTT_BUF      ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
 #define FORMAT(tk)  ((tk == NULL) ? "%s" : "%s%s")
 #define MIN(a, b)   ((a < b) ? a : b)
 #define IS_LUA_KW   (isalpha(gident[0]) && is_from_lua(gident, CKIA_LUA_KW))
@@ -40,8 +42,10 @@ void finish_treatment(void){
 }
 
 void treat_const(char *str){
-	const bool is_local = (strcmp(str, "local") == 0);
+	const bool is_local = (strcmp(str, "local")    == 0);
 	const bool is_funct = (strcmp(str, "function") == 0);
+	const bool is_floop = (strcmp(str, "for")      == 0);
+	const bool is_endkw = (strcmp(str, "end")      == 0);
 	const bool is_func_param_declare = (functd.start_declare && !functd.parameter_end);
 
 	gident     = str;
@@ -53,7 +57,7 @@ void treat_const(char *str){
 		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0){
 			update_layer(false);
 
-		}else if(strcmp(str, "end") == 0 && downdate_layer()){
+		}else if(is_endkw && downdate_layer()){
 			popped = true;
 
 			if(pop_function_declaration())
@@ -62,6 +66,9 @@ void treat_const(char *str){
 
 		if(!popped && layer.height == 0 && pop_function_declaration())
 			return;
+
+	}else if(is_endkw){
+		pop_nicknames_env_to_for_loop(layer.height);
 	}
 
 	if(is_func_param_declare){
@@ -87,12 +94,21 @@ void treat_const(char *str){
 	}else if(is_local){
 		dtoken = DT_LOCAL;
 
-	}else{
-		check_if_space_is_need(str);
-		set_if_space_is_mandatory(str);
+	}else if(for_loop.start_declare){
+		default_const_treatment(str);
 
-		dtoken = DT_NULL;
-		fprintf(CTT_BUF, "%s", str);
+		if(for_loop.expect_comma && str[0] == ',')
+			for_loop.expect_comma = false;
+		else
+			for_loop.start_declare = false;
+
+	}else if(is_floop){
+		new_nicknames_env_to_for_loop(layer.height);
+		for_loop.start_declare = true;
+		for_loop.expect_comma  = false;
+		for_loop.kw_placed     = false;
+	}else{
+		default_const_treatment(str);
 	}
 }
 
@@ -135,6 +151,20 @@ void treat_ident(char *_ident, char *_table_key){
 			treat_local_declare_AFTER_comma(true);
 
 		return;
+	}else if(for_loop.start_declare){
+		if(!for_loop.kw_placed){
+			for_loop.kw_placed = true;
+			default_const_treatment("for ");
+		}
+
+		if(!for_loop.expect_comma){
+			fprintf(CTT_BUF, "%s", save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_FOR_LOOP, BUF_FOR_LOOP));
+			space_is_mandatory = true;
+			for_loop.expect_comma = true;
+			return;
+		}
+
+		for_loop.start_declare = false;
 	}
 
 	// use or call
@@ -188,6 +218,14 @@ void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf){
 		free(full);
 }
 
+static void default_const_treatment(char *str){
+	check_if_space_is_need(str);
+	set_if_space_is_mandatory(str);
+
+	dtoken = DT_NULL;
+	fprintf(CTT_BUF, "%s", str);
+}
+
 
 static void update_layer(bool is_func){
 	layer.height++;
@@ -217,6 +255,7 @@ static bool downdate_layer(void){
 	const bool is_func = tmp->is_func_layer;
 	free(tmp);
 
+	pop_nicknames_env_to_for_loop(layer.height);
 	return is_func;
 }
 

@@ -23,16 +23,16 @@ void lim_init_env(void){
 	lim.header_partitions.table_list = NULL;
 
 	lim.buffers.destine_file = NULL;
-	lim.buffers.source_file_line = 1;
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;
 	lim.buffers.root.scope_var_tab      = NULL;
 	lim.buffers.root.global_func        = NULL;
+	lim.buffers.root.global_var_tab     = NULL;
+	lim.buffers.root.global_for_loop    = NULL;
 	lim.buffers.root.func_from_lua      = NULL;
 	lim.buffers.root.table_from_lua     = NULL;
 	lim.buffers.root.func_from_header   = NULL;
 	lim.buffers.root.table_from_header  = NULL;
-	lim.buffers.root.global_var_tab     = NULL;
 	lim.buffers.local.top               = NULL;
 	lim.buffers.local.bottom            = NULL;
 }
@@ -80,6 +80,7 @@ void lim_free_env(void){
 
 	qee_free_queue(lim.buffers.root.global_func);
 	qee_free_queue(lim.buffers.root.global_var_tab);
+	qee_free_queue(lim.buffers.root.global_for_loop);
 	qee_free_queue(lim.buffers.root.func_from_lua);
 	qee_free_queue(lim.buffers.root.table_from_lua);
 	qee_free_queue(lim.buffers.root.func_from_header);

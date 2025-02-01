@@ -10,11 +10,13 @@
 // #0: nickname to lua standard and header identifiers;
 // NICK_CURRENT, NICK_FORMAT, NICK_FIRST, NICK_LAST, NICK_PREFIX, NICK_SAVEDS
 static char *nick_std_hdr[5]      = {NULL, NULL, "A", "Z", "\0"};
-static char *nick_global_ident[5] = {NULL, NULL, "a", "z", "G",};
-static char *nick_local_ident[6]  = {NULL, NULL, "a", "z", "L",  NULL}; // nickname
+static char *nick_global_ident[5] = {NULL, NULL, "a", "z", "G"};
+static char *nick_local_ident[6]  = {NULL, NULL, "a", "z", "L",  NULL}; // nick_saveds
 static char *nick_parameter[6]    = {NULL, NULL, "a", "z", "\0", NULL}; // ~
+static char *nick_for_loop[5]     = {NULL, NULL, "a", "z", "F"};
 
 static const short LEN_2C = sizeof(char) * 2;
+static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
 
 #define NICK_CURRENT(n) (n[0])
 #define NICK_FORMAT(n)  (n[1])
@@ -30,6 +32,7 @@ void start_nickname_buffers(void){
 	start_nick_buf(nick_global_ident);
 	start_nick_buf(nick_local_ident);
 	start_nick_buf(nick_parameter);
+	start_nick_buf(nick_for_loop);
 }
 
 void restart_local_parameter_nicknames(void){
@@ -37,21 +40,32 @@ void restart_local_parameter_nicknames(void){
 	restart_nickname_of(nick_parameter);
 }
 
+void save_local_parameter_state(void){
+	NICK_SAVEDS(nick_local_ident) = string_copy( NICK_CURRENT(nick_local_ident) );
+	NICK_SAVEDS(nick_parameter)   = string_copy( NICK_CURRENT(nick_parameter) );
+}
+
+void new_nicknames_env_to_for_loop(unsigned short layer_base){
+	Nick_For_Loop_Stack *new;
+
+	new = malloc( sizeof(Nick_For_Loop_Stack) );
+	new->save_state = string_copy( NICK_CURRENT(nick_for_loop) );
+	new->layer_base = layer_base;
+	new->below = NULL;
+
+	if(nick_for_loop_data == NULL){
+		nick_for_loop_data = new;
+		return;
+	}
+
+	new->below = nick_for_loop_data;
+	nick_for_loop_data = new;
+}
+
 static void restart_nickname_of(char *nick_buf[]){
 	free_nick_buf(nick_buf, false);
-	start_nick_buf(nick_buf);
 	NICK_CURRENT(nick_buf) = NICK_SAVEDS(nick_buf);
 	NICK_SAVEDS(nick_buf) = NULL;
-}
-
-void save_local_parameter_state(void){
-	save_state_of(nick_local_ident);
-	save_state_of(nick_parameter);
-}
-
-static void save_state_of(char *nick_buf[]){
-	NICK_SAVEDS(nick_buf) = malloc( strlen( NICK_CURRENT(nick_buf) + 1 ) );
-	strcpy(NICK_SAVEDS(nick_buf), NICK_CURRENT(nick_buf));
 }
 
 static void start_nick_buf(char *nick_buf[]){
@@ -92,11 +106,34 @@ static void update_nick_current(char *nick_buf[], const int last_char){
 	strcat(NICK_CURRENT(nick_buf), NICK_FIRST(nick_buf));
 }
 
-void free_nickname_buffers(bool saveds_included){
-	free_nick_buf(nick_std_hdr,      saveds_included);
-	free_nick_buf(nick_global_ident, saveds_included);
-	free_nick_buf(nick_local_ident,  saveds_included);
-	free_nick_buf(nick_parameter,    saveds_included);
+void pop_nicknames_env_to_for_loop(unsigned short cur_layer){
+	if(nick_for_loop_data == NULL || cur_layer > nick_for_loop_data->layer_base)
+		return;
+
+	free( NICK_CURRENT(nick_for_loop) );
+	NICK_CURRENT(nick_for_loop) = nick_for_loop_data->save_state;
+
+	drop_nicknames_env_to_for_loop();
+}
+
+static void drop_nicknames_env_to_for_loop(void){
+	Nick_For_Loop_Stack *tmp;
+
+	tmp = nick_for_loop_data;
+	nick_for_loop_data = nick_for_loop_data->below;
+	
+	free(tmp);
+}
+
+void free_nickname_buffers(void){
+	while(nick_for_loop_data != NULL)
+		drop_nicknames_env_to_for_loop();
+
+	free_nick_buf(nick_std_hdr,      false);
+	free_nick_buf(nick_global_ident, false);
+	free_nick_buf(nick_local_ident,  true);
+	free_nick_buf(nick_parameter,    true);
+	free_nick_buf(nick_for_loop,     false);
 }
 
 static void free_nick_buf(char *nick_buf[], bool saveds_included){
@@ -197,19 +234,12 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	char *nick_tmp, **nick_buf;
 
 	if(ident[0] != '_'){
-
-		if(id == SCOPE_IDENT){
-			if(is_root)
-				nick_buf = nick_global_ident;
-			else
-				nick_buf = nick_local_ident;
-
-		}else if(id == SCOPE_STD_HDR)
-			nick_buf = nick_std_hdr;
-
-		else if(id == SCOPE_PARAM)
-			nick_buf = nick_parameter;
-
+		switch(id){
+			case SCOPE_IDENT:    nick_buf = ((is_root) ? nick_global_ident : nick_local_ident); break;
+			case SCOPE_STD_HDR:  nick_buf = nick_std_hdr;   break;
+			case SCOPE_PARAM:    nick_buf = nick_parameter; break;
+			case SCOPE_FOR_LOOP: nick_buf = nick_for_loop;  break;
+		}
 		nick_tmp = get_and_update_nick(nick_buf);
 
 	}else{

@@ -14,12 +14,7 @@ bool clear_white_spaces(char *c){
 	if(*c == EOF)
 		return false;
 
-	if(*c == '\n')
-		lim.buffers.source_file_line++;
-
-	while(!isgraph(*c) && (*c = fgetc(lim.files.source)) != EOF)
-		if(*c == '\n')
-			lim.buffers.source_file_line++;
+	while(!isgraph(*c) && (*c = fgetc(lim.files.source)) != EOF);
 
 	return (*c == EOF);
 }
