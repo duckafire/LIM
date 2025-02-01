@@ -52,20 +52,12 @@ void treat_const(char *str){
 	gtable_key = NULL;
 
 	if(!is_func_param_declare && layer.height > 0){
-		bool popped = false;
-
-		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0){
+		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0)
 			update_layer(false);
 
-		}else if(is_endkw && downdate_layer()){
-			popped = true;
-
+		else if(is_endkw && downdate_layer())
 			if(pop_function_declaration())
 				return;
-		}
-
-		if(!popped && layer.height == 0 && pop_function_declaration())
-			return;
 
 	}else if(is_endkw){
 		pop_nicknames_env_to_for_loop(layer.height);
@@ -134,7 +126,7 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(functd.start_declare && !functd.parameter_end){
-		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_PARAM, &(lim.buffers.local.top->parameter));
+		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_PARAM, &(lim.buffers.local.top->parameter));
 		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 		return;
 
@@ -350,7 +342,7 @@ static bool common_token_test(char first, char *str, LOCAL_TOKEN norepeat, LOCAL
 
 		if(check_comma == 1 && locald->token == LT_COMMA)
 			update_local_declare( PLD_FAIL_CONST );
-		else if(first != ',')
+		else if(first != ',' || new_token_id == LT_PAREN_COMMA)
 			merge_compound_value(gident);
 
 		const char lastc = gident[strlen(gident) - 1];
@@ -370,7 +362,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 	token = &(locald->token);
 
 	if(is_ident){
-		if(!compare_token(LT_USEORCALL, NULL, LT_COMMA, LT_MOPERATOR, LT_LOPERATOR, LT_PARENO, LT_BRACKETO, LT_NULL)){
+		if(!compare_token(LT_USEORCALL, NULL, LT_COMMA, LT_MOPERATOR, LT_LOPERATOR, LT_PARENO, LT_BRACKETO, LT_PAREN_COMMA, LT_NULL)){
 			print_local_declare(PLD_FAIL_IDENT);
 			return;
 		}
@@ -393,7 +385,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 		for(i = 0; i < 3; i++){
 			if(strcmp(gident, lua_boolean_kw[i]) == 0){
 
-				if(!compare_token(LT_BOOLEAN, NULL, LT_COMMA, LT_PARENO, LT_LOPERATOR, LT_BRACKETO, LT_NULL)){
+				if(!compare_token(LT_BOOLEAN, NULL, LT_COMMA, LT_PARENO, LT_LOPERATOR, LT_BRACKETO, LT_PAREN_COMMA, LT_NULL)){
 					print_local_declare( PLD_FAIL_CONST );
 					return;
 				}
@@ -425,7 +417,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 
 		// function
 		if(strcmp(gident, "function") == 0){
-			if(*token != LT_COMMA){
+			if(*token != LT_COMMA && *token != LT_PAREN_COMMA){
 				print_local_declare( PLD_FAIL_CONST );
 				return;
 			}
@@ -439,7 +431,7 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 	}
 
 	if(isdigit(gident[0])){
-		if(!compare_token(LT_NUMBER, NULL, LT_COMMA, LT_BRACKETO, LT_PARENO, LT_MOPERATOR, LT_LOPERATOR, LT_NULL)){
+		if(!compare_token(LT_NUMBER, NULL, LT_COMMA, LT_BRACKETO, LT_PARENO, LT_MOPERATOR, LT_LOPERATOR, LT_PAREN_COMMA, LT_NULL)){
 			print_local_declare( PLD_FAIL_CONST );
 			return;
 		}
@@ -473,13 +465,27 @@ static void treat_local_declare_AFTER_comma(bool is_ident){
 		return;
 	}
 
+	if(strchr("()", gident[0]) != NULL){ // no return
+		char *c;
+
+		for(c = gident; *c != '\0'; c++){
+			if(*c == '(')
+				(locald->paren_layer)++;
+
+			else if(locald->paren_layer > 0)
+				(locald->paren_layer)--;
+		}
+	}
+
+	if(locald->paren_layer > 0 && common_token_test(',', NULL, LT_PAREN_COMMA, LT_PAREN_COMMA, 1, LT_BOOLEAN, LT_FUNC_END, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
+
 	if(common_token_test(0,"=><~",  LT_LOPERATOR, LT_LOPERATOR, 0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(0,"+-*/%^",LT_MOPERATOR, LT_MOPERATOR, 0, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('.', NULL, LT_NULL,      LT_CONCAT,    0, LT_STRING, LT_USEORCALL, LT_NULL)) return;
-	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     1, LT_BRACKETO, LT_COMMA, LT_NULL)) return;
-	if(common_token_test(0,   "'\"",LT_STRING,    LT_STRING,    1, LT_BRACKETO, LT_COMMA, LT_CONCAT, LT_LOPERATOR, LT_NULL)) return;
+	if(common_token_test('{', NULL, LT_NULL,      LT_TABLE,     1, LT_BRACKETO, LT_COMMA, LT_PAREN_COMMA, LT_NULL)) return;
+	if(common_token_test(0,   "'\"",LT_STRING,    LT_STRING,    1, LT_BRACKETO, LT_COMMA, LT_CONCAT, LT_PAREN_COMMA, LT_LOPERATOR, LT_NULL)) return;
 	if(common_token_test(',', NULL, LT_COMMA,     LT_COMMA,     1, LT_BOOLEAN, LT_FUNC_END, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
-	if(common_token_test('(', NULL, LT_NULL,      LT_PARENO,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_USEORCALL, LT_NULL)) return;
+	if(common_token_test('(', NULL, LT_NULL,      LT_PARENO,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_PAREN_COMMA, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(')', NULL, LT_NULL,      LT_PARENC,    1, LT_BRACKETC, LT_BRACKETO, LT_COMMA, LT_LOPERATOR, LT_MOPERATOR, LT_NUMBER, LT_PARENC, LT_PARENO, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test('[', NULL, LT_NULL,      LT_BRACKETO,  0, LT_USEORCALL, LT_NULL)) return;
 	if(common_token_test(']', NULL, LT_BRACKETO,  LT_BRACKETC,  0, LT_BOOLEAN, LT_BRACKETC, LT_NUMBER, LT_PARENC, LT_STRING, LT_TABLE, LT_USEORCALL, LT_NULL)) return;
@@ -519,6 +525,8 @@ static void new_var_tab_declare_env(bool start, bool in_ident_decl){
 
 	locald->qident = 0;
 	locald->qvalue = 0;
+
+	locald->paren_layer = 0;
 }
 
 static void drop_var_tab_declare_env(bool force){
@@ -679,8 +687,7 @@ static void start_function_declaration(bool is_anony){
 	functd.parameter_end = false;
 	new_local_environment( (!is_anony && gtable_key != NULL && gtable_key[0] == ':') );
 
-	if(layer.height > 1)
-		save_local_parameter_state();
+	save_local_parameter_state();
 
 	if(is_anony){
 		fprintf(CTT_BUF, "%cfunction%s", ((space_is_mandatory && (locald == NULL || locald->token != LT_FUNC_START)) ? ' ' : '\0'), gident);

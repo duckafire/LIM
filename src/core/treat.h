@@ -37,6 +37,7 @@ typedef enum{
 	LT_NUMBER,
 	LT_PARENC,
 	LT_PARENO,
+	LT_PAREN_COMMA,
 	LT_STRING,
 	LT_TABLE,
 	LT_USEORCALL,
@@ -56,6 +57,7 @@ typedef struct Stack_Env{
 	LOCAL_TOKEN token;
 	Queue *bident, *bvalue, *bvtail; // buffer
 	unsigned short qident, qvalue;   // quantity
+	unsigned short paren_layer;
 	struct Stack_Env *below;
 }Stack_Env;
 
@@ -64,6 +66,7 @@ void treat_const(char *str);
 void treat_ident(char *_ident, char *_table_key);
 void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf);
 static void default_const_treatment(char *str);
+
 
 static void update_layer(bool is_func);
 static bool downdate_layer(void);

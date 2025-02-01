@@ -33,6 +33,8 @@ void start_nickname_buffers(void){
 	start_nick_buf(nick_local_ident);
 	start_nick_buf(nick_parameter);
 	start_nick_buf(nick_for_loop);
+
+	save_local_parameter_state();
 }
 
 void restart_local_parameter_nicknames(void){
