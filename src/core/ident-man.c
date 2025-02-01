@@ -154,13 +154,14 @@ void new_local_environment(bool is_method){
 	Func_Env_Stack *new;
 
 	new = malloc(sizeof(Func_Env_Stack));
-	new->content       = tmpfile();
-	new->scope_var_tab = NULL;
-	new->local_func    = NULL;
-	new->local_var_tab = NULL;
-	new->parameter     = NULL;
-	new->is_method     = is_method;
-	new->below         = NULL;
+	new->content        = tmpfile();
+	new->scope_var_tab  = NULL;
+	new->local_func     = NULL;
+	new->local_var_tab  = NULL;
+	new->local_for_loop = NULL;
+	new->parameter      = NULL;
+	new->is_method      = is_method;
+	new->below          = NULL;
 
 	#define NICK_TO_SELF   \
 		if(new->is_method) \
@@ -300,7 +301,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 }
 
 char* get_nickname_of(char *ident, bool is_root){
-	Queue *cur, *bufs[6];
+	Queue *cur, *bufs[7];
 
 	if(ident[0] == '_')
 		return ident;
@@ -311,9 +312,10 @@ char* get_nickname_of(char *ident, bool is_root){
 		for(env = lim.buffers.local.top; env != NULL; env = env->below){
 			bufs[0] = env->local_func;
 			bufs[1] = env->local_var_tab;
-			bufs[2] = env->parameter;
+			bufs[2] = env->local_for_loop;
+			bufs[3] = env->parameter;
 
-			for(short i = 0; i < 3; i++){
+			for(short i = 0; i < 4; i++){
 				cur = qee_get_item(bufs[i], ident);
 
 				if(cur != NULL)
@@ -325,12 +327,13 @@ char* get_nickname_of(char *ident, bool is_root){
 
 	bufs[0] = lim.buffers.root.global_func;
 	bufs[1] = lim.buffers.root.global_var_tab;
-	bufs[2] = lim.buffers.root.func_from_lua;
-	bufs[3] = lim.buffers.root.table_from_lua;
-	bufs[4] = lim.buffers.root.func_from_header;
-	bufs[5] = lim.buffers.root.table_from_header;
+	bufs[2] = lim.buffers.root.global_for_loop;
+	bufs[3] = lim.buffers.root.func_from_lua;
+	bufs[4] = lim.buffers.root.table_from_lua;
+	bufs[5] = lim.buffers.root.func_from_header;
+	bufs[6] = lim.buffers.root.table_from_header;
 
-	for(short i = 0; i < 5; i++){
+	for(short i = 0; i < 7; i++){
 		cur = qee_get_item(bufs[i], ident);
 
 		if(cur != NULL)

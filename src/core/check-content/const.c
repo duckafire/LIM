@@ -78,7 +78,7 @@ bool is_table_env(char c, char **tmp){
 		else if(is_commentary(c))
 			continue;
 
-		if(lastc_is_alnum && space && isalnum(c))
+		if(lastc_is_alnum && space && (c == '_' || isalnum(c)))
 			string_add(tmp, ' ');
 		string_add(tmp, c);
 

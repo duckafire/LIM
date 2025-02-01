@@ -693,12 +693,18 @@ static void start_function_declaration(bool is_anony){
 		fprintf(CTT_BUF, "%cfunction%s", ((space_is_mandatory && (locald == NULL || locald->token != LT_FUNC_START)) ? ' ' : '\0'), gident);
 
 	}else{
-		if(dtoken == DT_LIB_FUNC)
-			fprintf(CTT_BUF, ((gtable_key == NULL) ? "function _.%s" : "function %s%s"), gident, gtable_key);
-		else if(IS_ROOT)
+		if(dtoken == DT_LIB_FUNC){
+			if(gtable_key == NULL)
+				fprintf(CTT_BUF, "function _.%s", gident);
+			else
+				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
+
+		}else if(IS_ROOT){
 			fprintf(CTT_BUF, "local function %s", gident);
-		else
+
+		}else{
 			fprintf(CTT_BUF, ((gtable_key == NULL) ? "%s=function" : "%s%s=function"), save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_FUNC), gtable_key);
+		}
 	}
 
 	dtoken = DT_NULL;
