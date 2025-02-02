@@ -15,6 +15,7 @@ void lim_init_env(void){
 	lim.flags.verbose     = false;
 	lim.flags.replace     = false;
 	lim.flags.header_file = true;
+	lim.flags.lib_name    = NULL;
 
 	lim.header_partitions.top_header = NULL;
 	lim.header_partitions.code_scope = NULL;
@@ -51,8 +52,12 @@ void lim_free_env(void){
 
 
 	// "destine_name" store a
-	// value from "argv"
+	// copy of "argv" content
 	free(lim.files.destine_name);
+
+	// copy of "source_name", no extension,
+	// or specfied by flag (-ln) "--lib-name"
+	free(lim.flags.lib_name);
 
 
 	if(lim.header_partitions.top_header != NULL)

@@ -15,6 +15,7 @@
 	* <a href="#action-1">--replace</a>
 	* <a href="#action-2">--name</a>
 	* <a href="#action-3">--no-header</a>
+	* <a href="#action-4">--lib-name</a>
 * <a href="#syn"><i>Global</i> recommended synopsis</a>
 
 <br>
@@ -32,12 +33,12 @@
 	<li id="info-2"><code>-V | --verbose</code>: print information about the compaction, during this process.</li>
 	<li id="info-3"><code>-h | --help</code>: print information about flags and other <i>something</i>. One flag, or one of the "keywords" below, can be used like suffix (optional).</li>
 	<ul>
-		<li id="info-3-1"><code>h | header:</code> information about the <a href="https://github.com/duckafire/lim/blob/main/docs/the-header-lim.md" title="Official documentation"><i>header.lim</i></a>.</li>
-		<li id="info-3-2"><code>l | list</code>: show all Lim flags (short and long).</li>
+		<li id="info-3-1"><code>h  | header:</code> information about the <a href="https://github.com/duckafire/lim/blob/main/docs/the-header-lim.md" title="Official documentation"><i>header.lim</i></a>.</li>
+		<li id="info-3-2"><code>l  | list</code>: show all Lim flags (short and long).</li>
 		<li id="info-3-3"><code>li | license</code>: show Lim <a href="https://github.com/duckafire/lim/blob/main/LICENSE" title="MIT">license</a>.</li>
 		<li id="info-3-4"><code>ls | list-syn</code>: show all Lim flags (short and long), with their recommended synopsis.</li>
-		<li id="info-3-5"><code>r | rules</code>: semantic rules to compaction.</li>
-		<li id="info-3-6"><code>s | synopsis</code>: recommended <i>global</i> synopsis.</li>
+		<li id="info-3-5"><code>r  | rules</code>: semantic rules to compaction.</li>
+		<li id="info-3-6"><code>s  | synopsis</code>: recommended <i>global</i> synopsis.</li>
 	</ul>
 </ul>
 
@@ -46,9 +47,10 @@
 <h3 id="action">Action flags</h3>
 
 <ul>
-	<li id="action-1"><code>-r | --replace</code>: specify that, if already exist a file with the same name of the, output file must be replaced.</li>
-	<li id="action-2"><code>-n | --name</code>: specify that the next argument is the output file name. One argument (output file name) is required after it.</li>
+	<li id="action-1"><code>-r  | --replace</code>: specify that, if already exist a file with the same name of the, output file must be replaced.</li>
+	<li id="action-2"><code>-n  | --name</code>: specify that the next argument is the output file name. One argument (output file name) is required after it.</li>
 	<li id="action-3"><code>-nh | --no-header</code>: specific that the file "header.lim" must be ignored.</li>
+	<li id="action-4"><code>-ln | --lib-name</code>: Set the name of the reference table that will store the library table. If not specified, the source file name will be adapted and used to this finality. Invalid characters will be replaced by underscore.</li>
 </ul>
 
 <br>
@@ -58,7 +60,7 @@
 <br>
 
 ```
-lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] ]
+lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] [-ln <lib>] ]
 ```
 
 <br>

@@ -1,5 +1,5 @@
-#include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 #include "../../core/tools/lim-global-variables.h"
 #include "../print/flags-in-define.h"
 #include "../print/help.h"
@@ -25,8 +25,13 @@ void check_program_arguments(int c, char *v[]){
 	is_it_information_flag();
 	search_and_set_source_file();
 
-	if(read_other_arguments())
+	read_other_arguments();
+
+	if(lim.files.destine_name == NULL)
 		set_destine_file_name( lim.files.source_name );
+
+	if(lim.flags.lib_name == NULL)
+		set_lib_name( lim.files.source_name );
 
 	does_dest_file_already_exist();
 }
@@ -82,18 +87,16 @@ static void search_and_set_source_file(void){
 	}
 }
 
-static bool read_other_arguments(void){
+static void read_other_arguments(void){
 	if(argc == 1)
-		return true;
+		return;
 
 
+	#define IS_NULL_NEXT_ARGV (i == argc)
 	#define REPETITION(cond)                 \
 		if(cond){                            \
 			ERROR_flag_repetititon(argv[i]); \
 		}
-	//#enddef
-	#define IS_NULL_NEXT_ARGV \
-		(i == argc)
 
 	for(short i = 2; i <= argc; i++){
 
@@ -106,19 +109,20 @@ static bool read_other_arguments(void){
 			REPETITION(flag_cmp(argv[i], FLAG_HELP))
 		}
 
+		///// VALID ONE TIME /////
 
-		// valid (one time)
-		if(flag_cmp(argv[i], FLAG_DEST_NAME)){
-			REPETITION( (lim.files.destine_name != NULL) )
-
-			if(IS_NULL_NEXT_ARGV){
-				ERROR_suffix_expected_after_flag(argv[i]);
+		#define CMP_AND_CPY_STR(dest, set, ...)                \
+			if(flag_cmp(argv[i], __VA_ARGS__)){                \
+				REPETITION( (dest != NULL) )                   \
+				if(IS_NULL_NEXT_ARGV){                         \
+					ERROR_suffix_expected_after_flag(argv[i]); \
+				}                                              \
+				set(argv[++i]);                                \
+				continue;                                      \
 			}
 
-			set_destine_file_name(argv[++i]);
-			continue;
-		}
-
+		CMP_AND_CPY_STR(lim.files.destine_name, set_destine_file_name, FLAG_DEST_NAME)
+		CMP_AND_CPY_STR(lim.flags.lib_name,     set_lib_name,          FLAG_LIB_NAME)
 
 		#define CMP_AND_SET(cond, var, val, ...) \
 			if(flag_cmp(argv[i], __VA_ARGS__)){  \
@@ -138,11 +142,10 @@ static bool read_other_arguments(void){
 	}
 
 
+	#undef IS_NULL_NEXT_ARGV
 	#undef REPETITION
 	#undef CMP_AND_SET
-	#undef IS_NULL_NEXT_ARGV
-
-	return (lim.files.destine_name == NULL);
+	#undef CMP_AND_CPY_STR
 }
 
 static void set_destine_file_name(const char *src){
@@ -150,7 +153,7 @@ static void set_destine_file_name(const char *src){
 	char *tmp;
 
 
-	tmp = malloc(len + 1);
+	tmp = malloc(len + sizeof(char));
 	strcpy(tmp, src);
 
 
@@ -168,4 +171,66 @@ static void does_dest_file_already_exist(void){
 	if(lim.files.destine != NULL && !lim.flags.replace){
 		ERROR_dest_file_already_exist(lim.files.destine_name);
 	}
+}
+
+static void set_lib_name(const char *src){
+	const unsigned short src_len = strlen(src);
+	unsigned short i, brute_len, refined_len;
+	short bar_break = -1;
+	char *brute, *refined;
+
+	// path/to/fil$.lua
+	brute = malloc(src_len + sizeof(char));
+	strcpy(brute, src);
+
+	// path/to/fil$
+	if(IS_DOT_LUA(brute, src_len))
+		brute[src_len - 4] = '\0';
+
+	// path/to/fil$ -> bar_break = 7 (x2 bar)
+	for(i = 0; brute[i] != '\0'; i++)
+		if(brute[i] == '/')
+			bar_break = i;
+
+	// one (or more) bar was found
+	if(bar_break != -1){
+		brute_len = 0;
+
+		// length file name no path
+		for(i = bar_break + 1; brute[i] != '\0'; i++)
+			brute_len++;
+
+		refined = malloc(brute_len + sizeof(char));
+
+		// path/to/fil$ -> fil$
+		for(i = 0; brute[i] != '\0'; i++)
+			refined[i] = brute[bar_break + i + 1];
+
+		free(brute);
+
+	}else{
+		refined = brute;
+	}
+
+
+	refined_len = strlen(refined);
+
+	// path/.lua -> path/ ->   -> _
+	if(refined_len == 0){
+		free(refined);
+		refined = malloc(sizeof(char) * 2);
+		strcpy(refined, "_");
+	
+	// fil$ -> fil_
+	}else{
+		if(refined[0] != '_' && !isalpha(refined[0]))
+			refined[0] = '_';
+
+		for(i = 1; i < refined_len; i++)
+			if(refined[i] != '_' && !isalnum(refined[i]))
+				refined[i] = '_';
+	}
+
+
+	lim.flags.lib_name = refined;
 }

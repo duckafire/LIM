@@ -16,6 +16,8 @@
 ./scripts/.tmp/a.lua --no-header
 ./scripts/.tmp/a.lua -n
 ./scripts/.tmp/a.lua --name
+./scripts/.tmp/a.lua -ln
+./scripts/.tmp/a.lua --lib-name
 ./scripts/.tmp/b.lua -x
 ./scripts/.tmp/b.lua
 ./scripts/.tmp/b.lua --foo
@@ -27,6 +29,8 @@
 ./scripts/.tmp/b.lua -r --name output
 ./scripts/.tmp/b.lua -r -nh
 ./scripts/.tmp/b.lua -r --no-header
+./scripts/.tmp/a.lua -ln lib_name
+./scripts/.tmp/a.lua --lib-name lib_name
 ./scripts/.tmp/c.lua
 ./scripts/.tmp/main.c
 -v -x
@@ -54,9 +58,17 @@
 --help list-syn
 --help rules
 --help synopsis
+--help -v
 --help --version
+--help -h
 --help --help
+--help -V
 --help --verbose
+--help -n
 --help --name
+--help -r
 --help --replace
+--help -nh
 --help --no-header
+--help -ln
+--help --lib-name

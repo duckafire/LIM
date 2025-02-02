@@ -3,6 +3,12 @@
 #include "../rules/flags.h"
 #include "error.h"
 
+// NOTE: all flast need to be shown in:
+// if(flag_cmp(arg, HELP_ARG_LIST)){
+// if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
+// if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
+// "end of the function:" `help_flag`
+
 void show_help_messages(char *str){
 	if(str == NULL){
 		MESSAGE(
@@ -33,7 +39,8 @@ static void help_with_arg(char *arg){
 			"-V  --verbose",
 			"-n  --name",
 			"-r  --replace",
-			"-nh --no-header"
+			"-nh --no-header",
+			"-ln --lib-name"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LICENSE)){
@@ -102,17 +109,18 @@ static void help_with_arg(char *arg){
 	}
 	if(flag_cmp(arg, HELP_ARG_SYNOPSIS)){
 		MESSAGE(
-			"lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] ]"
+			"lim [ -v | -h [arg] | <in>.lua [-r] [-V] [-nh] [-n <out>] [-ln <lib>] ]"
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_LIST_SYNOPSIS)){
 		MESSAGE(
-			"-v  --version     -> lim {-v | --version}",
-			"-h  --help        -> lim {-h | --help} [arg]",
-			"-V  --verbose     -> lim {-V | --verbose} <input>.lua",
-			"-n  --name        -> lim <input>.lua {-n | --name} <output>",
-			"-r  --replace     -> lim {-r | --replace} <input>.lua",
-			"-nh --no-header   -> lim <source> {-nh | --no-header} <input>.lua"
+			"-v  --version    ->  lim {-v | --version}",
+			"-h  --help       ->  lim {-h | --help} [arg]",
+			"-V  --verbose    ->  lim <in>.lua {-V  | --verbose}",
+			"-n  --name       ->  lim <in>.lua {-n  | --name} <out>",
+			"-r  --replace    ->  lim <in>.lua {-r  | --replace}",
+			"-nh --no-header  ->  lim <in>.lua {-nh | --no-header}",
+			"-ln --lib-name   ->  lim <in>.lua {-ln | --lib-name} <lib>"
 		);
 	}
 }
@@ -134,7 +142,7 @@ static void help_flag(char *flag){
 	}
 	if(flag_cmp(flag, FLAG_VERBOSE)){
 		MESSAGE(
-			"lim {-V | --verbose} <input>.lua",
+			"lim <input>.lua {-V | --verbose}",
 			" ",
 			"Print information about the compaction, during this process."
 		);
@@ -148,7 +156,7 @@ static void help_flag(char *flag){
 	}
 	if(flag_cmp(flag, FLAG_REPLACE)){
 		MESSAGE(
-			"lim {-r | --replace} <input>.lua",
+			"lim <input>.lua {-r | --replace}",
 			" ",
 			"Specify that, if already exist a file with the same name of the,",
 			"output file must be replaced."
@@ -156,9 +164,19 @@ static void help_flag(char *flag){
 	}
 	if(flag_cmp(flag, FLAG_NO_HEADER)){
 		MESSAGE(
-			"lim <source> {-nh | --no-header} <input>.lua",
+			"lim <input>.lua {-nh | --no-header}",
 			" ",
 			"Specific that the file \"header.lim\" must be ignored."
+		);
+	}
+	if(flag_cmp(flag, FLAG_LIB_NAME)){
+		MESSAGE(
+			"lim <input>.lua {-ln | --lib-name}",
+			" ",
+			"Set the name of the reference table that will store the library",
+			"table. If not specified, the source file name will be adapted and",
+			"used to this finality. Invalid characters will be replaced by",
+			"underscore."
 		);
 	}
 }

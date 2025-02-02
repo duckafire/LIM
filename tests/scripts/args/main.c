@@ -19,6 +19,7 @@ int main(int argc, char *argv[]){
 	printf("  [-V ] Verbose messages:  %d\n",   lim.flags.verbose);
 	printf("  [-r ] Replace output:    %d\n",   lim.flags.replace);
 	printf("  [-nh] Header included:   %d\n",   lim.flags.header_file);
+	printf("  [-ln] Library name:      %s\n",   lim.flags.lib_name);
 	return 0;
 }
 
