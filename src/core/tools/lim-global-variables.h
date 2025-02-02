@@ -44,6 +44,7 @@ struct Lim_Global_Variables{
 
 		struct{
 			FILE *scope_func_pointer, *scope_func_address, *scope_var_tab;
+			Queue *lib_func;
 			Queue *global_func, *global_var_tab, *global_for_loop;
 			Queue *func_from_lua, *table_from_lua;
 			Queue *func_from_header, *table_from_header;

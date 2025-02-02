@@ -164,7 +164,7 @@ void treat_ident(char *_ident, char *_table_key){
 	set_if_space_is_mandatory(gident);
 
 	if(strcmp(gident, "_G") == 0){
-		fprintf(CTT_BUF, "%s", &(gtable_key[1]) );
+		fprintf(CTT_BUF, "_.%s", &(gtable_key[1]) );
 		return;
 	}
 
@@ -560,18 +560,38 @@ static void drop_var_tab_declare_env(bool force){
 }
 
 static void merge_compound_value(char *lident){ // Local
-	char **ident, *tmp;
+	unsigned short total_len;
+	char **ident, **takey, *tmp;
 
 	ident = &(locald->bvtail->ident);
-	tmp = malloc( sizeof(char) + strlen(*ident) + strlen(lident) + ((gtable_key == NULL) ? 0 : strlen(gtable_key)) );
+	takey = &(locald->bvtail->table_key);
+
+
+	total_len = sizeof(char) + strlen(*ident) + strlen(lident);
+
+	if(*takey != NULL)
+		total_len += strlen(*takey);
+
+	if(gtable_key != NULL)
+		total_len += strlen(gtable_key);
+
+	tmp = malloc(total_len);
+
 
 	strcpy(tmp, *ident);
+	if(*takey != NULL)
+		strcat(tmp, *takey);
+
 	strcat(tmp, lident);
 	if(gtable_key != NULL)
 		strcat(tmp, gtable_key);
 
+
 	free(*ident);
 	*ident = tmp;
+
+	free(*takey);
+	*takey = NULL;
 }
 
 static void update_local_declare(bool is_const){
@@ -695,12 +715,15 @@ static void start_function_declaration(bool is_anony){
 	save_local_parameter_state();
 
 	if(is_anony){
-		fprintf(CTT_BUF, "%cfunction%s", ((space_is_mandatory && (locald == NULL || locald->token != LT_FUNC_START)) ? ' ' : '\0'), gident);
+		if(space_is_mandatory && (locald == NULL || locald->token != LT_FUNC_START))
+			fprintf(CTT_BUF, " function%s", gident);
+		else
+			fprintf(CTT_BUF, "function%s", gident);
 
 	}else{
 		if(dtoken == DT_LIB_FUNC){
 			if(gtable_key == NULL)
-				fprintf(CTT_BUF, "function _.%s", gident);
+				fprintf(CTT_BUF, "function %s", save_lib_func_in_buffer(gident));
 			else
 				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
 

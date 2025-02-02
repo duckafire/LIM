@@ -26,6 +26,7 @@ void lim_init_env(void){
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;
 	lim.buffers.root.scope_var_tab      = NULL;
+	lim.buffers.root.lib_func           = NULL;
 	lim.buffers.root.global_func        = NULL;
 	lim.buffers.root.global_var_tab     = NULL;
 	lim.buffers.root.global_for_loop    = NULL;
@@ -82,6 +83,7 @@ void lim_free_env(void){
 	if(lim.buffers.root.scope_var_tab != NULL)
 		fclose(lim.buffers.root.scope_var_tab);
 
+	qee_free_queue(lim.buffers.root.lib_func);
 	qee_free_queue(lim.buffers.root.global_func);
 	qee_free_queue(lim.buffers.root.global_var_tab);
 	qee_free_queue(lim.buffers.root.global_for_loop);

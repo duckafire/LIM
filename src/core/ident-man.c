@@ -17,6 +17,7 @@ static char *nick_for_loop[5]     = {NULL, NULL, "a", "z", "F"};
 
 static const short LEN_2C = sizeof(char) * 2;
 static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
+static char *nick_lib_func = NULL; // different algorithm
 
 #define NICK_CURRENT(n) (n[0])
 #define NICK_FORMAT(n)  (n[1])
@@ -136,6 +137,8 @@ void free_nickname_buffers(void){
 	free_nick_buf(nick_local_ident,  true);
 	free_nick_buf(nick_parameter,    true);
 	free_nick_buf(nick_for_loop,     false);
+
+	free(nick_lib_func);
 }
 
 static void free_nick_buf(char *nick_buf[], bool saveds_included){
@@ -245,9 +248,11 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 		}
 		nick_tmp = get_and_update_nick(nick_buf);
 
+	// started with '_' will not be compacted
+	}else if(strcmp(ident, "_") == 0){
+		nick_tmp = "__";
+		
 	}else{
-		// identifier that start with
-		// '_' will not be compact
 		nick_tmp = ident;
 	}
 
@@ -301,10 +306,11 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 }
 
 char* get_nickname_of(char *ident, bool is_root){
-	Queue *cur, *bufs[7];
+	Queue *cur, *bufs[8];
 
 	if(ident[0] == '_')
 		return ident;
+
 
 	if(!is_root){
 		Func_Env_Stack *env;
@@ -332,8 +338,9 @@ char* get_nickname_of(char *ident, bool is_root){
 	bufs[4] = lim.buffers.root.table_from_lua;
 	bufs[5] = lim.buffers.root.func_from_header;
 	bufs[6] = lim.buffers.root.table_from_header;
+	bufs[7] = lim.buffers.root.lib_func; // these is "rare"
 
-	for(short i = 0; i < 7; i++){
+	for(short i = 0; i < 8; i++){
 		cur = qee_get_item(bufs[i], ident);
 
 		if(cur != NULL)
@@ -343,4 +350,19 @@ char* get_nickname_of(char *ident, bool is_root){
 
 	// here should have an error ;)
 	return ident;
+}
+
+char* save_lib_func_in_buffer(char *ident){
+	free(nick_lib_func);
+	nick_lib_func = malloc(strlen(ident) + 3);
+
+	strcpy(nick_lib_func, "_.");
+	strcat(nick_lib_func, ident);
+
+	if(lim.buffers.root.lib_func == NULL)
+		lim.buffers.root.lib_func = qee_create(ident, NULL, nick_lib_func, false);
+	else
+		qee_add_item(&(lim.buffers.root.lib_func), ident, NULL, nick_lib_func, false, QEE_DROP);
+
+	return nick_lib_func;
 }
