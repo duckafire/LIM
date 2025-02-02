@@ -1,8 +1,0 @@
-core/ident-man.c
-core/treat.c
-core/check-content/const.c
-core/check-content/ident.c
-core/process-master.c
-core/tools/string-plus.c
-core/tools/lim-global-variables.c
-core/tools/queue.c
