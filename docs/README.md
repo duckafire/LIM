@@ -1,9 +1,9 @@
 # Índice
 
 * [A história](https://github.com/duckafire/lim/blob/main/docs/a-historia.md)
-* Bandeias de instrução
+* [Bandeias](https://github.com/duckafire/lim/blob/main/docs/bandeiras.md)
 * Compactação explicada
-* Lista de códigos de erro
+* [Lista de códigos de erro](https://github.com/duckafire/lim/blob/main/docs/codigos-de-erro)
 * O "header.lim"
 * Regras da compactação
 
