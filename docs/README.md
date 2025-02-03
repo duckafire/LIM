@@ -1,10 +1,11 @@
-# Índice de documentação
+# Índice
 
-* [Compaction explanation](https://github.com/duckafire/lim/blob/main/docs/compactacao-explicada.md)
-* Regras de compactação
-* Lista de códigos de erro
+* [A história](https://github.com/duckafire/lim/blob/main/docs/a-historia.md)
 * Bandeias de instrução
+* Compactação explicada
+* Lista de códigos de erro
 * O "header.lim"
+* Regras da compactação
 
 <br>
 
