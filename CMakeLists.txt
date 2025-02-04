@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 
-option(DEBUG_VERSION ON "Turn on GDB bug flag ('-g') + move executable to '../tests/'")
+option(DEBUG_VERSION OFF "Turn on GDB bug flag ('-g') + move executable to '../tests/'")
 
 if(DEBUG_VERSION)
 	set(CMAKE_BUILD_TYPE "Debug")
@@ -23,13 +23,14 @@ project(lim
 
 
 file(GLOB MAIN       ${CMAKE_BINARY_DIR}/../src/*.c)
+file(GLOB ARGS_      ${CMAKE_BINARY_DIR}/../src/args/*.c)
 file(GLOB ARGS_PRINT ${CMAKE_BINARY_DIR}/../src/args/print/*.c)
-file(GLOB ARGS_RULES ${CMAKE_BINARY_DIR}/../src/args/rules/*.c)
+file(GLOB ARGS_FLAGS ${CMAKE_BINARY_DIR}/../src/args/flags/*.c)
 file(GLOB CORE       ${CMAKE_BINARY_DIR}/../src/core/*.c)
 file(GLOB CORE_TOOLS ${CMAKE_BINARY_DIR}/../src/core/tools/*.c)
-FILE(GLOB CORE_CKCTT ${CMAKE_BINARY_DIR}/../src/core/check-content/*.c)
+file(GLOB CORE_CKCTT ${CMAKE_BINARY_DIR}/../src/core/check-content/*.c)
 
-add_executable(lim ${MAIN} ${ARGS_PRINT} ${ARGS_RULES} ${CORE} ${CORE_TOOLS} ${CORE_CKCTT})
+add_executable(lim ${MAIN} ${ARGS_} ${ARGS_PRINT} ${ARGS_FLAGS} ${CORE} ${CORE_TOOLS} ${CORE_CKCTT})
 
 
 set(HEADER_DIR ${CMAKE_BINARY_DIR}/../src/cmake-h)

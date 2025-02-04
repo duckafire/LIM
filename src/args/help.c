@@ -1,7 +1,7 @@
+#include "flags/man.h"
+#include "flags/list.h"
+#include "print/error.h"
 #include "help.h"
-#include "../rules/flag-man.h"
-#include "../rules/flags.h"
-#include "error.h"
 
 // NOTE: all flast need to be shown in:
 // if(flag_cmp(arg, HELP_ARG_LIST)){

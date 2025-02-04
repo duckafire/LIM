@@ -1,12 +1,12 @@
 #include <string.h>
 #include <ctype.h>
-#include "../../core/tools/lim-global-variables.h"
-#include "../print/flags-in-define.h"
-#include "../print/help.h"
-#include "../print/error.h"
+#include "../core/tools/lim-global-variables.h"
+#include "print/flags-in-define.h"
+#include "print/error.h"
+#include "flags/man.h"
+#include "flags/list.h"
 #include "check-and-treat.h"
-#include "flag-man.h"
-#include "flags.h"
+#include "help.h"
 
 static int argc;
 static char **argv;

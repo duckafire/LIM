@@ -45,8 +45,6 @@
 --help foo
 -h -x
 --help -x
--h --foo
---help --foo
 --help
 --help header foo
 --help header --foo

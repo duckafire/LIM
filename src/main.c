@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "args/rules/check-and-treat.h"
+#include "args/check-and-treat.h"
 #include "args/print/verbose.h"
 #include "core/tools/lim-global-variables.h"
 #include "core/process-master.h"

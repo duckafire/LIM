@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "../../../src/core/tools/lim-global-variables.h"
-#include "../../../src/args/rules/check-and-treat.h"
+#include "../../../src/args/check-and-treat.h"
 
 static void lim_free(void);
 static void start_global_variables(void);
