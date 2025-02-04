@@ -1,5 +1,11 @@
-#ifndef CORE_COMPACTION_PROCESS_CHECK_CONTENT_CHECK_CONTENT
-#define CORE_COMPACTION_PROCESS_CHECK_CONTENT_CHECK_CONTENT
+#ifndef CORE_CHECK_CONTENT
+#define CORE_CHECK_CONTENT
+
+// NOTE: Divided in:
+// // constants
+// // identifiers
+
+///// CONSTANTS /////
 
 #include <stdbool.h>
 
@@ -15,8 +21,9 @@ static bool clear_single_line_commentary(char c);
 
 void is_special_char(char c, char **tmp);
 
+///// IDENTIFERS /////
 
-#include "../tools/queue.h"
+#include "tools/queue.h"
 
 // ChecK Ident Array InDex
 typedef enum{

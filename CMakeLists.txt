@@ -28,9 +28,8 @@ file(GLOB ARGS_PRINT ${CMAKE_BINARY_DIR}/../src/args/print/*.c)
 file(GLOB ARGS_FLAGS ${CMAKE_BINARY_DIR}/../src/args/flags/*.c)
 file(GLOB CORE       ${CMAKE_BINARY_DIR}/../src/core/*.c)
 file(GLOB CORE_TOOLS ${CMAKE_BINARY_DIR}/../src/core/tools/*.c)
-file(GLOB CORE_CKCTT ${CMAKE_BINARY_DIR}/../src/core/check-content/*.c)
 
-add_executable(lim ${MAIN} ${ARGS_} ${ARGS_PRINT} ${ARGS_FLAGS} ${CORE} ${CORE_TOOLS} ${CORE_CKCTT})
+add_executable(lim ${MAIN} ${ARGS_} ${ARGS_PRINT} ${ARGS_FLAGS} ${CORE} ${CORE_TOOLS})
 
 
 set(HEADER_DIR ${CMAKE_BINARY_DIR}/../src/cmake-h)

@@ -7,7 +7,7 @@
 #include "tools/queue.h"
 #include "tools/lim-global-variables.h"
 #include "tools/string-plus.h"
-#include "check-content/check-content.h"
+#include "check-content.h"
 #include "treat.h"
 #include "ident-man.h"
 

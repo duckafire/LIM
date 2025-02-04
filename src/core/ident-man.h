@@ -1,5 +1,5 @@
-#ifndef CORE_COMPACTION_PROCESS_IDENT_MAN
-#define CORE_COMPACTION_PROCESS_IDENT_MAN
+#ifndef CORE_IDENT_MAN
+#define CORE_IDENT_MAN
 
 #include <stdbool.h>
 #include "tools/queue.h"
