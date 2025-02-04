@@ -3,7 +3,7 @@
 #include "../core/tools/lim-global-variables.h"
 #include "print/flags-in-define.h"
 #include "print/error.h"
-#include "flags/man.h"
+#include "flags/cmp.h"
 #include "flags/list.h"
 #include "check-and-treat.h"
 #include "help.h"

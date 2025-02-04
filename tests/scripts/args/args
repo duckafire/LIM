@@ -33,6 +33,14 @@
 ./scripts/.tmp/a.lua --lib-name lib_name
 ./scripts/.tmp/c.lua
 ./scripts/.tmp/main.c
+./scripts/.tmp/a.lua -ln 1foo
+./scripts/.tmp/a.lua --lib-name 1foo
+./scripts/.tmp/a.lua -ln 1foo
+./scripts/.tmp/a.lua --lib-name ++
+./scripts/.tmp/a.lua -ln 1foo
+./scripts/.tmp/a.lua --lib-name ?
+./scripts/.tmp/a.lua -ln 1foo
+./scripts/.tmp/a.lua --lib-name Foo-f00
 -v -x
 -x -v
 --v

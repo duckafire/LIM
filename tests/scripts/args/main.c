@@ -20,6 +20,7 @@ int main(int argc, char *argv[]){
 	printf("  [-r ] Replace output:    %d\n",   lim.flags.replace);
 	printf("  [-nh] Header included:   %d\n",   lim.flags.header_file);
 	printf("  [-ln] Library name:      %s\n",   lim.flags.lib_name);
+	putchar('\n');
 	return 0;
 }
 

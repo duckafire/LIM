@@ -1,4 +1,4 @@
 args/check-and-treat.c
-args/flags/man.c
+args/flags/cmp.c
 args/help.c
 args/print/verbose.c

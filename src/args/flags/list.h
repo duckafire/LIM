@@ -1,5 +1,5 @@
-#ifndef ARGS_RULES_FLAGS
-#define ARGS_RULES_FLAGS
+#ifndef ARGS_FLAGS_LIST
+#define ARGS_FLAGS_LIST
 
 #define TOTAL_LIM_FLAGS 7
 #define TOTAL_HELP_FLAGS 6

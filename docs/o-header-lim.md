@@ -27,9 +27,9 @@
 
 ## Visão geral
 
-Sempre que a bandeira `--no-heade` (`-nh`) não é utilizada, Lim buscará, no diretório
+Sempre que a bandeira `--no-header` (`-nh`) não é utilizada, Lim buscará, no diretório
 atual, por um arquivo nomeado como *header.lim*. Se esse arquivo for encontrado, seu
-conteúdo sera lido e separado em *buffers*, para futuros processos. Caso contrário, o
+conteúdo será lido e separado em *buffers*, para futuros processos. Caso contrário, o
 processo de compactação continuará normalmente.
 
 ---

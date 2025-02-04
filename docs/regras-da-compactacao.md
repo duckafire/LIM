@@ -7,7 +7,7 @@ denominadas *Regras*. Ambas estão listadas abaixo.
 1. Apenas as variáveis, tabelas e funções globais serão adicionadas à biblioteca. Essa
 medida foi tomada para evitar conflitos com identificadores externos à biblioteca.
 
-2. Multíplas variáveis não devem receber multíplos valores,
+2. Multíplas variáveis não devem receber multíplos valores
 durante sua declaração (*por exemplo `local func, tab, zero = ipairs(foo)`*), apenas
 após ela. Veja o porquê disso em:
 [Compactação explicada: içamento de identificadores](https://github.com/duckafire/lim/blob/main/docs/içamento-de-identificadores.md).

@@ -41,19 +41,30 @@ informações no console, sendo estas referentes ao Lim e aos seus processos.
 * `-h | --help`: gera uma mensagem informativa com base no seu sufixo opcional, que pode
 ser **qualquer** bandeira ou uma das palavras reservadas abaixo.
 
-	* `l | list`: lista todas as bandeiras do Lim.
+	* `h  | header`: exibe informações essenciais sobre o *header.lim*. Veja mais sobre em:
+	[O *header.lim*](https://github.com/duckafire/blob/main/docs/o-header-lim.md).
+
+	* `l  | list`: lista todas as bandeiras do Lim.
 	
 	* `li | license`: imprime a licença de uso, modificação e distribuição deste projeto
 	(que é a [MIT](https://github.com/duckafire/lim/blob/main/LICENSE)).
 	
 	* `ls | list-syn`: lista todas as bandeiras do Lim, junto a sua sinopse recomendada.
 
-	* `r | rules`: exibe os padrões/regras semâticos do Lim, usados para certas definições.
-	Veja também: [Regras semânticas](https://github.com/duckafire/blob/main/docs/regras-semanticas.md).
+	* `r  | rules`: exibe os padrões/regras semâticos do Lim, usados para certas
+	definições. Veja também:
+	[Regras semânticas](https://github.com/duckafire/blob/main/docs/regras-semanticas.md).
 
-	* `s | synopsis`: exibe a sinopse recomendada para o posicionamento dos todos os
+	* `s  | synopsis`: exibe a sinopse recomendada para o posicionamento dos todos os
 	argumentos e bandeiras possíveis, simultaneamente. O mesmo que esta disponível
 	[abaixo](#sinopse-global-recomendada).
+
+* `-V | --verbose`: exibirá informações relacionadas aos processos que ocorrem durante a
+compactação, simultaneamente a ela.
+
+* `-v | --version`: exibe a versão do Lim.
+
+---
 
 ## Bandeiras de ação
 
