@@ -1,6 +1,6 @@
 # O *header.lim*
 
-***
+---
 
 > [!IMPORTANT]
 > Essa página não se propõem a explicar como ocorrer o processo de leitura do *header.lim*,
@@ -8,7 +8,7 @@
 > funcionamento desses processos, acesse: [Compactação explicada: Leitura do *header.lim*
 ](https://github.com/duckafire/lim/blob/main/docs/compactacao-explicada.md#leitura-do-header-lim).
 
-***
+---
 
 * [Visão geral](#visão-geral)
 * [Conteúdo do arquivo](#conteúdo-do-arquivo)
@@ -23,7 +23,7 @@
 	* [Arquivo](#arquivo)
 	* [Partições](#partições)
 
-***
+---
 
 ## Visão geral
 
@@ -32,7 +32,7 @@ atual, por um arquivo nomeado como *header.lim*. Se esse arquivo for encontrado,
 conteúdo sera lido e separado em *buffers*, para futuros processos. Caso contrário, o
 processo de compactação continuará normalmente.
 
-***
+---
 
 ## Conteúdo do arquivo
 
@@ -106,7 +106,7 @@ tabcat
 delay
 ```
 
-***
+---
 
 ## Estado de leitura
 

@@ -10,7 +10,7 @@
 [leg-cha]: <https://duckafire.itch.io/legendary-champion> "Página do jogo na itch.io"
 [git]:     <https://git-scm.com> "Website oficial"
 
-***
+---
 
 * [Introdução](#introdução)
 * [Nasce a ideia](#nasce-a-ideia)
@@ -22,23 +22,23 @@
 * [Por que o nome "Lim"?](#por-que-o-nome-lim)
 * [Considerações finais](#considerações-finais)
 
-***
+---
 
 ## Introdução
 
-&emsp;Nesta página contarei um pouco sobre a história desse pequeno projeto,
+Nesta página contarei um pouco sobre a história desse pequeno projeto,
 aprofundando-me principalmente no que desencadeou seu surgimento. Certamente esse não é
 um conhecimento crítico para ser ter, principalmente se seu objetivo for apenas usar
 ou entender como o código funciona, então sinta-se a vontade para pular essa parte.
 
 ## Nasce a ideia
 
-&emsp;[*Tic80 Tiny Computer*][tic80] é um console/computador de fantasia, que, sem sobre
+[*Tic80 Tiny Computer*][tic80] é um console/computador de fantasia, que, sem sobre
 de dúvidas, foi extremamente importante, tanto para meu desenvolvimento como programador,
 quanto para o surgimento do Lim, pois foram suas *"limitações"* que me levaram a criar
 este programa.
 
-&emsp;Com o passar do tempo, minhas habilidades como programador evoluíram cada vez mais,
+Com o passar do tempo, minhas habilidades como programador evoluíram cada vez mais,
 a ponto de me permitir notar uma certa peculiaridade: alguns trechos de código poderiam ser
 facilmente reutilizados em outros projetos, o que me proporcionaria uma maior facilidade,
 agilidade e qualidade no código em questão.
@@ -48,7 +48,7 @@ agilidade e qualidade no código em questão.
 
 ## Limites fantasiosos
 
-&emsp;Escrever uma biblioteca em [*Lua*][lua] não é, de forma alguma, uma tarefa difícil,
+Escrever uma biblioteca em [*Lua*][lua] não é, de forma alguma, uma tarefa difícil,
 a menos que hajam "limites técnicos", o que era o caso. Assim como muitos outros programas
 do gênero, o [*Tic80*][tic80] possui algumas limitações propositais, das quais duas com
 certeza dificultariam meus planos.
@@ -56,24 +56,24 @@ certeza dificultariam meus planos.
 * Sem suporte para multíplos arquivos.
 * Limite de caracteres (`65.536` *v.FREE*; `524.288` *v.PRO*).
 
-&emsp;Logo, minhas bibliotecas para uso Nesta aplicação deveriam, principalmente, ser:
+Logo, minhas bibliotecas para uso Nesta aplicação deveriam, principalmente, ser:
 "enxutas", de modo a que não proporcionassem uma grande poluição nos códigos;
 "comprimidas", assim não ocupando muito espaço no *script*, permitindo que o usuário
 tivesse o máximo de espaço possível para seu projeto.
 
 ## A solução
 
-&emsp;Quanto a esse pequeno infortúnio, não havia muito a ser pensar, a solução era clara,
+Quanto a esse pequeno infortúnio, não havia muito a ser pensar, a solução era clara,
 bastava que minhas bibliotecas possuem as características antes citadas, entretanto: *como
 atribuir estas características a uma código e mantê-lo legível?*. Esse não é uma pergunta
 difícil, basta ter dois códigos: um código fonte e um código *compactado*. A verdadeira
 dificuldade está em como alcançar esse objetivo, *como compactar o código?*
 
-&emsp;A resposta à essa pergunta não demorou muito para me vir a mente, mas sua velocidade
+A resposta à essa pergunta não demorou muito para me vir a mente, mas sua velocidade
 de chegada denunciava o quão grotesca ela era. Simplesmente compactar o código manualmente. Era um trabalho discutivelmente exigente, que, mesmo com a ajudar da substituição de texto
 (*fornecida por muitos editores de arquivos*), continuava a ser desafiador.
 
-&emsp;Minha solução, discutivelmente, não foi a melhor, mas alguns fatores me levaram a
+Minha solução, discutivelmente, não foi a melhor, mas alguns fatores me levaram a
 ela, sendo eles: meu conhecimento nulo com relação a manipulação de arquivos, seja com
 [*Lua*][lua], seja com qualquer outra linguagem; meu desejo por aperfeiçoar minha atenção
 na escrita dos meus código, tendo em vista que errinhos bobos voltados a esse tópico me
@@ -81,7 +81,7 @@ consumiam um tempo considerável.
 
 ## A base da obra
 
-&emsp;Como todo bom programador, primeiramente, visei decidir quais seriam as regras
+Como todo bom programador, primeiramente, visei decidir quais seriam as regras
 levadas em conta para a realização desse processo, e, também, como todo *bom programador*
 eu não anotei nenhuma delas, confiando-as apenas a minha mente (*o que não é uma boa ideia,
 mas felizmente, por si só, não causou problema algum*). Baseado no que recordo, listarei
@@ -119,7 +119,7 @@ para referenciar a biblioteca.
 
 * Nenhuma variável, tabela ou função global deveria ser declarada dentro da biblioteca.
 
-&emsp;É certo que essa explicação possa parecer um pouco confusa, então, como forma de
+É certo que essa explicação possa parecer um pouco confusa, então, como forma de
 superar esse probleminha, abaixo encontra-se uma representação do que, respectivamente,
 seria um código fonte e um código *compactado*:
 
@@ -137,7 +137,7 @@ local lib=L
 
 ## A face do problema
 
-&emsp;Embarcar nessa "loucura" me trouxe muito aprendizado, melhorou minha organização,
+Embarcar nessa "loucura" me trouxe muito aprendizado, melhorou minha organização,
 escrita e leitura de código, entretanto também me expôs à problemas bem chatinhos e,
 até mesmo, estressantes (*principalmente porque eu, nem sempre, fui tão cabeça fria quanto
 sou hoje*). Estes eram causados por um "único" erro: identificadores escritos erroneamente. Por mais que a solução fosse simples, muitas vezes, era difícil identificar que este era o
@@ -146,18 +146,18 @@ se dispersava a ponto de quase anular-se, já que um simples trecho com menos de
 caracteres (*por exemplo:* `x=x+s*_MC(r)y=y+s*_MS(r)`) poderia possuir tanta informação
 quanto uma linha em *"código normal"*.
 
-&emsp;Porém, mesmo com todos esse probleminhas, eu ainda achava que esta era uma boa
+Porém, mesmo com todos esse probleminhas, eu ainda achava que esta era uma boa
 abordagem, principalmente porque minhas bibliotecas não apresentavam grande complexidade
 ou tamanho (*isso é discutível*) e por conta do exercício de atenção que essa prática
 me proporcionava.
 
-&emsp;A essa altura do campeonato, eu já havia criado a [*Tiny Library*](tinylib), um
+A essa altura do campeonato, eu já havia criado a [*Tiny Library*](tinylib), um
 pequeno projeto que englobava todos as minhas bibliotecas para o [*Tic80*][tic80], e foi
 graças a uma delas que vi-me forçado a mudar meu método.
 
 ## O despertar
 
-&emsp;Grande parte (*ou até mesmo todo*) do conteúdo presente nas bibliotecas do projeto
+Grande parte (*ou até mesmo todo*) do conteúdo presente nas bibliotecas do projeto
 [*Tiny Library*][tinylib] partiram das minhas necessidades como programador, durante o
 desenvolvimento do meu primeiro "jogo completo", chamado de
 [*Legendary Champion: Rebirth*][leg-cha]. Na época eu precisava de um meio agradável de
@@ -166,7 +166,7 @@ o achava bastante confuso. Por conta disso, descidi criar uma biblioteca de cont
 e "expansão" de memória, chamada *longBit*, a qual, quando comparada as demais, possuía
 um nível elevado de complexidade.
 
-&emsp;Essa característica dessa biblioteca, aliada ao meu método primitivo de
+Essa característica dessa biblioteca, aliada ao meu método primitivo de
 *compactação*, resultou em uma bomba de *bugs*. De todo tipo, de todo tamanho, eram
 problemas que não acabavam mais, erros sem fim, tanto porque meu código fonte não era
 perfeito, quanto porque eu percava muito durante a compressão do código. Foi então que,
@@ -176,12 +176,12 @@ encontrar uma forma mais eficiente de realizar aquele trabalho desgastante, pois
 tornando-se claro para mim o quão grande estavam e o quão grandes poderiam tornar-se
 tais bibliotecas.
 
-&emsp;Nesse período, eu estava, paralelamente, iniciando meus estudos em [*C*][lang-c], e
+Nesse período, eu estava, paralelamente, iniciando meus estudos em [*C*][lang-c], e
 como essa me parecia uma ótima oportunidade para obter experiências práticas com essa
 linguagem formidável, eu decidi! Eu criaria um programa (*de terminal*) capaz de reduzir
 um código [*Lua*][lua] ao seu "tamanho mínimo".
 
-&emsp;Foi então que no dia `04/05/2024`, no repositório da [*Tiny Library*][tinylib], eu
+Foi então que no dia `04/05/2024`, no repositório da [*Tiny Library*][tinylib], eu
 introduzi ao [*Git*][git] o que viria a ser a primeira versão a **primeira versão do Lim**,
 denominada *Tin*. E no dia seguinte, iniciei **este** repositório, com o objetivo de criar
 um *compactador de bibliotecas* [*Lua*][lua].
@@ -199,7 +199,7 @@ Date:   Sat May 4 21:21:03 2024 -0300
 
 ## Por que o nome "Lim"?
 
-&emsp;Inicialmente, eu pretendia nomear este programa como *Tin*, por conta de três motivos principais:
+Inicialmente, eu pretendia nomear este programa como *Tin*, por conta de três motivos principais:
 
 * Referenciava parte do "nome completo" do [*Tic80*][tic80], especificamente *Tic* e
 *Tiny*.
@@ -209,17 +209,17 @@ como *Tiny*.
 
 * Era um nome curto e fácil de se lembrar.
 
-&emsp;*Mas por que eu abandonei essa ideia?* A resposta, para fazer a verdade, é um pouco
+*Mas por que eu abandonei essa ideia?* A resposta, para fazer a verdade, é um pouco
 boba. Eu queria que os arquivos gerados pela aplicação tivessem seu nome como extensão, mas
 ao fazer uma breve pesquisa, pude constatar que a extensão `.tin` já existia.
 
-&emsp;Por conta desse *"problema"*, decidi "buscar" um novo nome, que deveria ser composto,
+Por conta desse *"problema"*, decidi "buscar" um novo nome, que deveria ser composto,
 também, por três letras, além de ser simples. Eu não conseguia pensar em três palavras
 cujas iniciais gerassem um bom resultado, então eu mudei para uma abordagem mais criativa:
 a primeira letra da primeira palavra, segunda da segunda e terceira da terceira. E daí
 surgiu o nome *Lim*, oriundo de *Lua Library Compactor*.
 
-&emsp;Se você foi curioso o suficiente a ponto de procurar, deve ter notado que já havia
+Se você foi curioso o suficiente a ponto de procurar, deve ter notado que já havia
 uma extensão de arquivo `.lim`, entretanto, o nome era tão bom e me faltava tanta
 criatividade, que eu decidi manter esse. Hoje percebo que isso não era um "problema de
 verdade", já que ambas as extensões são muito ninchadas e, certamente, nenhum indivíduo
@@ -227,15 +227,15 @@ confundiria os arquivos (*a menos que fosse induzido ao erro*).
 
 ## Considerações finais
 
-&emsp;Chegar até aqui foi uma tarefa difícil, cheia de problemas e desmotivações, que
+Chegar até aqui foi uma tarefa difícil, cheia de problemas e desmotivações, que
 felizmente me trouxe muito aprendizado, permitindo-me evoluir diversos aspectos meus,
 tanto com relação a programação, quanto com relação a minha vida pessoal.
 
-&emsp;O histórico deste repositório denúncia minhas dificuldades, incertezas e erros, mas
+O histórico deste repositório denúncia minhas dificuldades, incertezas e erros, mas
 também revela minhas soluções e maneiras, muitas vezes engenhosas (*ou apenas grotescas*),
 de superar esses problemas. Essa foi, indiscutivelmente, uma aventura proveitosa, poderia
 ter sido um pouco menos desgastante, mas isso não foi algo necessariamente ruim, foi
 aprendizado.
 
-&emsp;Isso é tudo que você *"precisa"* saber sobre a história desse projeto. Espero que
+Isso é tudo que você *"precisa"* saber sobre a história desse projeto. Espero que
 tenha sido agradável ler esse trecho, pois escrevê-lo certamente foi. Obrigado por ler!

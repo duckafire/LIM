@@ -1,26 +1,26 @@
 # Bandeiras
 
-***
+---
 
 * [Visão geral](#visão-geral)
 * [Bandeiras informativas](#bandeiras-informativas)
-	* `--help`&emsp;`--verbose`
+	* `--help` - `--verbose`
 	* `--version`
 * [Bandeiras de ação](#bandeiras-de-ação)
-	* `--lib-name`&emsp;`--name`
-	* `--no-header`&emsp;`--replace`
+	* `--lib-name` - `--name`
+	* `--no-header` - `--replace`
 * [Sinopse global recomendada](#sinopse-global-recomendada)
 
-***
+---
 
 ## Visão geral
 
-&emsp;Bandeiras (em inglês *flag*), no contexto desse projeto, é o nome dado a palavras
+Bandeiras (em inglês *flag*), no contexto desse projeto, é o nome dado a palavras
 chaves que podem, opcionalmente, ser usadas como argumento para o Lim. Elas permitem
 obter informações, ativar/desativar funcionalidades ou informar "valores" específicos,
 assim possibilitando um processo customizado.
 
-&emsp;Cada um desses argumentos especiais está disponível em duas versões: *longa* e
+Cada um desses argumentos especiais está disponível em duas versões: *longa* e
 *curta*. A diferença está unicamente na escrita, onde a *versão longa* é prefixada por
 `--` e tem seu nome como sendo uma referência a sua função, já a *versão curta* é prefixada
 por `-` e é formada pela(s) inicial(is) da *versão longa* (podendo ser minúscula ou
@@ -31,11 +31,11 @@ maiúscula).
 > configuração) e/ou possuir suas próprias palavras reservadas, como é o caso de
 > `--help`.
 
-***
+---
 
 ## Bandeiras informativas
 
-&emsp;Como o própio nome sugere, essas bandeiras servem unicamente para imprimir
+Como o própio nome sugere, essas bandeiras servem unicamente para imprimir
 informações no console, sendo estas referentes ao Lim e aos seus processos.
 
 * `-h | --help`: gera uma mensagem informativa com base no seu sufixo opcional, que pode
@@ -57,7 +57,7 @@ ser **qualquer** bandeira ou uma das palavras reservadas abaixo.
 
 ## Bandeiras de ação
 
-&emsp;Há também as bandeiras responsável por permitir a ativação/desativação de recursos
+Há também as bandeiras responsável por permitir a ativação/desativação de recursos
 ou espeficicação de "componentes", de modo a modificar o "produto final".
 
 * `-ln | --lib-name`: permite informar qual será o nome da *tabela de referência*,
@@ -78,11 +78,11 @@ Veja mais sobre em: [O *header.lim*](https://github.com/duckafire/blob/main/docs
 de saída, este deverá ser substituído. Se está bandeira não for especificada e houver um
 arquivo com tal característica, Lim gerará um erro.
 
-***
+---
 
 ## Sinopse global recomendada
 
-&emsp;Como é de se imaginar, Lim espera que seus argumentos sigam uma certa ordem lógica,
+Como é de se imaginar, Lim espera que seus argumentos sigam uma certa ordem lógica,
 sejam eles bandeiras ou não. Entretanto, há uma certa flexibilidade em alguns aspectos,
 permitindo que certos argumentos possam ser posicionados em lugares diversos, o que pode
 gerar uma certa confusão. Como forma de orientar os usuários, foi criada uma sinopse

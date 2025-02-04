@@ -7,9 +7,5 @@
 * [O "header.lim"](https://github.com/duckafire/lim/blob/main/docs/o-header-lim.md)
 * [Regras da compactação](https://github.com/duckafire/lim/blob/main/docs/regras-da-compactacao.md)
 
-<br>
-
 > [!NOTE]
 > Por favor reporte *bugs* [aqui](https://github.com/duckafire/LIM/issues "Github issues").
-
-<br>
