@@ -4,10 +4,11 @@
 
 * [Visão geral](#visão-geral)
 * [Bandeiras informativas](#bandeiras-informativas)
-	* `--help`&emsp;`--verbose`&emsp;`--version`
+	* `--help`&emsp;`--verbose`
+	* `--version`
 * [Bandeiras de ação](#bandeiras-de-ação)
-	* `--lib-name`&emsp;`--name`&emsp;`--no-header`
-	* `--replace`
+	* `--lib-name`&emsp;`--name`
+	* `--no-header`&emsp;`--replace`
 * [Sinopse global recomendada](#sinopse-global-recomendada)
 
 ***
