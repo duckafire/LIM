@@ -2,8 +2,8 @@
 #include <string.h>
 #include "flags/cmp.h"
 #include "flags/list.h"
-#include "print/error.h"
-#include "print/flags-in-define.h"
+#include "fatal/error.h"
+#include "fatal/info.h"
 #include "help.h"
 #include "process-master.h"
 #include "check.h"

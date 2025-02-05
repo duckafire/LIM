@@ -1,6 +1,6 @@
 #include "flags/cmp.h"
 #include "flags/list.h"
-#include "print/error.h"
+#include "fatal/error.h"
 #include "help.h"
 
 // NOTE: all flags need to be shown in:
