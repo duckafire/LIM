@@ -50,7 +50,7 @@ static void help_with_arg(char *arg){
 		MESSAGE(
 			"MIT License" N
 			N
-			"Copyright (c) 2024 DuckAfire <duckafire.github.io/nest>" N
+			"Copyright (c) 2024-2025 DuckAfire <duckafire.github.io/nest>" N
 			N
 			"Permission is hereby granted, free of charge, to any person obtaining a copy" N
 			"of this software and associated documentation files (the 'Software'), to deal" N

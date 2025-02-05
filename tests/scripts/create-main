@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
 
-_main_c_path=$(get_main_path $ARG_TARGET)
-_files=$(      read_file $ARG_TARGET/files    1 1)
-_includes=$(   read_file $ARG_TARGET/includes 0 1)
-_main=$(       read_file $ARG_TARGET/main.c   1 0)
+declare _main_c_path=$(get_main_path $ARG_TARGET)
+declare _files=$(      read_file $ARG_TARGET/files  1 1)
+declare _main=$(       read_file $ARG_TARGET/main.c 1 0)
 
 
 echo "$_main" > $MAIN
-gcc -g $_main_c_path $_files $_includes -o $EXE
+gcc -g $_main_c_path $_files -o $EXE
 
 
 if [[ $? != "0" ]]; then

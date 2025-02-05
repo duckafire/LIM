@@ -54,7 +54,6 @@ declare -r EXE="$TMP/exe"
 declare -r LOG="$TMP/log"
 declare -r BIN="$ADDR/../src/"
 
-declare _files _includes _main _args _main_c_path
 
 [[ ! -d $TMP ]] && mkdir $TMP
 [[ ! -f $MAIN ]] && > $MAIN
@@ -116,7 +115,6 @@ function debug_exe(){
 
 export ARG_TARGET ARG_BROKEN
 export ADDR TMP BROK MAIN EXE LOG SRC BIN
-export _files _includes _main _args _main_c_path
 export -f read_file get_main_path get_args_path debug_exe
 
 
@@ -138,7 +136,6 @@ fi
 [[ $CREATE_MAIN_STATUS -eq 0 ]] && $ADDR/scripts/start-tests
 
 
-unset _files _includes _main _args _main_c_path
 unset -f read_file get_main_path get_args_path debug_exe
 
 exit $CREATE_MAIN_STATUS
