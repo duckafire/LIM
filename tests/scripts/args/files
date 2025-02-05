@@ -1,4 +1,5 @@
-args/check-and-treat.c
-args/flags/cmp.c
+args/process-master.c
+args/check.c
+args/treat.c
 args/help.c
-args/print/verbose.c
+args/flags/cmp.c

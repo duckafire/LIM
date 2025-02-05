@@ -13,7 +13,9 @@ static char c;
 void read_source_file(void){
 	char *tmp = NULL;
 
+	lim.files.source = fopen(lim.files.source_name, "r");
 	lim.buffers.destine_file = tmpfile();
+
 	start_nickname_buffers();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){

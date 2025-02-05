@@ -3,10 +3,10 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include "lim-global-variables.h"
 #include "verbose.h"
 
 static va_list content;
-static bool is_on = false;
 
 
 // #define LIM_ERROR "<LIM>" (./error.h)
@@ -29,12 +29,8 @@ static bool is_on = false;
 #define END \
 	puts(".")
 
-void set_verbose(bool flag){
-	is_on = flag;
-}
-
 void print_verbose(short tag, ...){
-	if(!is_on)
+	if(!lim.flags.verbose)
 		return;
 
 	va_start(content, tag);
