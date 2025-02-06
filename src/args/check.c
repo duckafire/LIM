@@ -47,7 +47,7 @@ void is_it_information_flag(void){
 	if(flag_cmp(args.value[1], FLAG_VERSION)){
 		OTHER_ARGS_ARE_IGNORED(1);
 
-		print_current_version;
+		print_current_version(args.program_version);
 	}
 
 	if(flag_cmp(args.value[1], FLAG_HELP)){

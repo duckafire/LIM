@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "cmake-h/version.h"
 #include "args/process-master.h"
 #include "core/tools/lim-global-variables.h"
 #include "core/process-master.h"
@@ -11,7 +12,7 @@ int main(int argc, char *argv[]){
 	atexit(lim_free_env);
 
 
-	args_init_env(argc, argv);
+	args_init_env(argc, argv, LIM_VERSION);
 	atexit(args_free_env);
 
 	check_program_arguments();

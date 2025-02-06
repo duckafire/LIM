@@ -20,10 +20,12 @@ void check_program_arguments(void){
 	does_dest_file_already_exist();
 }
 
-void args_init_env(unsigned int c, char *v[]){
+void args_init_env(unsigned int c, char *v[], char *program_version){
 	args.index = c - 1;
 	args.value = v;
-	args.content_shared = false;
+
+	args.content_shared  = false;
+	args.program_version = program_version;
 
 	args.files_name.source  = NULL;
 	args.files_name.destine = NULL;

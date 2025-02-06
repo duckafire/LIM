@@ -13,7 +13,9 @@
 struct Args_Flags_And_Status{
 	unsigned int index;
 	char **value;
+
 	bool content_shared;
+	char *program_version;
 
 	struct{
 		char *source;
@@ -32,7 +34,7 @@ struct Args_Flags_And_Status{
 extern struct Args_Flags_And_Status args;
 
 void check_program_arguments(void);
-void args_init_env(unsigned int c, char *v[]);
+void args_init_env(unsigned int c, char *v[], char *program_version);
 void args_free_env(void);
 
 #endif

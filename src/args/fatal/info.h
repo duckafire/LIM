@@ -3,14 +3,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../cmake-h/version.h"
+
+#define LIM_INFO(str, ...)      \
+	printf(str, ##__VA_ARGS__); \
+	exit(0)
 
 #define no_arguments_to_lim \
-	puts("[LIM] - Lua Library Compactor\n\nTry: `lim --help`\n"); \
-	exit(0)
+	LIM_INFO("[LIM] - Lua Library Compactor\n\nTry: `lim --help`\n")
 
-#define print_current_version     \
-	printf("%s\n\n", LIM_VERSION);\
-	exit(0)
+#define print_current_version(v) \
+	LIM_INFO("%s\n\n", v)
 
 #endif
