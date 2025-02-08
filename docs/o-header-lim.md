@@ -5,8 +5,8 @@
 > [!IMPORTANT]
 > Essa página não se propõem a explicar como ocorrer o processo de leitura do *header.lim*,
 > seu objetivo é explicar *o que é o header.lim*. Para obter informações sobre o
-> funcionamento desses processos, acesse: [Compactação explicada: Leitura do *header.lim*
-](https://github.com/duckafire/lim/blob/main/docs/compactacao-explicada.md#leitura-do-header-lim).
+> funcionamento desses processos, acesse: [Como o Lim funciona?: Leitura do *header.lim*
+](https://github.com/duckafire/lim/blob/main/docs/como-o-lim-funciona.md#leitura-do-headerlim).
 
 ---
 
