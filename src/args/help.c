@@ -93,6 +93,9 @@ static void help_with_arg(char *arg){
 			"5 - The string delimitator `[[]]` is not supported. Because the Lim final" N
 			"    organization model conflict with the main feature of this delimitator," N
 			"    its capacity of accept special characters, that included line feed." N
+			N
+			"6 - Only characters from ASCII Table are supported. The use of other will" N
+			"    generate undefined behavior. See too: https://www.ascii-code.com" N
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_HEADER)){

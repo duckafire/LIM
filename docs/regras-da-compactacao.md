@@ -23,3 +23,6 @@ confundidas com variáveis e tabelas locais.
 que o modelo de *organização final* adotado pelo Lim conflita com a principal
 funcionalidade deste delimitador, que é sua capacidade de aceitar caracteres especiais
 literais, o que inclui quebras de linha.
+
+6. Apenas caracteres pertencentes à Tabela [ASCII](https://www.ascii-code.com/pt "Tabela ASCII")
+são suportados. Os demais gerarão comportamentos inesperados.
