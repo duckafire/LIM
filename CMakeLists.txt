@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 
-option(DEBUG_VERSION OFF "Turn on GDB bug flag ('-g') + move executable to '../tests/'")
+option(DEBUG_VERSION "Turn on GDB bug flag ('-g') + move executable to '../tests/'" OFF)
 
 if(DEBUG_VERSION)
 	set(CMAKE_BUILD_TYPE "Debug")
@@ -9,6 +9,12 @@ if(DEBUG_VERSION)
 else(DEBUG_VERSION)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin/)
 endif(DEBUG_VERSION)
+
+set(VERSION_TAG "" CACHE STRING "Version suffix: 'NONE'; beta; alpha.")
+
+if(NOT VERSION_TAG STREQUAL "")
+	set(VERSION_TAG "-${VERSION_TAG}")
+endif()
 
 
 set(VERSION_MAJOR 1)

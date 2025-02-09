@@ -6,6 +6,9 @@ bin-alpha/
 void/
 todo
 
+src/cmake-h/*.h
+!src/cmake-h/*.h.in
+
 tests/new
 tests/bin/
 tests/lim-broken/
