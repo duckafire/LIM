@@ -8,14 +8,7 @@ struct Lim_Global_Variables lim;
 void lim_init_env(void){
 	lim.files.source       = NULL;
 	lim.files.destine      = NULL;
-	lim.files.source_name  = NULL;
-	lim.files.destine_name = NULL;
 	lim.files.header_lim   = NULL;
-
-	lim.flags.verbose     = false;
-	lim.flags.replace     = false;
-	lim.flags.header_file = true;
-	lim.flags.lib_name    = NULL;
 
 	lim.header_partitions.top_header = NULL;
 	lim.header_partitions.code_scope = NULL;

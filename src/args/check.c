@@ -63,22 +63,18 @@ void is_it_information_flag(void){
 void search_and_set_source_file(void){
 	FILE *tmp;
 
+	if(args.value[1][0] == '-'){
+		ERROR_file_name_expected_instead_flag(args.value[1]);
+	}
+
 	args.files_name.source = args.value[1];
 	tmp = fopen(args.value[1], "r");
 
 	if(tmp == NULL){
-		if(args.value[1][0] == '-'){
-			ERROR_file_name_expected_instead_flag(args.value[1]);
-		}
-
 		ERROR_source_file_not_exist(args.value[1]);
 	}
 
 	fclose(tmp);
-
-	if(args.value[1][0] == '-'){
-		ERROR_file_name_expected_instead_flag(args.value[1]);
-	}
 
 	if(!IS_DOT_LUA( args.value[1], strlen(args.value[1])) ){
 		ERROR_invalid_file_extension(args.value[1]);
@@ -94,11 +90,11 @@ void read_other_arguments(void){
 
 		// invalid
 		if(flag_cmp(args.value[i], FLAG_VERSION)){
-			CHECK_FLAG_REPETITION(flag_cmp(args.value[i], FLAG_VERSION))
+			ERROR_invalid_use_of_the_flag(FLAG_VERSION, i);
 		}
 
 		if(flag_cmp(args.value[i], FLAG_HELP)){
-			CHECK_FLAG_REPETITION(flag_cmp(args.value[i], FLAG_HELP))
+			ERROR_invalid_use_of_the_flag(FLAG_HELP, i);
 		}
 
 		///// VALID ONE TIME /////
@@ -111,7 +107,7 @@ void read_other_arguments(void){
 		CaS_BOOL_FLAG(!args.flags.header_file,args.flags.header_file, false, FLAG_NO_HEADER)
 
 		if(args.value[i][0] != '-'){
-			ERROR_unexpected_file_name(args.value[i]);
+			ERROR_invalid_argument(args.value[i]);
 		}
 		ERROR_invalid_flag(args.value[i]);
 	}

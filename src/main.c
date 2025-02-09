@@ -8,10 +8,6 @@
 #include "core/tools/read-header-lim.h"
 
 int main(int argc, char *argv[]){
-	lim_init_env();
-	atexit(lim_free_env);
-
-
 	args_init_env(argc, argv, LIM_VERSION);
 	atexit(args_free_env);
 
@@ -32,6 +28,9 @@ int main(int argc, char *argv[]){
 	read_header_file(&foo);
 	free(foo);
 
+
+	lim_init_env();
+	atexit(lim_free_env);
 
 	read_source_file();
 	build_destine_file();

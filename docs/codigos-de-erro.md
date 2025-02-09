@@ -10,6 +10,7 @@
 | 5      | Argumento inválido para a bandeira `help`     |
 | 6      | Nome de arquivo esperado ao invés de bandeira |
 | 7      | Bandeira inválida                             |
-| 8      | Nome de arquivo inesperado                    |
+| 8      | Argumento inválido                            |
 | 9      | O arquivo de destino já existe                |
 | 10     | Extensão de arquivo inválida                  |
+| 11     | Uso inválido de bandeira                      |
