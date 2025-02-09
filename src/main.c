@@ -34,5 +34,6 @@ int main(int argc, char *argv[]){
 
 
 	read_source_file();
+	build_destine_file();
 	return 0;
 }

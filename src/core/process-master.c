@@ -55,7 +55,6 @@ void read_source_file(void){
 	finish_treatment();
 	free_nickname_buffers();
 	string_set(&tmp, STR_END);
-	build_destine_file();
 }
 
 static void get_and_put_from_buffer(FILE *buf, bool separator){
@@ -71,7 +70,7 @@ static void get_and_put_from_buffer(FILE *buf, bool separator){
 		fputc(';', lim.files.destine);
 }
 
-static void build_destine_file(void){
+void build_destine_file(void){
 	lim.files.destine = fopen(lim.files.destine_name, "w");
 
 	get_and_put_from_buffer(lim.header_partitions.top_header, false);
