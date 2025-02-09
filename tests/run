@@ -6,9 +6,12 @@
 # -g - IF a error occur, create the ./lim-broken/lim, to debug with gdb
 # -c - only compile the ./lim-broken/lim, no execute none test
 # -a - auto run tests. Stop after a error ocurr and wait use to continue
+# -A - run ALL tests, like if each were called with the flag `-a`. It
+#      will stop if a compilation error occur.
 
 
-declare -r TRY="./run < args | queue | header | -r > [ -g | -c | -a ]"
+declare -r KW=("args" "queue" "header")
+declare -r TRY="./run < ${KW[0]} | ${KW[1]} | ${KW[2]} | -A | -r > [ -a | -c | -g ]"
 declare -r ADDR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 if [[ $# -eq 0 ]]; then
@@ -29,6 +32,15 @@ if [[ $ARG_TARGET = "-r" ]]; then
 
 	echo -e "./lim-broken/lim don't exist.\n"
 	exit 1
+
+elif [[ $ARG_TARGET = "-A" ]]; then
+
+	for cur_kw in "${KW[@]}"; do
+		$ADDR/run $cur_kw -a
+		[[ $? -ne 0 ]] && exit 1
+	done
+
+	exit 0
 fi
 
 if [[ $# -ge 2 ]]; then
@@ -43,8 +55,16 @@ else
 fi
 
 function check_argument(){
-	[[ $1 != "args" ]] && [[ $1 != "queue" ]] && [[ $1 != "header" ]]
-	return $?
+	local -r arg="$1"
+
+	for cur_kw in "${KW[@]}"; do
+		if [[ $arg = "$cur_kw" ]]; then
+			return 1
+		fi
+	done
+
+	# error
+	return 0
 }
 
 declare -r TMP="$ADDR/scripts/.tmp"

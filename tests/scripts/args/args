@@ -6,6 +6,7 @@
 ./scripts/.tmp/a.lua
 ./scripts/.tmp/a.lua -x
 ./scripts/.tmp/a.lua --foo
+./scripts/.tmp/a.lua foo
 ./scripts/.tmp/a.lua -r
 ./scripts/.tmp/a.lua --replace
 ./scripts/.tmp/a.lua -V

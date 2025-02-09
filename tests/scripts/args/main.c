@@ -3,7 +3,7 @@
 #include "../../../src/args/process-master.h"
 
 int main(int argc, char *argv[]){
-	args_init_env(argc, argv);
+	args_init_env(argc, argv, "vX.X.X-debug");
 	atexit(args_free_env);
 
 	check_program_arguments();

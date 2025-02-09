@@ -137,6 +137,8 @@ ainda mais o processo de análise. Ambos encontram-se abaixo:
 
 * `flag`: caractere, prefixados por `-`, que permite a execução de uma ação específica.
 Estão disponíveis:
+
+	* `-A` executa **todos** os testes possíveis, com a mesma *configuração* de `-a`.
 	
 	* `-a`: executa os testes sem exibir sua saída e sem exigir que a tecla *[enter]* seja
 	pressionada, a menos que um erro ocorra.
