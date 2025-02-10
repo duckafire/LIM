@@ -22,7 +22,7 @@
 	}
 
 // CaS => Check and Set
-#define CaS_CHAR_FLAG(dest, set, ...)              \
+#define CaS_CHAR_FLAG(dest, set, ...)                        \
 	if(flag_cmp(args.value[i], __VA_ARGS__)){                \
 		CHECK_FLAG_REPETITION( (dest != NULL) )              \
 		if(IS_NEXT_ARG_NULL){                                \
@@ -32,11 +32,11 @@
 		continue;                                            \
 	}
 
-#define CaS_BOOL_FLAG(cond, var, val, ...) \
-	if(flag_cmp(args.value[i], __VA_ARGS__)){        \
-		CHECK_FLAG_REPETITION( (cond) )              \
-		var = val;                                   \
-		continue;                                    \
+#define CaS_BOOL_FLAG(cond, var, val, ...)    \
+	if(flag_cmp(args.value[i], __VA_ARGS__)){ \
+		CHECK_FLAG_REPETITION( (cond) )       \
+		var = val;                            \
+		continue;                             \
 	}
 
 void is_it_information_flag(void){
@@ -61,11 +61,11 @@ void is_it_information_flag(void){
 }
 
 void search_and_set_source_file(void){
-	FILE *tmp;
-
 	if(args.value[1][0] == '-'){
 		ERROR_file_name_expected_instead_flag(args.value[1]);
 	}
+
+	FILE *tmp;
 
 	args.files_name.source = args.value[1];
 	tmp = fopen(args.value[1], "r");

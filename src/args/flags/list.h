@@ -1,9 +1,6 @@
 #ifndef ARGS_FLAGS_LIST
 #define ARGS_FLAGS_LIST
 
-#define TOTAL_LIM_FLAGS 7
-#define TOTAL_HELP_FLAGS 6
-
 #define FLAG_VERSION   "-v", "--version"
 #define FLAG_HELP      "-h", "--help"
 #define FLAG_VERBOSE   "-V", "--verbose"
