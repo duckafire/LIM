@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LIM_ERROR(code, msg, ...) \
-	printf(msg, ##__VA_ARGS__);   \
+#define LIM_ERROR(code, msg, ...)        \
+	fprintf(stderr, msg, ##__VA_ARGS__); \
 	exit(code)
 
 #define ERROR_source_file_not_exist(sourceFileName) \
