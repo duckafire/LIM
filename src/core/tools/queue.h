@@ -8,7 +8,6 @@ typedef enum{
 	QEE_DROP,
 	QEE_UP_QUANT,
 	QEE_INSERT,
-	QEE_UP_AND_INS,
 }IS_DUPLIC;
 
 typedef struct Queue{

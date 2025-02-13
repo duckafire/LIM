@@ -55,18 +55,17 @@ static Queue* insert_item(Queue *item){
 		return new_item;
 
 	}else if(string_compare(item->ident, new_item->ident)){
-		if(treat_duplicated_item == QEE_UP_QUANT || treat_duplicated_item == QEE_UP_AND_INS)
+		if(treat_duplicated_item == QEE_UP_QUANT)
 			(item->quantity)++;
 
-		if(treat_duplicated_item != QEE_INSERT && treat_duplicated_item != QEE_UP_AND_INS){
-			// treat_duplicated_item == QEE_DROP
+		if(treat_duplicated_item == QEE_DROP){
 			free_item(new_item);
 			return item;
 		}
 
-		// NOTE: if the last condition are
+		// NOTE: if the last condition aren't
 		// `true`, the item'll be inserted
-		// after the other clones
+		// after other clones
 	}
 
 	item->next = insert_item(item->next);
