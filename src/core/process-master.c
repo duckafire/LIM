@@ -76,9 +76,9 @@ void build_destine_file(void){
 	get_and_put_from_buffer(lim.header_partitions.top_header, false);
 
 	if((lim.header_partitions.top_header != NULL))
-		fprintf(lim.files.destine, "\nlocal _={}\ndo ");
-	else
-		fprintf(lim.files.destine, "local _={}\ndo ");
+		fputc('\n', lim.files.destine);
+
+	fprintf(lim.files.destine, "local _={}\ndo ");
 
 	get_and_put_from_buffer(lim.header_partitions.code_scope,    true);
 	get_and_put_from_buffer(lim.buffers.root.scope_func_pointer, false);

@@ -26,16 +26,11 @@ HF_OUT_STATUS read_header_file(char **indiv_part_status){
 	FSEEK;
 
 
-	HF_READ_STATUS status[4];
-	start_reading(status);
+	HF_READ_STATUS s[4]; // Status
+	start_reading(s);
 
-	*indiv_part_status = malloc(5);
-
-	for(short i = 0; i < 4; i++)
-		(*indiv_part_status)[i] = '0' + status[i];
-
-	(*indiv_part_status)[4] = '\0';
-
+	*indiv_part_status = malloc(sizeof(char) * 5);
+	sprintf(*indiv_part_status, "%d%d%d%d\0", s[0], s[1], s[2], s[3]);
 
 	return HF_CONTENT_READED;
 }

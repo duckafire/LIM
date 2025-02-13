@@ -80,11 +80,13 @@ que as funções do *Padrão Lua*.
 
 ```
 -- NAME: hello-world.lua
+
 @
 local function _hw()print("Hello world!")end
 ```
 
 ```
+
 @
 local function _add(a,b)return a+b end
 local function _sub(a,b)return a-b end
@@ -96,7 +98,9 @@ local function _pow(a,b)return a^b end
 ```
 
 ```
+
 @
+
 @
 screen
 draw
@@ -105,6 +109,9 @@ printf
 tabcat
 delay
 ```
+
+> [!CAUNTION]
+> Sempre deixe uma quebra de linha em partições vazias.
 
 ---
 

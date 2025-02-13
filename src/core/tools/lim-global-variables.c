@@ -10,11 +10,6 @@ void lim_init_env(void){
 	lim.files.destine      = NULL;
 	lim.files.header_lim   = NULL;
 
-	lim.header_partitions.top_header = NULL;
-	lim.header_partitions.code_scope = NULL;
-	lim.header_partitions.funct_list = NULL;
-	lim.header_partitions.table_list = NULL;
-
 	lim.buffers.destine_file = NULL;
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;

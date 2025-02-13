@@ -114,7 +114,7 @@ static void help_with_arg(char *arg){
 			"TABLE LIST: will receive the same treatment that Lua standard tables." N
 			"FUNCT LIST: will receive the same treatment that Lua standard functions." N
 			N
-			">>> EXAMPLE >>>" N
+			">>> EXAMPLE 0 >>>" N
 			"-- NAME: header.lim" N
 			"-- VERSION: 0.0.1" N
 			"-- AUTHOR: foo user" N
@@ -130,7 +130,15 @@ static void help_with_arg(char *arg){
 			"foo_funct_0" N
 			"foo_funct_1" N
 			"foo_funct_n" N
-			"<<< EXAMPLE <<<" N
+			"<<< EXAMPLE 0 <<<" N
+			N
+			">>> EXAMPLE 1 >>>" N
+			N
+			"@" N
+			N
+			"@" N
+			"foo_funct" N
+			"<<< EXAMPLE 1 <<<" N
 			N
 			"The 'header.lim' will be ignored if the flag (-nh) '--no-header' is used." N
 			N
