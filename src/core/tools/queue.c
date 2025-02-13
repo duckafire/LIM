@@ -4,7 +4,8 @@
 #include "string-plus.h"
 #include "queue.h"
 
-static bool qee_add_item_status;
+static bool qee_add_item_return;
+static bool qee_add_item_quant_upped;
 static Queue *new_item;
 static Queue *tmp_item;
 static bool bigger_to_lower_is_allow = true;
@@ -34,29 +35,32 @@ bool qee_add_item(Queue **head, char *ident, char *table_key, char *nick, bool i
 	new_item = qee_create(ident, table_key, nick, is_const);
 
 	treat_duplicated_item = treat;
-	qee_add_item_status = false;
+	qee_add_item_return = false;
+	qee_add_item_quant_upped = false;
 	*head = insert_item(*head);
 
-	if(bigger_to_lower_is_allow)
+	if(qee_add_item_quant_upped && bigger_to_lower_is_allow)
 		*head = ordenate_queue(*head);
 
-	return qee_add_item_status;
+	return qee_add_item_return;
 }
 
 static Queue* insert_item(Queue *item){
 	if(item == NULL){
-		qee_add_item_status = true;
+		qee_add_item_return = true;
 		return new_item;
 	}
 
 	if(bigger_to_lower_is_allow && CK_QTT_AND_LEN(item, new_item)){
-		qee_add_item_status = true;
+		qee_add_item_return = true;
 		new_item->next = item;
 		return new_item;
 
 	}else if(string_compare(item->ident, new_item->ident)){
-		if(treat_duplicated_item == QEE_UP_QUANT)
+		if(treat_duplicated_item == QEE_UP_QUANT){
+			qee_add_item_quant_upped = true;
 			(item->quantity)++;
+		}
 
 		if(treat_duplicated_item == QEE_DROP){
 			free_item(new_item);
