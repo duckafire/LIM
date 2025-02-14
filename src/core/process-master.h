@@ -5,7 +5,7 @@
 #include "tools/queue.h"
 
 void read_source_file(void);
-static void get_and_put_from_buffer(FILE *buf, bool separator);
+static void get_and_put_from_buffer(FILE *buf, bool separator, char *its_name, char *verbose_msg);
 void build_destine_file(void);
 
 #endif

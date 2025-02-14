@@ -7,109 +7,142 @@
 #include "verbose.h"
 
 static va_list content;
+static bool const_chain = false;
+static short const_quant = 0;
 
+#define ITEM(s)  "  " s ": %s\n"
+#define STR va_arg(content, char*)
+#define INT va_arg(content, int)
 
-// #define LIM_ERROR "<LIM>" (./error.h)
-#define LIM_NORMAL   "[lim] "
-#define LIM_TITLE    "[LIM] "
-#define LIM_F_STATUS "{lim} "
-#define LIM_STARTING ">lim> "
-#define LIM_CLOSING  "<lim< "
-#define LIM_C_STATUS "(lim) "
-#define LIM_BREAK_P  "|lim| "
+#define NORMAL   "[lim] "
+#define START(s) printf(">lim> Starting: '%s'...\n", s)
+#define CLOSE(s) printf("<lim< Closing: '%s'...\n", s)
+#define CONST_ID "|lim| "
+#define INSERT   "{lim} "
+#define WARNING  "[LIM] "
+#define THING    "(lim) "
 
-
-#define START(lim) \
-	printf(lim);   \
-	putchar(toupper(text[0]))
-
-#define FOR \
-	for(short for_i = 1; text[for_i] != '\0'; for_i++)
-
-#define END \
-	puts(".")
-
-void print_verbose(short tag, ...){
-	if(!lim.flags.verbose)
-		return;
-
+void pverbose(VERBOSE_TAG tag, ...){
 	va_start(content, tag);
 
 	switch(tag){
-		case V_NORMAL:          normal(va_arg(content, char*) ); break;
-		case V_TITLE:           title( va_arg(content, char*) ); break;
-		case V_FLAG_STATUS:     flag_status();                   break;
-		case V_STARTING:        starting_or_closing(true);       break;
-		case V_CLOSING:         starting_or_closing(false);      break;
-		case V_CODE_STATUS_NUM: code_status(true);               break;
-		case V_CODE_STATUS_STR: code_status(false);              break;
-		case V_BREAK_PROCESS:   break_process();                 break;
+		case V_FLAGS_STATUS:  flags_status(); break;
+		case V_HEADER_STATUS: header_lim_status(); break;
+		case V_START_PROCESS: start_or_close_process(true); break;
+		case V_CLOSE_PROCESS: start_or_close_process(false); break;
+		case V_CONST_FOUND:   const_found(); break;
+		case V_IDENT_FOUND:   ident_found(); break;
+		case V_INSERTING:     inserting(); break;
+		case V_WARNING:       warning(); break;
+		case V_NEW_THING:     thing(0); break;
+		case V_LOST_THING:    thing(1); break;
+		case V_END_THING:     thing(2); break;
 	}
 
 	va_end(content);
 }
 
-static void normal(char *text){
-	START(LIM_NORMAL);
+static char* bool_to_str(bool val){
+	if(val)
+		return "true";
 
-	FOR printf("%c", text[ for_i ]);
-
-	END;
+	return "false";
 }
 
-static void title(char *text){
+static void was_const(void){
+	if(!const_chain)
+		return;
+
+	const_chain = false;
+	const_quant = 0;
 	putchar('\n');
-
-	START(LIM_TITLE);
-
-	FOR printf("%c", toupper(text[ for_i ]));
-
-	END;
 }
 
-static void flag_status(void){
-	int status;
-	char *f, *flag, text_status[4];
-	
-	f      = va_arg(content, char*);
-	flag   = va_arg(content, char*);
-	status = va_arg(content, int);
-
-	if(status)
-		strcpy(text_status, "ON");
-	else
-		strcpy(text_status, "OFF");
-
-	printf(LIM_F_STATUS "%s (%s): %s\n", flag, f, text_status);
+static void flags_status(void){
+	puts(NORMAL "Flags status:");
+	printf(ITEM("Verbose mode"),         bool_to_str(lim.flags.verbose));
+	printf(ITEM("Replace destine file"), bool_to_str(lim.flags.replace));
+	printf(ITEM("Search 'header.lim'"),  bool_to_str(lim.flags.header_file));
+	printf(ITEM("Library table name"),   lim.flags.lib_name);
 }
 
-static void starting_or_closing(bool is_start){
+static void header_lim_status(void){
+	printf(NORMAL "'header.lim' status: %d\n", INT);
+	printf("  Partitions status: %s\n", STR);
+}
+
+static void start_or_close_process(bool is_start){
+	was_const();
+
+	char *process;
+	process = STR;
+
 	if(is_start)
-		printf(LIM_STARTING "Starting: ");
+		START(process);
 	else
-		printf(LIM_CLOSING "Closing: ");
+		CLOSE(process);
+}
+
+static void const_found(void){
+	if(!const_chain){
+		static const short title_len = strlen(CONST_ID "Constants found: ");
+		printf(CONST_ID "Constants found: ");
+
+		const_chain = true;
+		const_quant = title_len;
+	}
+
+	char *_const = STR;
+
+	const_quant += strlen(_const);
+	if(const_quant > 70){
+		const_quant = 0;
+		printf("\n  ");
+	}
+
+	printf("%s ", _const);
+}
+
+static void ident_found(void){
+	was_const();
+
+	const char *from[3] = {"Lua Standard", "'header.lim'", "input file"};
+
+	printf(CONST_ID "Identifier found (%s):\n", from[INT]);
+	printf(ITEM("ident"), STR);
+
+	const char *table_key = STR;
+	if(table_key != NULL)
+		printf(ITEM("table key"), table_key);
+}
+
+static void inserting(void){
+	was_const();
+
+	const char *msg;
+	msg = STR;
+
+	if(msg != NULL)
+		printf(INSERT "Inserting: %s...\n", msg);
+}
+
+static void warning(void){
+	was_const();
 
 	char *cur;
+	printf(WARNING);
 
-	while( (cur = va_arg(content, char*)) != NULL )
-		printf(" %s;", cur);
+	while( (cur = STR) != NULL )
+		printf("%s ", cur);
 
 	putchar('\n');
 }
 
-static void code_status(bool is_num){
-	char *identifier, status[10];
+static void thing(short code){
+	was_const();
 
-	identifier = va_arg(content, char*);
+	char *def_msg = (code == 0) ? "New" : ((code == 1) ? "Lost" : "End") ;
+	short quant = (short)INT;
 
-	if(is_num)
-		sprintf(status, "%d", (va_arg(content, int)) );
-	else
-		strcpy(status, va_arg(content, char*));
-
-	printf(LIM_C_STATUS "Output status from \"%s\": %s\n", identifier, status);
-}
-
-static void break_process(void){
-	printf(LIM_BREAK_P "Compaction break in Stage %d.\n\n", va_arg(content, int));
+	printf(THING "%s (#%d): %s\n", def_msg, quant, STR);
 }

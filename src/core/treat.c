@@ -7,6 +7,7 @@
 #include "tools/queue.h"
 #include "tools/lim-global-variables.h"
 #include "tools/string-plus.h"
+#include "tools/verbose.h"
 #include "check-content.h"
 #include "treat.h"
 #include "ident-man.h"
@@ -109,6 +110,8 @@ void treat_ident(char *_ident, char *_table_key){
 	gtable_key = _table_key;
 
 	if(dtoken == DT_LOCAL){
+		pverbose(V_NEW_THING, count_envs(true) + 1, "Identifier declaration chain");
+
 		if(locald != NULL && !locald->start_declare)
 			locald->start_declare = true;
 		else
@@ -223,9 +226,27 @@ static void default_const_treatment(char *str){
 	fprintf(CTT_BUF, "%s", str);
 }
 
+static unsigned short count_envs(bool is_locald){
+	unsigned short qtt = 0;
+
+	if(is_locald){
+		Stack_Env *cur;
+
+		for(cur = locald; cur != NULL; cur = cur->below)
+			qtt++;
+	}else{
+		Func_Env_Stack *cur;
+
+		for(cur = lim.buffers.local.top; cur != NULL; cur = cur->below)
+			qtt++;
+	}
+
+	return qtt;
+}
+
 
 static void update_layer(bool is_func){
-	layer.height++;
+	pverbose(V_NEW_THING, ++layer.height, "Layer block");
 
 	Layer_Type *new;
 
@@ -243,7 +264,7 @@ static void update_layer(bool is_func){
 }
 
 static bool downdate_layer(void){
-	layer.height--;
+	pverbose(V_END_THING, layer.height--, "Layer block");
 
 	Layer_Type *tmp;
 	tmp = layer.type;
@@ -636,6 +657,7 @@ static void print_local_declare(PLD_ID id){
 		for(cur = locald->bident; cur != NULL; cur = cur->next)
 			save_ident_in_buffer(cur->ident, cur->table_key, locald->in_root_envir, SCOPE_IDENT, BUF_VAR_TAB);
 
+		pverbose(V_LOST_THING, count_envs(true), "Identifier declaration chain");
 		drop_var_tab_declare_env(false);
 
 		// recycle
@@ -695,6 +717,7 @@ static void print_local_declare(PLD_ID id){
 		}
 	}
 
+	pverbose(V_END_THING, count_envs(true), "Identifier declaration chain");
 	drop_var_tab_declare_env(false);
 
 	// recycle
@@ -736,6 +759,7 @@ static void start_function_declaration(bool is_anony){
 	}
 
 	dtoken = DT_NULL;
+	pverbose(V_NEW_THING, count_envs(false), "Function declaration");
 }
 
 static void search_func_param_end(void){
@@ -760,6 +784,7 @@ static bool pop_function_declaration(void){
 			locald->token = LT_FUNC_END;
 	}
 
+	pverbose(V_END_THING, count_envs(false), "Function declaration");
 	restart_local_parameter_nicknames();
 	drop_local_environment( ((locald != NULL && in_ident_declare) ? &anony_func_to_local_declare : NULL) );
 

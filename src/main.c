@@ -6,6 +6,7 @@
 #include "core/tools/lim-global-variables.h"
 #include "core/process-master.h"
 #include "core/tools/read-header-lim.h"
+#include "core/tools/verbose.h"
 
 int main(int argc, char *argv[]){
 	args_init_env(argc, argv, LIM_VERSION);
@@ -23,10 +24,14 @@ int main(int argc, char *argv[]){
 
 	args.content_shared = true;
 
+	pverbose(V_FLAGS_STATUS);
 
-	char *foo = NULL;
-	read_header_file(&foo);
-	free(foo);
+
+	char *part_status = NULL;
+	HF_OUT_STATUS file_status = read_header_file(&part_status);
+
+	pverbose(V_HEADER_STATUS, file_status, part_status);
+	free(part_status);
 
 
 	lim_init_env();

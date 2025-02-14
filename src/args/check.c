@@ -90,11 +90,11 @@ void read_other_arguments(void){
 
 		// invalid
 		if(flag_cmp(args.value[i], FLAG_VERSION)){
-			ERROR_invalid_use_of_the_flag(FLAG_VERSION, i);
+			ERROR_invalid_use_of_the_flag(args.value[i], i);
 		}
 
 		if(flag_cmp(args.value[i], FLAG_HELP)){
-			ERROR_invalid_use_of_the_flag(FLAG_HELP, i);
+			ERROR_invalid_use_of_the_flag(args.value[i], i);
 		}
 
 		///// VALID ONE TIME /////

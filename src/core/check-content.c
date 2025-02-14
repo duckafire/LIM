@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include "tools/lim-global-variables.h"
 #include "tools/string-plus.h"
+#include "tools/verbose.h"
 #include "tools/queue.h"
 #include "treat.h"
 #include "check-content.h"
@@ -224,37 +225,52 @@ bool is_identifier(char c, char **tmp){
 	else
 		table_key = buf;
 
+	short code_to_pverbose;
+
 
 	if(table_key != NULL){
-		if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+		if(is_from_lua(ident, CKIA_LUA_STD_TABLE)){
+			code_to_pverbose = 0;
 			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_lua));
 
-		else if(is_from_header(ident, lim.header_partitions.table_list))
+		}else if(is_from_header(ident, lim.header_partitions.table_list)){
+			code_to_pverbose = 1;
 			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_header));
 
-		else
+		}else{
+			code_to_pverbose = 2;
 			treat_ident(ident, table_key);
+		}
 
 	}else{
-		if(is_from_lua(ident, CKIA_LUA_KW))
+		if(is_from_lua(ident, CKIA_LUA_KW)){
+			code_to_pverbose = -1;
 			*tmp = string_copy(ident); // it will be treat in "read_source_file"
 
-		else if(is_from_lua(ident, CKIA_LUA_STD_FUNC))
+		}else if(is_from_lua(ident, CKIA_LUA_STD_FUNC)){
+			code_to_pverbose = 0;
 			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_lua));
 
-		else if(is_from_lua(ident, CKIA_LUA_STD_TABLE))
+		}else if(is_from_lua(ident, CKIA_LUA_STD_TABLE)){
+			code_to_pverbose = 0;
 			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_lua));
 
-		else if(is_from_header(ident, lim.header_partitions.funct_list))
+		}else if(is_from_header(ident, lim.header_partitions.funct_list)){
+			code_to_pverbose = 1;
 			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_header));
 
-		else if(is_from_header(ident, lim.header_partitions.table_list))
+		}else if(is_from_header(ident, lim.header_partitions.table_list)){
+			code_to_pverbose = 1;
 			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_header));
 
-		else
+		}else{
+			code_to_pverbose = 2;
 			treat_ident(ident, NULL);
+		}
 	}
 
+	if(code_to_pverbose != -1)
+		pverbose(V_IDENT_FOUND, code_to_pverbose, ident, table_key);
 
 	if(c != EOF)
 		fseek(lim.files.source, -1, SEEK_CUR);
