@@ -21,6 +21,11 @@ HF_OUT_STATUS read_header_file(char **indiv_part_status){
 	if(lim.files.header_lim == NULL)
 		return HF_NOT_FOUND;
 
+	if(fgetc(lim.files.header_lim) == EOF)
+		return HF_IS_EMPTY;
+	FSEEK;
+
+
 	HF_READ_STATUS s[4]; // Status
 	start_reading(s);
 
