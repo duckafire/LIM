@@ -1,4 +1,4 @@
-# O *header.lim*
+# O "*header.lim*"
 
 ---
 
@@ -128,8 +128,7 @@ bandeira `--verbose` (`-V`) seja usada.
 | :-:    | :--                            |
 | 0      | Leitura desabilitada por `-nh` |
 | 1      | Arquivo não encontrado         |
-| 2      | O arquivo está vazio           |
-| 3      | Leitura realizada com sucesso  |
+| 2      | Leitura realizada com sucesso  |
 
 ### Partições
 
