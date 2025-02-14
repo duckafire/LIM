@@ -27,11 +27,12 @@ int main(int argc, char *argv[]){
 	pverbose(V_FLAGS_STATUS);
 
 
-	char *part_status = NULL;
+	char *part_status = "0000";
 	HF_OUT_STATUS file_status = read_header_file(&part_status);
 
 	pverbose(V_HEADER_STATUS, file_status, part_status);
-	free(part_status);
+	if(part_status[0] != '0')
+		free(part_status);
 
 
 	lim_init_env();

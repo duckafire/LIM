@@ -23,6 +23,9 @@ static short const_quant = 0;
 #define THING    "(lim) "
 
 void pverbose(VERBOSE_TAG tag, ...){
+	if(!lim.flags.verbose)
+		return;
+
 	va_start(content, tag);
 
 	switch(tag){
