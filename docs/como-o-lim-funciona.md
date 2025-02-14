@@ -23,6 +23,18 @@
 				* [Arquivo de destino](#arquivos-de-destino)
 				* [Tabela de referência](#tabela-de-referência)
 			* [Compartilhando valores](#compartilhando-valores)
+	* [*Buffers*](#buffers)
+		* [Arquivos temporários](#arquivos-temporários)
+		* [Filas](#filas)
+			* [Inicializando](#inicializando)
+			* [Adicionando](#adicionando)
+			* [Obtendo](#obtendo)
+			* [Liberando](#liberando)
+	* [Lendo o *header.lim*](#lendo-o-headerlim)
+		* [Verificando o arquivo](#verificando-o-arquivo)
+		* [Buscando as partições](#buscando-as-partições)
+		* [Aprontando as saída](#aprontando-as-saídas)
+
 
 ---
 
@@ -652,3 +664,432 @@ Junto a esse conjunto de atribuições, o valor de `args.content_shared` será a
 para `true`, assim desabilitando a função de limpeza responsável por liberar a memória
 alocada para a estrutura de `./src/args/`. Para mais informações sobre veja:
 [O processo em si](#o-processo-em-si).
+
+> [!NOTE]
+> **VERBOSE**: Ao fim dessa tarefa, uma mensagem exibindo o estado de definição das
+> bandeiras será imprimida.
+
+## *Buffers*
+
+Chegamos em um ponto interessante, pois a partir de agora, os sistemas voltados ao
+armazenamento da saída dos algoritmos se tornará mais complexo, dado que suas saídas
+se tornarão incomparavelmente mais numerosas do que aquelas geradas pelo algoritmo
+anterior, de modo a que variáveis e vetores tornem-se insuficientes para tal tarefa.
+
+Tais dados podem ser divididos em dois tipos:
+
+1. Valores extremamente volumosos e imprevisíveis, que são (*opcionalmente*) formatados/
+filtrados de modo simples (*antes de sua gravação na memória*) e exigidos apenas uma vez.
+
+2. Dados majoritariamente curtos, mas numerosos, que necessitam ser capturados e isolados
+uns dos outros. São constantemente lido e requeridos, por conta disso precisam ser
+armazenados em meios rápidos, flexíveis e expansíveis.
+
+Visto que a solução empregada a esses problemas é muito popular nos algoritmos seguintes,
+faremos uma pausa na explicação linear que estava ocorrendo e adentraremos nesse
+importantíssimo assunto.
+
+> [!NOTE]
+> *A explicação* continua a partir de: [Lendo o *header.lim*](#lendo-o-headerlim).
+
+### Arquivos temporários
+
+Grande parte das operações empregadas pelos algoritmos posteriores estarão ligadas à
+leitura de arquivos persistentes, onde as informações obtidas são, muitas vezes, submetidas
+a filtros e, só então, salvas no *buffer*.
+
+Sabendo disso, organizei alguns pontos relacionados com tais dados:
+
+* Serão salvos linearmente, ou seja, na ordem em que foram capturados.
+* Não precisarão ser editadas.
+* Nenhum algoritmo exigirá trechos de seu conteúdo.
+* Serão exigidos apenas uma vez e como um todo.
+* Exigirão um espaço dinâmico para que possam ser armazenadas.
+
+Tendo isso em mente, pude concluir que a melhor forma de armazenar dados com estas
+características seria por meio de *arquivos temporários*, pois:
+
+* Eles expandem-se até onde o sistema operacional permitir.
+* Possuem uma *API* considerável em `stdio.h`.
+* São seguros quanto à memória.
+
+> [!TIP]
+> É possível criar arquivos temporários usando a função `FILE* tmpfile(void)`.
+
+Mas: *por que não armazenar essas informações diretamente no destino?*
+
+> A resposta é simples: certos tipos de dados tem prioridade sobre outros, ou seja, eles
+> precisam ser escritos primeiros no arquivo de saída. Mais informações sobre estão
+> disponíveis em: [Escopos](#escopos) e [Içamento](#içamento).
+
+### Filas
+
+Agora que um dos "problemas" havia sido resolvido, bastava buscar uma solução para o outro.
+Este era um pouco mais complexo, já que seu dados precisariam ser gravados, lidos e obtidos
+em números imprevisíveis, logo seu meio de armazenamento deveria ser rápido, expansível e
+flexível (*para que pudesse ser empregado em múltiplas situações*).
+
+Baseado nisso, bastava encontrar a melhor estrutura de dados para que tal problema desaparecesse. Após algumas ideias, cheguei a conclusão de que **filas** seriam a melhor
+escolha, por conta de sua flexibilidade, lógica simples e maleabilidade.
+
+> [!NOTE]
+> Uma estrutura de *Árvore Binária AVL* foi desenvolvida, como forma de obter mais
+> velocidades em cenários específicos, entretanto, por conta de sua baixa eficiência,
+> ela foi removida no *commit*:
+> ```
+> commit b3a7cdcfb0d8cefa8e989f31f1cfffce65f32789
+> Author: DuckAfire <155199080+duckafire@users.noreply.github.com>
+> Date:   Tue Jan 21 18:19:43 2025 -0300
+>
+> Rework in directory
+>
+> .gitignore     | 1 +
+> CMakeLists.txt | 30 +++++++-------
+> ...
+> ```
+
+Visto que a solução já estava em mãos, fazia-se necessários desenvolver uma estrutura para
+os itens, além de uma "mini *API*" para realizar operações com tais tipos compostos.
+
+Começando pela estrutura, temos:
+
+``` c
+typedef struct Queue{
+	char *ident;
+	char *table_key;
+	char *nick;
+	unsigned short quantity;
+	bool is_const;
+	struct Queue *next;
+}Queue;
+```
+
+* Conteúdos: valores que serão armazenados.
+	* **`indet`**: **conteúdo principal**, logo **nunca será `NULL`**. Seu valor depende do
+	contexto, mas, geralmente, é o identificador de uma variável, tabela ou função extraída
+	do arquivo de entrada.
+	* `table_key`: para o caso de `ident` ser o identificador de uma tabela *em uso*,
+	tal vetor armazenará todo o conteúdo após `.` ou `:` (`foo.x`; `foo:draw()`), do
+	contrário armazenará `NULL`.
+	* `nick`: "versão" compactada de `ident` ou `NULL`, caso o contexto não exija 
+	compactação.
+* Utilitários da "mini *API*": usados pela "mini *API*" para realizar operações.
+	* `quantity`: indica quantas vezes ocorreu a tentativa de reinserir `ident` em uma
+	mesma fila.
+	* `is_const`: indica que `ident` não deve ser compactado. Se for `true`, `nick` será,
+	obrigatoriamente, `NULL`.
+* Membro da fila: partes fundamentais de uma fila.
+	* `next`: aponta para o próximo item da fila.
+
+#### Inicializando
+
+Agora que entendemos a estrutura dos itens de uma fila, vamos usar esse conhecimento para
+compreender o funcionamento da "mini *API*" que está armazenada em
+`./src/core/tools/queue.c/h`, a qual é destinada a abstrair e automatizar os procedimentos
+envolvendo filas.
+
+A primeira função que iremos ver é a
+`Queue* qee_create(char *nick, char *ident, char *table_key, bool is_const);`, e, como seu
+nome dá a entender, esta é encarregada de criar um item de fila, além de inicializar seu
+membros, tanto com os argumentos que lhe foram passados, quanto com valores padrão.
+
+``` c
+Queue* qee_create(char *ident, char *table_key, char *nick, bool is_const){
+	new_item = malloc(sizeof(Queue));
+
+	new_item->ident     = string_copy(ident);
+	new_item->table_key = string_copy(table_key);
+	new_item->nick      = string_copy(nick);
+	new_item->quantity  = 0;
+	new_item->is_const  = is_const;
+	new_item->next      = NULL;
+
+	return new_item;
+}
+```
+
+> [!WARNING]
+> `new_item` é um ponteiro global estático, presente em `./src/core/tools/queue.c/h`, mas
+> ela não é a única, havendo também:
+> ``` c
+> static bool qee_add_item_status;
+> static bool qee_add_item_quant_upped;
+> static Queue *new_item;
+> static Queue *tmp_item;
+> static bool bigger_to_lower_is_allow = true;
+> static IS_DUPLIC treat_duplicated_item;
+> ```
+> Já `IS_DUPLIC` é um tipo baseado no seguinte `enum`. Mas informações sobre estão
+> disponíveis adiante.
+
+#### Adicionando
+
+Dando prosseguimento, falaremos agora sobre a função
+`bool qee_add_item(Queue **head, char *nick, char *ident, char *table_key, bool is_const, IS_DUPLIC treat)`
+e suas "irmãs": `static Queue* insert_item(Queue *item)` e
+`static Queue* ordenate_queue(Queue *item)`.
+
+Esse conjunto de funções é responsável por duas coisas:
+
+1. Adicionar itens a uma dada fila.
+2. Opcionalmente manter sua ordenação.
+
+Partindo do início, vamos entender tal grupo de funções:
+
+* Tudo inicia-se em `qee_add_item`, após sua chamada, onde os valores das seguintes
+variáveis e ponteiro:
+	* `new_item = qee_create(ident, table_key, is_const);`: *possivelmente* será
+	adicionado à fila.
+	* `treat_duplicated_item = treat;`: define como itens duplicados serão tratados
+	(*o valor de `ident` é usado para definir quais valores são duplicados*).
+	* `qee_add_item_status = false;`: valor que será retornado por `qee_add_item`.
+	* `qee_add_item_quant_upped = false;`: indica se a quantidade de algum item da fila foi
+	atualizada.
+
+> [!IMPORTANT]
+> `treat_duplicated_item` é uma variável do tipo `IS_DUPLIC`, baseado no seguinte `enum`:
+> ``` c
+> typedef enum{
+> 	QEE_DROP,
+> 	QEE_UP_QUANT,
+> 	QEE_INSERT,
+> }IS_DUPLIC;
+> ```
+> Onde:
+> * `QEE_DROP`: indica que itens duplicados devem ser descartados.
+> * `QEE_UP_QUANT`: indica que itens duplicados devem ser descartados e suas "versões" já
+> presentes na fila devem ter seu membro `quantity` incrementado em `+1`.
+> * `QEE_INSERT`: indica que itens duplicados devem ser adicionados a fila, após os
+> similares já presentes na mesma. Não altera a quantidade de nenhum item.
+
+* Então, a função `insert_item` é chamada `*head = insert_node(*head)`
+(*seu algoritmo é simples, mas o fato de ser recursivo pode dar um nó na cabeça*):
+	
+	* Ela, primeiramente, verificará se seu argumento é `NULL`, retornando `new_item` caso
+	verdadeira.
+	
+	* Após a condição anterior falhar, o valor de `bigger_to_lower_is_allow` será
+	verificado, caso verdadeiro, o caso seguinte da condição será verificado, nele ocorrerá
+	uma comparação entre os membros `quantity` e o comprimento dos membros `ident` do
+	*item atual* e de `new_item`, que, se dada como verdadeira, resultará na inserção do
+	*novo item* entre dois itens já existentes, da seguinte forma.
+	
+	* Seguido de uma nova falha condicional, o conteúdo presente no membro `indet`, do
+	*item atual* e de `new_item`, será comparado, onde, se ambos forem iguais, um devido
+	tratamento será empregado a `new_item`, baseado no valor de `treat_duplicated_item`.
+	
+	* Por fim, caso nenhum processo anterior finalize a função, a mesma chamará a si,
+	usando o próximo item como argumento e receptor de retorno, a modo a repetir todo esse
+	procedimento, até que o item seja adicionado a lista ou descartado. Após tal chamada
+	recursiva, a função retornará seu próprio argumento.
+
+* Com o fim do trabalho de `insert_item`, em `qee_add_item`, será verificado se
+`bigger_to_lower_is_allow` e `qee_add_item_quant_upped` são verdadeiros em caso positivo, a
+função de ordenação `ordenate_queue` será chamado. Seu objetivo é garantir que os itens presente na fila permanecerão ordenados do maior ao menor
+(*mais informações na primeira nota abaixo*).
+
+	* Inicialmente, `ordenate_queue` verificará se o *item atual* é `NULL`, caso não,
+	verificará se o *próximo item* é `NULL`. Qualquer condição destas que se provar
+	verdadeira resultará no retorno do *item atual*.
+	
+	* Após a falha da condição citada acima, ocorrerá uma comparação entre os membros
+	`quantity` e o comprimento dos membros `ident` do *item atual* e de `próximo item`,
+	que, se dada como verdadeira, resultará em um troca de posições, onde o
+	*próximo item* tomará o lugar do *item atual*, que será enviado para frente,
+	tornando-se o "novo *próximo item*". Seguidamente, o "novo *item atual*" receberá o
+	retorna de outra chamada da função `ordenate_queue`, que terá o "novo *próximo item*"
+	como argumento.
+	
+	* Ao final, caso a função não tenha sido finalizada anteriormente, `ordenate_queue`
+	será chamada recursivamente, com o *próximo item* seu argumento e receptor de seu
+	retorno, o que desencadeará a repetição do processo acima, até que todos os valores
+	sejam estejam ordenados corretamente. Depois dessa chamada, `ordenate_queue` retornará
+	seu próprio argumento.
+
+* No final de `qee_add_item`, a mesma retornará `qee_add_item_status`, para indicar se
+o novo item foi inserido na fila em questão.
+
+> [!WARNING]
+> O valor de `bigger_to_lower_is_allow` pode ser definido através do uso da função
+> `void qee_bigger_to_lower(bool allow)`. Esta variável é responsável por especificar se
+> a ordenação dos itens deve ser efetuada.
+>
+> Por padrão, os itens presentes em uma fila são ordenados daqueles com maior quantidade
+> àqueles com menor, onde itens de mesma quantidade tem o comprimento de seu membro `ident`
+> comparado para definir qual devem deverá ser posto primeiro. Se ambos os valores sejam
+> igual, o *novo item* será posto atrás do item atual, a menos que este padrão se repita
+> para eles, nesse caso, tal procedimento será repetido até que o novo item será
+> devidamente tratado.
+
+> [!IMPORTANT]
+> O valor de `qee_add_item` se tornará verdadeiro sempre que um item  for introduzido à
+> fila.
+
+> [!NOTE]
+> Após `insert_item` alterar a quantidade de um dado item, surgem grandes chances de sua
+> nova quantidade torná-lo um item desordenado, pois `insert_item` não o realocará, caso
+> isso seja necessário, pois sua habilidades para tal resumem-se ao momento da adição dele
+> à fila.
+> 
+> Para contornar esse problema, foi criada a função `ordenate_queue`, executada após
+> `insert_item`, dentro de `qee_add_item`, caso `bigger_to_lower_is_allow` será verdadeiro.
+
+Por mais que esse algoritmo seja simples, o fato dele ser recursivo e envolver uma série de
+pequenos detalhes torna sua explicação discutivelmente verbosa, entretanto isso não é bem
+um problema.
+
+#### Obtendo
+
+Partindo agora para um algoritmo mais simples, falaremos sobre a função
+`Queue* qee_get_item(Queue *item, char *ident)`. Esta função recursiva trabalha sozinha
+para obter um dado item de uma determinada fila.
+
+Sua lógica consiste em três pontos:
+
+1. Validação: seu o item atual for igual a `NULL`, a função retornará `NULL`.
+2. Comparação: se o conteúdo do seu segundo argumento for igual ao conteúdo do membro
+`indet` do item atual, a função retornará o item atual.
+3. Avanço: a função será chamada recursivamente, utilizando o próximo item como primeiro
+argumento e mantendo o segundo.
+
+#### Liberando
+
+Como últimos membro dessa "mini *API*", temos as funções `void qee_free_queue(Queue *item)`
+e `static void free_item(Queue *item)`, que, como é possível imaginar, são encarregadas de
+liberar a memória alocada para os itens de uma fila.
+
+Depois que o primeiro item de uma dada fila é dado como argumento a `qee_free_queue`, tal
+função executará uma série de chamadas recursivas, que resultará na liberação das memórias
+alocadas para `ident`, `table_key`, `nick` e para a própria estrutura do item.
+
+> [!NOTE]
+> `free_item` existe apenas por conta que seu código é utilizado em duas funções, sendo
+> elas: `qee_add_item` e `qee_free_queue`.
+
+## Lendo o *header.lim*
+
+Agora que o fluxo retorna a `main`, estamos prestes a executar um processo de grande
+importância: a verificação do *header.lim*.
+
+> [!IMPORTANT]
+> Esse tópico visa explica o funcionamento interno do algoritmo encarregado de ler e tratar
+> o conteúdo e o próprio *header.lim*, para uma explicação relacionada aos seus usos,
+> funcionalidades e afins, consulte:
+> [O "header.lim"](https://github.com/duckafire/lim/blob/main/docs/o-header-lim.md)
+
+Tal tarefa foi dada a função `HF_OUT_STATUS read_header_file(char **indiv_part_status)`,
+armazenada em `./src/core/tools/read-header-lim.c/h`, onde tal função executa uma série de
+verificações, que, se dadas como falsas, acarretam na leitura do conteúdo do *header.lim*.
+
+> [!IMPORTANT]
+> `HF_OUT_STATUS` é um tipo baseado no seguinte `enum`:
+> ``` c
+> typedef enum{
+> 	HF_READING_DISABLE,
+> 	HF_NOT_FOUND,
+>	HF_IS_EMPTY,
+> 	HF_CONTENT_READED,
+> }HF_OUT_STATUS;
+> ```
+> Onde suas constantes representam os seguintes estados de saída:
+> * `HF_READING_DISABLE`: indica que a leitura do *header.lim* foi desabilitada.
+> * `HF_NOT_FOUND`: indica que o *header.lim* não foi encontrado.
+> * `HF_IS_EMPTY`: indica que o *header.lim* foi encontrado, mas está vazio.
+> * `HF_CONTENT_READED`: indica que o *header.lim* foi lido com sucesso.
+
+Antes de adentrarmos `read_header_file`, é importante que tenhamos ciência sobre uma coisa:
+tanto o processo de leitura do *header.lim* (*como um todo*), quanto a leitura de suas 
+partições (*individualmente*) gera um "estado de saída".
+
+Sabendo isso, antes de chamar `read_header_file`, a função `main` declara o seguinte:
+
+``` c
+char *part_status = "0000";
+HF_OUT_STATUS file_status;
+```
+
+Onde ambos são responsáveis por:
+
+* `part_status`: capturar o código de estado de saída de **todas** as partições do 
+*header.lim*. Para que tal tarefa seja concluída, seu endereço será dado como argumento
+para `read_header_file`.
+
+* `file_status`: capturar o código de estado de saída do *header.lim*, que indica o que
+ocorreu durante sua verificação. Tal valor será retornado por `read_header_file`.
+
+Agora que você já entende o propósito dos "periféricos" que acompanham a chamada da função
+`read_header_file` (*na `main`*), vamos mergulhar em seu interior, visando compreender de
+que modo seu algoritmo verifica, trata e lê o *header.lim*.
+
+### Verificando o arquivo
+
+Já dentro do `read_header_file`, a primeira coisa que podemos ver são três condições:
+
+``` c
+if(!lim.flags.header_file)
+	return HF_READING_DISABLE;
+
+lim.files.header_lim = fopen("header.lim", "r");
+if(lim.files.header_lim == NULL)
+	return HF_NOT_FOUND;
+	
+if(fgetc(lim.files.header_lim) == EOF)
+	return HF_IS_EMPTY;
+FSEEK;
+```
+
+> [!NOTE]
+> `FSEEK` é uma *macro* ***local*** que contém `fseek(lim.files.header_lim, -1, SEEK_CUR)`,
+> logo, nesse contexto, o intuito de seu uso é reverter a ação realizada pela função
+> `fgetc`, chamada no última condição.
+
+Como é possível imaginar, esse pequeno trecho é responsável por verificar, respectivamente:
+
+1. Se a leitura do *header.lim* foi bloqueada.
+2. Se o *header.lim* existe.
+3. Se o *header.lim* está vazio.
+
+Caso ambas falhem, isso acarretará, inevitavelmente, no retorno de `HF_CONTENT_READED`, que 
+encontra-se ao fim do arquivo.
+
+### Buscando as partições
+
+Após tais condições, um vetor local, do tipo `HF_READ_STATUS`, será declarado, o qual é
+utilizado como argumento para a função
+`static void start_reading(HF_READ_STATUS *refined_status)`, que será chamada em seguida.
+Tal função utilizará seu argumento para armazenar o estado de saída de todas as partições
+do *header.lim*.
+
+Ao adentrarmos em `start_reading`, podemos notar que o estado das partições é dividido em
+dois: *bruto* e *refinado*. Onde:
+
+* Estado bruto (`bool`): caso verdadeiro, indica que a próxima partição foi encontrada,
+caso falso, indica que o final de *header.lim* foi encontrado. Cada partição possui seu
+próprio "estado bruto".
+
+* Estado refinado (`int`): é o estado de saída de cada partição, obtido através de um
+processo que consiste na análise do "estado bruto" junto ao estado do *buffer*
+(*vazio ou não vazio*), o qual responsável por armazenar os valores de cada partição.
+
+Os "estados brutos" são preenchidos pelo retorno das funções de leitura abaixo:
+
+* `static bool read_top_header(void)`
+* `static bool read_code_scope(void)`
+* `static bool read_list(Queue **buf, bool is_this_found)`
+
+> [!NOTE]
+> `read_list` é utilizada para ler *`funct list`* e *`table list`*.
+
+Seguidamente, a função
+`static HF_READ_STATUS refine_brute_status(FILE **buf, Queue **list, bool new_part_found, bool isfile)`
+é utilizada para "refinar" os "estados brutos". Seu retorno é armazenado no índices do
+argumento de `start_reading`.
+
+### Aprontando as saída
+
+Depois que `start_reading` preenche os índices de seu argumento, o fluxo do programa retorna a `read_header_file`, lá o conteúdo de tais índices será convertido (*de `int`*) 
+para `char` e será armazenado no endereço apontado pelo argumento de `read_header_file`, o 
+qual receberá um espaço em memória justo, destinado a tal finalidade.
+
+Por fim, `read_header_file` retornará `HF_OUT_STATUS`, indicando que o *header.lim* foi
+encontrado e lido com sucesso.
