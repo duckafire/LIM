@@ -100,7 +100,7 @@ void build_destine_file(void){
 	get_and_put_from_buffer(lim.buffers.destine_file, false, "Compacted content", "Compacted content from input file");
 
 	pverbose(V_INSERTING, "End of 'do end' block + reference to library table");
-	fprintf(lim.files.destine, " end\nlocal lim=_");
+	fprintf(lim.files.destine, " end\nlocal %s=_", lim.flags.lib_name);
 
 	pverbose(V_CLOSE_PROCESS, "Build output file");
 }

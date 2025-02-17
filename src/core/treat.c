@@ -120,9 +120,6 @@ void treat_ident(char *_ident, char *_table_key){
 		dtoken = DT_NULL;
 
 	}else if(dtoken == DT_FUNCTION || dtoken == DT_LIB_FUNC){
-		if(dtoken == DT_FUNCTION)
-			gident = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
-
 		check_if_space_is_need("f");
 		start_function_declaration(false);
 		return;
@@ -750,11 +747,11 @@ static void start_function_declaration(bool is_anony){
 			else
 				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
 
-		}else if(IS_ROOT){
-			fprintf(CTT_BUF, "local function %s", gident);
-
 		}else{
-			fprintf(CTT_BUF, ((gtable_key == NULL) ? "%s=function" : "%s%s=function"), save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_FUNC), gtable_key);
+			// NOTE: like way of avoid that the local
+			// nickname prefix will be putted in this
+			// function nickname, it don't use 'IS_ROOT'.
+			fprintf(CTT_BUF, ((gtable_key == NULL) ? "%s=function" : "%s%s=function"), save_ident_in_buffer(gident, gtable_key, (layer.height - 1 == 0), SCOPE_IDENT, BUF_FUNC), gtable_key);
 		}
 	}
 
