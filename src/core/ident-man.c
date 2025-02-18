@@ -168,21 +168,25 @@ void new_local_environment(bool is_method){
 	new->is_method      = is_method;
 	new->below          = NULL;
 
-	#define NICK_TO_SELF   \
-		if(new->is_method) \
-			save_ident_in_buffer("self", NULL, false, SCOPE_IDENT, &(new->local_var_tab))
+	#define NICK_TO_SELF(buf)                                              \
+		if(new->is_method){                                                \
+			if(buf == NULL)                                                \
+				buf = qee_create("self", NULL, "Sa", false);               \
+			else                                                           \
+				qee_add_item(&(buf), "self", NULL, "Sa", false, QEE_DROP); \
+		}
 
 	if(lim.buffers.local.bottom == NULL){
 		lim.buffers.local.bottom = new;
 		lim.buffers.local.top = new;
 
-		NICK_TO_SELF;
+		NICK_TO_SELF(new->local_var_tab)
 		return;
 	}
 
 	new->below = lim.buffers.local.top;
 	lim.buffers.local.top = new;
-	NICK_TO_SELF;
+	NICK_TO_SELF(new->local_var_tab)
 }
 
 void drop_local_environment(void){
@@ -205,8 +209,14 @@ void drop_local_environment(void){
 
 	fseek(top->content, 0, SEEK_SET);
 
-	while( (c = fgetc(top->content)) != EOF )
+	while( (c = fgetc(top->content)) != EOF ){
 		fputc(c, dest);
+
+		if(top->is_method && c == ')'){
+			top->is_method = false;
+			fprintf(dest, "local Sa=self;");
+		}
+	}
 
 
 	fclose(top->content);
