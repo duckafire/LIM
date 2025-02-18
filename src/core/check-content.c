@@ -76,6 +76,9 @@ bool is_table_env(char c, char **tmp){
 	unsigned short layer = 0;
 	bool lastc_is_alnum = false, space = false;
 
+	char string_delimiter;
+	bool inverted_bar = false;
+
 	string_set(tmp, STR_START);
 	string_add(tmp, '{');
 
@@ -91,7 +94,24 @@ bool is_table_env(char c, char **tmp){
 			string_add(tmp, ' ');
 		string_add(tmp, c);
 
-		if(c == '{'){
+		if(c == '\'' || c == '"'){
+			string_delimiter = c;
+			inverted_bar = false;
+
+			while( FGETC != EOF ){
+				string_add(tmp, c);
+
+				if(!inverted_bar){
+					if(c == '\\')
+						inverted_bar = true;
+					else if(c == string_delimiter)
+						break;
+				}else{
+					inverted_bar = false;
+				}
+			}
+
+		}else if(c == '{'){
 			layer++;
 
 		}else if(c == '}'){
