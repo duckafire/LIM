@@ -14,6 +14,11 @@ typedef enum{
 	// choose it a nickname
 }SCOPE_ID;
 
+typedef struct Stack_Nick_Memory{
+	char *save;
+	struct Stack_Nick_Memory *below;
+}Stack_Nick_Memory;
+
 typedef struct Nick_For_Loop_Stack{
 	char *save_state;
 	unsigned short layer_base;
@@ -24,14 +29,16 @@ void start_nickname_buffers(void);
 void restart_local_parameter_nicknames(void);
 void save_local_parameter_state(void);
 void new_nicknames_env_to_for_loop(unsigned short layer_base);
-static void restart_nickname_of(char *nick_buf[]);
+static void restart_nickname_of(char *nick_buf[], Stack_Nick_Memory **mem);
+static void save_nickname_of(char *nick_buf[], Stack_Nick_Memory **mem);
 static void start_nick_buf(char *nick_buf[]);
 static char* get_and_update_nick(char *nick_buf[]);
 static void update_nick_current(char *nick_buf[], const int last_char);
 void pop_nicknames_env_to_for_loop(unsigned short cur_layer);
 static void drop_nicknames_env_to_for_loop(void);
 void free_nickname_buffers(void);
-static void free_nick_buf(char *nick_buf[], bool saveds_included);
+static void free_nick_buf(char *nick_buf[]);
+static void free_nick_mem_stack(Stack_Nick_Memory *mem);
 
 void new_local_environment(bool is_method);
 void drop_local_environment(void);

@@ -10,10 +10,13 @@
 // #0: nickname to lua standard and header identifiers;
 // NICK_CURRENT, NICK_FORMAT, NICK_FIRST, NICK_LAST, NICK_PREFIX, NICK_SAVEDS
 static char *nick_std_hdr[5]      = {NULL, NULL, "A", "Z", "\0"};
-static char *nick_global_ident[5] = {NULL, NULL, "a", "z", "G"};
-static char *nick_local_ident[6]  = {NULL, NULL, "a", "z", "L",  NULL}; // nick_saveds
-static char *nick_parameter[6]    = {NULL, NULL, "a", "z", "\0", NULL}; // ~
-static char *nick_for_loop[5]     = {NULL, NULL, "a", "z", "F"};
+static char *nick_global_ident[5] = {NULL, NULL, "a", "z",  "G"};
+static char *nick_local_ident[5]  = {NULL, NULL, "a", "z",  "L"};
+static char *nick_parameter[5]    = {NULL, NULL, "a", "z", "\0"};
+static char *nick_for_loop[5]     = {NULL, NULL, "a", "z",  "F"};
+
+static Stack_Nick_Memory *nick_local_mem = NULL;
+static Stack_Nick_Memory *nick_param_mem = NULL;
 
 static const short LEN_2C = sizeof(char) * 2;
 static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
@@ -28,7 +31,6 @@ static unsigned short local_env_quant = 0;
 #define NICK_LASTC(n)   (n[3][0])
 #define NICK_LAST(n)    (n[3])
 #define NICK_PREFIX(n)  (n[4])
-#define NICK_SAVEDS(n)  (n[5])
 
 void start_nickname_buffers(void){
 	start_nick_buf(nick_std_hdr);
@@ -36,18 +38,16 @@ void start_nickname_buffers(void){
 	start_nick_buf(nick_local_ident);
 	start_nick_buf(nick_parameter);
 	start_nick_buf(nick_for_loop);
-
-	save_local_parameter_state();
 }
 
 void restart_local_parameter_nicknames(void){
-	restart_nickname_of(nick_local_ident);
-	restart_nickname_of(nick_parameter);
+	restart_nickname_of(nick_local_ident, &nick_local_mem);
+	restart_nickname_of(nick_parameter,   &nick_param_mem);
 }
 
 void save_local_parameter_state(void){
-	NICK_SAVEDS(nick_local_ident) = string_copy( NICK_CURRENT(nick_local_ident) );
-	NICK_SAVEDS(nick_parameter)   = string_copy( NICK_CURRENT(nick_parameter) );
+	save_nickname_of(nick_local_ident, &nick_local_mem);
+	save_nickname_of(nick_parameter,   &nick_param_mem);
 }
 
 void new_nicknames_env_to_for_loop(unsigned short layer_base){
@@ -67,10 +67,44 @@ void new_nicknames_env_to_for_loop(unsigned short layer_base){
 	nick_for_loop_data = new;
 }
 
-static void restart_nickname_of(char *nick_buf[]){
-	free_nick_buf(nick_buf, false);
-	NICK_CURRENT(nick_buf) = NICK_SAVEDS(nick_buf);
-	NICK_SAVEDS(nick_buf) = NULL;
+static void restart_nickname_of(char *nick_buf[], Stack_Nick_Memory **mem){
+	free_nick_buf(nick_buf);
+
+	if(*mem == NULL){ // for syntax errors in "input code"
+		NICK_CURRENT(nick_buf) = string_copy( NICK_FIRST(nick_buf) );
+		return;
+	}
+
+	NICK_CURRENT(nick_buf) = (*mem)->save;
+
+	if((*mem)->below == NULL){
+		free(*mem);
+		*mem = NULL;
+		return;
+	}
+
+	Stack_Nick_Memory *tmp;
+
+	tmp = *mem;
+	*mem = tmp->below;
+
+	free(tmp);
+}
+
+static void save_nickname_of(char *nick_buf[], Stack_Nick_Memory **mem){
+	Stack_Nick_Memory *new;
+
+	new = malloc(sizeof(Stack_Nick_Memory));
+	new->save = string_copy( NICK_CURRENT(nick_buf) );
+	new->below = NULL;
+
+	if(*mem == NULL){
+		*mem = new;
+		return;
+	}
+
+	new->below = *mem;
+	*mem = new;
 }
 
 static void start_nick_buf(char *nick_buf[]){
@@ -134,24 +168,34 @@ void free_nickname_buffers(void){
 	while(nick_for_loop_data != NULL)
 		drop_nicknames_env_to_for_loop();
 
-	free_nick_buf(nick_std_hdr,      false);
-	free_nick_buf(nick_global_ident, false);
-	free_nick_buf(nick_local_ident,  true);
-	free_nick_buf(nick_parameter,    true);
-	free_nick_buf(nick_for_loop,     false);
+	free_nick_buf(nick_std_hdr);
+	free_nick_buf(nick_global_ident);
+	free_nick_buf(nick_local_ident);
+	free_nick_buf(nick_parameter);
+	free_nick_buf(nick_for_loop);
 
 	free(nick_lib_func);
+
+	free_nick_mem_stack(nick_local_mem);
+	free_nick_mem_stack(nick_param_mem);
 }
 
-static void free_nick_buf(char *nick_buf[], bool saveds_included){
+static void free_nick_buf(char *nick_buf[]){
 	free( NICK_CURRENT(nick_buf) );
 	free( NICK_FORMAT(nick_buf) );
 	nick_buf[0] = NULL; // CURRENT
 	nick_buf[1] = NULL; // FORMAT
+}
 
-	// call only in end of "read_source_file"
-	if(saveds_included)
-		free( NICK_SAVEDS(nick_buf) );
+static void free_nick_mem_stack(Stack_Nick_Memory *mem){
+	Stack_Nick_Memory *cur, *below;
+
+	for(cur = mem; cur != NULL; cur = below){
+		free(cur->save);
+
+		below = cur->below;
+		free(cur);
+	}
 }
 
 
