@@ -65,7 +65,9 @@ void read_source_file(void){
 
 static void get_and_put_from_buffer(FILE *buf, bool separator, char *its_name, char *verbose_msg){
 	if(buf == NULL){
-		pverbose(V_WARNING, its_name, "is empty, none content were found for it.", NULL);
+		if(its_name != NULL)
+			pverbose(V_WARNING, its_name, "is empty, none content were found for it.", NULL);
+
 		return;
 	}
 

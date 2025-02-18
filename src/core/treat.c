@@ -55,8 +55,6 @@ void treat_const(char *str){
 		else if(is_endkw && downdate_layer())
 			pop_function_declaration();
 
-		default_const_treatment(gident);
-		return;
 	}
 	
 	if(is_endkw){
@@ -249,14 +247,6 @@ static bool downdate_layer(void){
 
 
 static void start_function_declaration(bool is_anony){
-	update_layer(true);
-
-	functd.start_declare = true;
-	functd.parameter_end = false;
-	new_local_environment( (!is_anony && gtable_key != NULL && gtable_key[0] == ':') );
-
-	save_local_parameter_state();
-
 	if(is_anony){
 		if(space_is_mandatory)
 			fprintf(CTT_BUF, " function%s", gident);
@@ -271,12 +261,20 @@ static void start_function_declaration(bool is_anony){
 				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
 
 		}else{
-			// NOTE: like way of avoid that the local
-			// nickname prefix will be putted in this
-			// function nickname, it don't use 'IS_ROOT'.
-			fprintf(CTT_BUF, ((gtable_key == NULL) ? "%s=function" : "%s%s=function"), save_ident_in_buffer(gident, gtable_key, (layer.height - 1 == 0), SCOPE_IDENT, BUF_FUNC), gtable_key);
+			fprintf(CTT_BUF, "local function %s", save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_IDENT, BUF_FUNC));
+
+			if(gtable_key != NULL)
+				pverbose(V_WARNING, "An invalid table key was discarted:", "local function", gident, ">", gtable_key, "<", NULL);
 		}
 	}
+
+	update_layer(true);
+
+	functd.start_declare = true;
+	functd.parameter_end = false;
+	new_local_environment( (!is_anony && gtable_key != NULL && gtable_key[0] == ':') );
+
+	save_local_parameter_state();
 
 	dtoken = DT_NULL;
 	pverbose(V_NEW_THING, get_local_env_quant(), "Function declaration");
