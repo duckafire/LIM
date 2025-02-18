@@ -280,7 +280,7 @@ bool is_identifier(char c, char **tmp){
 	return true;
 }
 
-bool is_from_lua(char *ident, CKIA_ID id){
+static bool is_from_lua(char *ident, CKIA_ID id){
 	const char **array;
 
 	switch(id){

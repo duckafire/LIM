@@ -19,6 +19,8 @@ static const short LEN_2C = sizeof(char) * 2;
 static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
 static char *nick_lib_func = NULL; // different algorithm
 
+static unsigned short local_env_quant = 0;
+
 #define NICK_CURRENT(n) (n[0])
 #define NICK_FORMAT(n)  (n[1])
 #define NICK_FIRSTC(n)  (n[2][0])
@@ -155,10 +157,10 @@ static void free_nick_buf(char *nick_buf[], bool saveds_included){
 
 void new_local_environment(bool is_method){
 	Func_Env_Stack *new;
+	local_env_quant++;
 
 	new = malloc(sizeof(Func_Env_Stack));
 	new->content        = tmpfile();
-	new->scope_var_tab  = NULL;
 	new->local_func     = NULL;
 	new->local_var_tab  = NULL;
 	new->local_for_loop = NULL;
@@ -181,58 +183,43 @@ void new_local_environment(bool is_method){
 	new->below = lim.buffers.local.top;
 	lim.buffers.local.top = new;
 	NICK_TO_SELF;
-
-	#undef NICK_TO_SELF
 }
 
-void drop_local_environment(char **anony_func_to_local_declare){
-	char c = 0, d = 0;
+void drop_local_environment(void){
+	if(local_env_quant > 0)
+		local_env_quant--;
+
+	char c = 0;
+	FILE *dest;
 	Func_Env_Stack *top;
+
 
 	top = lim.buffers.local.top;
 	lim.buffers.local.top = top->below;
+
+	dest = ((lim.buffers.local.top == NULL) ? lim.buffers.destine_file : lim.buffers.local.top->content);
+
 
 	if(lim.buffers.local.top == NULL)
 		lim.buffers.local.bottom = NULL;
 
 	fseek(top->content, 0, SEEK_SET);
-	if(top->scope_var_tab != NULL)
-		fseek(top->scope_var_tab, 0, SEEK_SET);
 
-	#define PUT(c) ((anony_func_to_local_declare != NULL) ? string_add(anony_func_to_local_declare, c) : fputc(c, ((lim.buffers.local.top == NULL) ? lim.buffers.destine_file : lim.buffers.local.top->content)))
+	while( (c = fgetc(top->content)) != EOF )
+		fputc(c, dest);
 
-	if(anony_func_to_local_declare != NULL)
-		string_set(anony_func_to_local_declare, STR_START);
-
-	while( (c = fgetc(top->content)) != EOF ){
-		PUT(c);
-
-		if(top->scope_var_tab != NULL && d != EOF && c == ')'){
-			while( (d = fgetc(top->scope_var_tab)) != EOF)
-				PUT(d);
-
-			if(top->is_method){
-				char *e, *self = "=self";
-
-				for(e = self; *e != '\0'; e++)
-					PUT(*e);
-			}
-
-			PUT(';');
-		}
-	}
-
-	#undef PUT
 
 	fclose(top->content);
-	if(top->scope_var_tab != NULL)
-		fclose(top->scope_var_tab);
 	
 	qee_free_queue(top->local_func);
 	qee_free_queue(top->local_var_tab);
 	qee_free_queue(top->parameter);
 
 	free(top);
+}
+
+unsigned short get_local_env_quant(void){
+	return local_env_quant;
 }
 
 char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf){
@@ -257,26 +244,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	}
 
 
-	// write identifier nickname to scope buffer
-	if(id == SCOPE_IDENT){ // var/tab/func
-		FILE **scope_var_tab;
-
-		if(is_root)
-			scope_var_tab = &(lim.buffers.root.scope_var_tab);
-		else
-			scope_var_tab = &(lim.buffers.local.top->scope_var_tab);
-
-		if(*scope_var_tab == NULL){
-			*scope_var_tab = tmpfile();
-
-			fprintf(*scope_var_tab , "local ");
-		}else{
-			fputc(',', *scope_var_tab);
-		}
-
-		fprintf(*scope_var_tab , "%s", nick_tmp);
-
-	}else if(id == SCOPE_STD_HDR){
+	if(id == SCOPE_STD_HDR){
 		FILE **pointer, **address;
 		pointer = &(lim.buffers.root.scope_func_pointer);
 		address = &(lim.buffers.root.scope_func_address);

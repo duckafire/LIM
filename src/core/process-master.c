@@ -95,7 +95,6 @@ void build_destine_file(void){
 	get_and_put_from_buffer(lim.header_partitions.code_scope,    true,  "'Code scope'", "'Code scope' partition, from 'header.lim'");
 	get_and_put_from_buffer(lim.buffers.root.scope_func_pointer, false, "Functions scope", "Functions, from Lua and 'header.lim', that were used");
 	get_and_put_from_buffer(lim.buffers.root.scope_func_address, true,  NULL, NULL);
-	get_and_put_from_buffer(lim.buffers.root.scope_var_tab,      true,  "Variables and table scope", "Variables and tables declared in 'do end' environment");
 
 	get_and_put_from_buffer(lim.buffers.destine_file, false, "Compacted content", "Compacted content from input file");
 

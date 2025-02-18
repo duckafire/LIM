@@ -33,7 +33,7 @@ typedef enum{
 }CKIA_ID;
 
 bool is_identifier(char c, char **tmp);
-bool is_from_lua(char *ident, CKIA_ID id);
+static bool is_from_lua(char *ident, CKIA_ID id);
 static bool is_from_header(char *ident, Queue *buf);
 
 #endif

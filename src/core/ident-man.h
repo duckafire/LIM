@@ -34,7 +34,8 @@ void free_nickname_buffers(void);
 static void free_nick_buf(char *nick_buf[], bool saveds_included);
 
 void new_local_environment(bool is_method);
-void drop_local_environment(char **anony_func_to_local_declare);
+void drop_local_environment(void);
+unsigned short get_local_env_quant(void);
 char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf);
 char* get_nickname_of(char *ident, bool is_root);
 char* save_lib_func_in_buffer(char *ident);
