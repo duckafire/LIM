@@ -4,13 +4,6 @@
 #include <stdbool.h>
 #include "tools/queue.h"
 
-typedef enum{ // Print Local Declare
-	PLD_SUCCESS,
-	PLD_FAIL_CONST,
-	PLD_FAIL_IDENT,
-	PLD_FORCED_END,
-}PLD_ID;
-
 typedef enum{
 	DT_NULL = -1,
 	DT_LOCAL,

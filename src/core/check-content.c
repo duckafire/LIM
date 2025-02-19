@@ -180,7 +180,7 @@ void is_special_char(char c, char **tmp){
 		if(c == EOF){
 			return;
 
-		}else if(strchr("=><", c) == NULL){
+		}else if(c != '='){
 			FSEEK;
 			return;
 		}
