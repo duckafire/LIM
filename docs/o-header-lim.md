@@ -4,9 +4,9 @@
 
 > [!IMPORTANT]
 > Essa página não se propõem a explicar como ocorrer o processo de leitura do *header.lim*,
-> seu objetivo é explicar *o que é o header.lim*. Para obter informações sobre o
-> funcionamento desses processos, acesse: [Como o Lim funciona?: Leitura do *header.lim*
-](https://github.com/duckafire/lim/blob/main/docs/como-o-lim-funciona.md#leitura-do-headerlim).
+> seu objetivo é explicar "o que é o *header.lim*". Para obter informações sobre o
+> funcionamento desses processos, acesse:
+> [Como o Lim funciona?: Leitura do *header.lim*](https://github.com/duckafire/lim/blob/main/docs/como-o-lim-funciona.md#leitura-do-headerlim).
 
 ---
 
@@ -42,7 +42,7 @@ cada uma delas possui um nome e propósito específico para seu conteúdo.
 ### Separador de partições
 
 Durante o processo de leitura, Lim buscará, dentro do *header.lim*, por uma cadeia de
-caracteres específica, chamada de *Cadeia separadora*. Ela é resposável por indicar o fim
+caracteres específica, chamada de *cadeia separadora*. Ela é responsável por indicar o fim
 da partição atual e início da próxima. Sendo composta por `\n@\n`, visualmente:
 
 ```
@@ -55,20 +55,37 @@ da partição atual e início da próxima. Sendo composta por `\n@\n`, visualmen
 @\n
 ```
 
-* Partindo de outra pespectiva, é possível ver essa cadeia da seguinte maneira:
-	* **1º é uma regra**: o `@` deve ser escrito no início da linha.
-	* **`@` é o** ***caractere de separação***: pois apenas ele é visível.
-	* **2º é uma regra**: nenhum caractere deve ser escrito após o *caractere separador*.
+* Partindo de outra perspectiva, é possível ver essa cadeia da seguinte maneira:
+	1. **1º é uma regra**: o `@` deve ser escrito no início da linha.
+	2. **`@` é o** ***caractere de separação***: pois apenas ele é visível.
+	3. **2º é uma regra**: nenhum caractere deve ser escrito após o *caractere separador*.
+
+> [!IMPORTANT]
+> Caso haja uma partição vazia antes da *cadeia separadora*, ou outra *cadeia separadora*,
+> entre ambas deve haver uma "linha vazia".
+> ```
+> FOO
+> @
+> 
+> @
+> foo
+> ```
+> ```
+> FOO\n
+> @\n
+> \n
+> @\n
+> foo
 
 ### Partições
 
 * ***Top header***: conteúdo que será escrito no topo do arquivo de saída, acima da
 biblioteca. Seu conteúdo não será alterado.
 
-* ***Code scope***: conteúdo que será posicionado dentro da biblioteca, abaixo do *escopo
-de referências de funções*. Seus identificadores não serão comprimidos, mas espaço em
-branco desnecessários serão removidos, os necessário serão susbtituído por um caractere
-de espaço.
+* ***Code scope***: conteúdo que será posicionado dentro da biblioteca, abaixo do
+*escopo de referências de funções*. Seus identificadores não serão comprimidos, mas
+espaçamentos desnecessários serão removidos, os necessário serão substituído por um
+caractere de espaço.
 
 * ***Table list***: lista de identificadores (de tabelas) que receberão o mesmo tratamento
 que as tabelas do *Padrão Lua*.
@@ -119,8 +136,8 @@ delay
 
 Depois que o Lim tenta manipular o *header.lim*, ele gera um *código de estado*, que indica
 o que ocorreu durante seu processamento. Tanto o *header.lim*, quanto suas partições
-possuem seus próprios *códigos de estado*. Eles serão exibidos no console apenas caso a
-bandeira `--verbose` (`-V`) seja usada.
+possuem seus próprios *códigos de estado*. Eles serão exibidos no console caso o
+*modo verboso* esteja ativado.
 
 ### Arquivo
 
@@ -140,4 +157,4 @@ bandeira `--verbose` (`-V`) seja usada.
 | 2      | Partição lida com sucesso |
 
 > [!NOTE]
-> Os *códigos de estado* da partições são retornados juntos (`1100`; `2212`; `0000`).
+> Os *códigos de estado* das partições são retornados juntos (`1100`; `2212`; `0000`).

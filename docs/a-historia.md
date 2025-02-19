@@ -1,4 +1,4 @@
-# Compactação explicada
+# A história
 ###### Escrito em: 02-03/02/2025
 
 [//]: # "Lista de links"
@@ -35,7 +35,7 @@ ou entender como o código funciona, então sinta-se a vontade para pular essa p
 
 [*Tic80 Tiny Computer*][tic80] é um console/computador de fantasia, que, sem sobre
 de dúvidas, foi extremamente importante, tanto para meu desenvolvimento como programador,
-quanto para o surgimento do Lim, pois foram suas *"limitações"* que me levaram a criar
+quanto para o surgimento do Lim, pois foram suas *limitações* que me levaram a criar
 este programa.
 
 Com o passar do tempo, minhas habilidades como programador evoluíram cada vez mais,
@@ -56,36 +56,42 @@ certeza dificultariam meus planos.
 * Sem suporte para multíplos arquivos.
 * Limite de caracteres (`65.536` *v.FREE*; `524.288` *v.PRO*).
 
-Logo, minhas bibliotecas para uso Nesta aplicação deveriam, principalmente, ser:
-"enxutas", de modo a que não proporcionassem uma grande poluição nos códigos;
-"comprimidas", assim não ocupando muito espaço no *script*, permitindo que o usuário
-tivesse o máximo de espaço possível para seu projeto.
+Logo, minhas bibliotecas para uso nesta aplicação deveriam, principalmente, ser:
+
+1. **Enxutas**: de modo a que não proporcionassem uma grande poluição nos códigos.
+
+2. **Comprimidas**: assim não ocupando muito espaço no *script*, permitindo que o usuário
+possa ter o máximo de espaço possível para seu projeto.
 
 ## A solução
 
 Quanto a esse pequeno infortúnio, não havia muito a ser pensar, a solução era clara,
-bastava que minhas bibliotecas possuem as características antes citadas, entretanto: *como
-atribuir estas características a uma código e mantê-lo legível?*. Esse não é uma pergunta
-difícil, basta ter dois códigos: um código fonte e um código *compactado*. A verdadeira
-dificuldade está em como alcançar esse objetivo, *como compactar o código?*
+bastava que minhas bibliotecas possuíssem as características antes citadas, entretanto:
+*como atribuir estas características a uma código e mantê-lo legível?*. Esse não é uma
+pergunta difícil; basta ter dois códigos: um código fonte e um código *compactado*. A
+verdadeira dificuldade está em como alcançar esse objetivo, *como compactar o código?*
 
 A resposta à essa pergunta não demorou muito para me vir a mente, mas sua velocidade
-de chegada denunciava o quão grotesca ela era. Simplesmente compactar o código manualmente. Era um trabalho discutivelmente exigente, que, mesmo com a ajudar da substituição de texto
+de chegada denunciava o quão grotesca ela era. Simplesmente compactar o código manualmente.
+Era um trabalho discutivelmente exigente, que, mesmo com a ajudar da substituição de texto
 (*fornecida por muitos editores de arquivos*), continuava a ser desafiador.
 
-Minha solução, discutivelmente, não foi a melhor, mas alguns fatores me levaram a
-ela, sendo eles: meu conhecimento nulo com relação a manipulação de arquivos, seja com
-[*Lua*][lua], seja com qualquer outra linguagem; meu desejo por aperfeiçoar minha atenção
-na escrita dos meus código, tendo em vista que errinhos bobos voltados a esse tópico me
-consumiam um tempo considerável.
+Minha solução, discutivelmente, não foi a melhor, mas alguns fatores me levaram a ela,
+sendo eles:
+
+* Meu conhecimento nulo com relação a manipulação de arquivos, seja com [*Lua*][lua], seja
+com qualquer outra linguagem.
+
+* Meu desejo por aperfeiçoar minha atenção na escrita dos meus código, tendo em vista que
+errinhos bobos voltados a esse tópico me consumiam um tempo considerável.
 
 ## A base da obra
 
 Como todo bom programador, primeiramente, visei decidir quais seriam as regras
 levadas em conta para a realização desse processo, e, também, como todo *bom programador*
-eu não anotei nenhuma delas, confiando-as apenas a minha mente (*o que não é uma boa ideia,
-mas felizmente, por si só, não causou problema algum*). Baseado no que recordo, listarei
-estas "regras" abaixo:
+eu não anotei nenhuma delas, confiando-as apenas a minha mente
+(*o que não é uma boa ideia, mas felizmente, por si só, não causou problema algum*).
+Baseado no que recordo, listarei estas "regras" abaixo:
 
 * Palavras chave, números, cadeias de caracteres, *funções da biblioteca* e caracteres
 especiais não serão *compactados*. Todo o resto será reduzido ao mínimo possível, que
@@ -102,7 +108,7 @@ conflito entre o código da biblioteca e o código do projeto que à está usado
 de letras maiúsculas possível. A declaração destas deveria ser feita no "topo" do código, 
 após à abertura do bloco `do end` (`do local _T,_P=type,print ... _P("Hello world!")`).
 
-* Todo o bloco `do end` deveria ser reduzido a apenas uma linha de "altura", como forma de
+* Todo o bloco `do end` deveria ser reduzido à apenas uma linha de "altura", como forma de
 garantir que não houvesse nenhum tipo de "poluição visual" no projeto.
 
 * Antes da declaração do bloco `do end`, uma tabela (*denominada "tabela núcleo"*) seria
@@ -139,10 +145,12 @@ local lib=L
 
 Embarcar nessa "loucura" me trouxe muito aprendizado, melhorou minha organização,
 escrita e leitura de código, entretanto também me expôs à problemas bem chatinhos e,
-até mesmo, estressantes (*principalmente porque eu, nem sempre, fui tão cabeça fria quanto
-sou hoje*). Estes eram causados por um "único" erro: identificadores escritos erroneamente. Por mais que a solução fosse simples, muitas vezes, era difícil identificar que este era o
-problema (*e não um erro lógico ou no código fonte*), principalmente porque minha atenção
-se dispersava a ponto de quase anular-se, já que um simples trecho com menos de trinta
+até mesmo, estressantes
+(*principalmente porque eu nem sempre fui tão cabeça fria quanto sou hoje*). Estes eram
+causados por um "único" erro: identificadores escritos erroneamente. Por mais que a solução
+fosse simples, muitas vezes, era difícil identificar que este era o problema
+(*e não um erro lógico ou no código fonte*), principalmente porque minha atenção se
+dispersava a ponto de quase anular-se, já que um simples trecho com menos de trinta 
 caracteres (*por exemplo:* `x=x+s*_MC(r)y=y+s*_MS(r)`) poderia possuir tanta informação
 quanto uma linha em *"código normal"*.
 
@@ -162,14 +170,14 @@ Grande parte (*ou até mesmo todo*) do conteúdo presente nas bibliotecas do pro
 desenvolvimento do meu primeiro "jogo completo", chamado de
 [*Legendary Champion: Rebirth*][leg-cha]. Na época eu precisava de um meio agradável de
 manipular o acesso a memória fornecido pelo [*Tic80*][tic80], principalmente porque eu
-o achava bastante confuso. Por conta disso, descidi criar uma biblioteca de controle
+o achava bastante confuso. Por conta disso, decidi criar uma biblioteca de controle
 e "expansão" de memória, chamada *longBit*, a qual, quando comparada as demais, possuía
 um nível elevado de complexidade.
 
 Essa característica dessa biblioteca, aliada ao meu método primitivo de
 *compactação*, resultou em uma bomba de *bugs*. De todo tipo, de todo tamanho, eram
 problemas que não acabavam mais, erros sem fim, tanto porque meu código fonte não era
-perfeito, quanto porque eu percava muito durante a compressão do código. Foi então que,
+perfeito, quanto porque eu pecava muito durante a compressão do código. Foi então que,
 após cerca de **duas horas** (*a média girava em torno de 30-90min*) compactando um código
 que resultou em erros e mais erros, eu decidi, estava na hora de aprimorar meus meios,
 encontrar uma forma mais eficiente de realizar aquele trabalho desgastante, pois havia
@@ -209,9 +217,9 @@ como *Tiny*.
 
 * Era um nome curto e fácil de se lembrar.
 
-*Mas por que eu abandonei essa ideia?* A resposta, para fazer a verdade, é um pouco
-boba. Eu queria que os arquivos gerados pela aplicação tivessem seu nome como extensão, mas
-ao fazer uma breve pesquisa, pude constatar que a extensão `.tin` já existia.
+*Mas por que eu abandonei essa ideia?* A resposta, para fazer na verdade, é um pouco boba.
+Eu queria que os arquivos gerados pela aplicação tivessem seu nome como extensão, mas ao
+fazer uma breve pesquisa, pude constatar que a extensão `.tin` já existia.
 
 Por conta desse *"problema"*, decidi "buscar" um novo nome, que deveria ser composto,
 também, por três letras, além de ser simples. Eu não conseguia pensar em três palavras
@@ -222,13 +230,13 @@ surgiu o nome *Lim*, oriundo de *Lua Library Compactor*.
 Se você foi curioso o suficiente a ponto de procurar, deve ter notado que já havia
 uma extensão de arquivo `.lim`, entretanto, o nome era tão bom e me faltava tanta
 criatividade, que eu decidi manter esse. Hoje percebo que isso não era um "problema de
-verdade", já que ambas as extensões são muito ninchadas e, certamente, nenhum indivíduo
+verdade", já que ambas as extensões são muito nichadas e, certamente, nenhum indivíduo
 confundiria os arquivos (*a menos que fosse induzido ao erro*).
 
 ## Considerações finais
 
-Chegar até aqui foi uma tarefa difícil, cheia de problemas e desmotivações, que
-felizmente me trouxe muito aprendizado, permitindo-me evoluir diversos aspectos meus,
+Chegar até aqui foi uma tarefa difícil, cheia de problemas e desmotivações, porém,
+felizmente, me trouxe muito aprendizado, permitindo-me evoluir diversos aspectos meus,
 tanto com relação a programação, quanto com relação a minha vida pessoal.
 
 O histórico deste repositório denúncia minhas dificuldades, incertezas e erros, mas
@@ -237,5 +245,5 @@ de superar esses problemas. Essa foi, indiscutivelmente, uma aventura proveitosa
 ter sido um pouco menos desgastante, mas isso não foi algo necessariamente ruim, foi
 aprendizado.
 
-Isso é tudo que você *"precisa"* saber sobre a história desse projeto. Espero que
-tenha sido agradável ler esse trecho, pois escrevê-lo certamente foi. Obrigado por ler!
+Isso é tudo que você "precisa" saber sobre a história desse projeto. Espero que tenha
+sido agradável ler esse trecho, pois escrevê-lo certamente foi. Obrigado por ler!
