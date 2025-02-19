@@ -80,21 +80,18 @@ static void help_with_arg(char *arg){
 			"    This measure was taken to avoid conflicts with identifiers extern" N
 			"    to library" N
 			N
-			"2 - Multiple variables must not receive multiple values during themself" N
-			"    declaration (`local func, tab, zero = ipairs(foo)`), only after it." N
-			N
-			"3 - Keywords, numbers (any type), special characteres, identifiers started" N
+			"2 - Keywords, numbers (any type), special characteres, identifiers started" N
 			"    with '_' and global identifiers will NOT be compacted." N
 			N
-			"4 - Global variables and tables must always be prefixed by `_G`. Otherwise," N
+			"3 - Global variables and tables must always be prefixed by `_G`. Otherwise," N
 			"    they will not be added to library table and, eventually, they can be" N
 			"    confused with local variables and tables." N
 			N
-			"5 - The string delimitator `[[]]` is not supported. Because the Lim final" N
-			"    organization model conflict with the main feature of this delimitator," N
+			"4 - The string delimitator `[[]]` or `[=[ ]=]` is not supported. Because the Lim" N
+			"    final organization model conflict with the main feature of this delimitator," N
 			"    its capacity of accept special characters, that included line feed." N
 			N
-			"6 - Only characters from ASCII Table are supported. The use of other will" N
+			"5 - Only characters from ASCII Table are supported. The use of other will" N
 			"    generate undefined behavior. See too: https://www.ascii-code.com" N
 		);
 	}
