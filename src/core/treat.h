@@ -7,7 +7,7 @@
 typedef enum{
 	DT_NULL = -1,
 	DT_LOCAL,
-	DT_FUNCTION,  // global
+	DT_FUNCTION, // global
 	DT_LIB_FUNC, // local
 }DECLARE_TOKEN;
 

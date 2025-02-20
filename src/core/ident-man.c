@@ -22,8 +22,6 @@ static const short LEN_2C = sizeof(char) * 2;
 static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
 static char *nick_lib_func = NULL; // different algorithm
 
-static unsigned short local_env_quant = 0;
-
 #define NICK_CURRENT(n) (n[0])
 #define NICK_FORMAT(n)  (n[1])
 #define NICK_FIRSTC(n)  (n[2][0])
@@ -201,7 +199,7 @@ static void free_nick_mem_stack(Stack_Nick_Memory *mem){
 
 void new_local_environment(bool is_method){
 	Func_Env_Stack *new;
-	local_env_quant++;
+	(lim.buffers.local.env_quant)++;
 
 	new = malloc(sizeof(Func_Env_Stack));
 	new->content        = tmpfile();
@@ -234,8 +232,8 @@ void new_local_environment(bool is_method){
 }
 
 void drop_local_environment(void){
-	if(local_env_quant > 0)
-		local_env_quant--;
+	if(lim.buffers.local.env_quant > 0)
+		(lim.buffers.local.env_quant)--;
 
 	char c = 0;
 	FILE *dest;
@@ -270,10 +268,6 @@ void drop_local_environment(void){
 	qee_free_queue(top->parameter);
 
 	free(top);
-}
-
-unsigned short get_local_env_quant(void){
-	return local_env_quant;
 }
 
 char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf){

@@ -42,7 +42,6 @@ static void free_nick_mem_stack(Stack_Nick_Memory *mem);
 
 void new_local_environment(bool is_method);
 void drop_local_environment(void);
-unsigned short get_local_env_quant(void);
 char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf);
 char* get_nickname_of(char *ident, bool is_root);
 char* save_lib_func_in_buffer(char *ident);

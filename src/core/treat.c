@@ -276,12 +276,12 @@ static void start_function_declaration(bool is_anony){
 
 	functd.start_declare = true;
 	functd.parameter_end = false;
-	new_local_environment( (!is_anony && gtable_key != NULL && gtable_key[0] == ':') );
+	new_local_environment( (!is_anony && gtable_key != NULL && strchr(gtable_key, ':') != NULL) );
 
 	save_local_parameter_state();
 
 	dtoken = DT_NULL;
-	pverbose(V_NEW_THING, get_local_env_quant(), "Function declaration");
+	pverbose(V_NEW_THING, lim.buffers.local.env_quant, "Function declaration");
 }
 
 static void search_func_param_end(void){
@@ -294,7 +294,7 @@ static void search_func_param_end(void){
 }
 
 static void pop_function_declaration(void){
-	pverbose(V_END_THING, get_local_env_quant(), "Function declaration");
+	pverbose(V_END_THING, lim.buffers.local.env_quant, "Function declaration");
 
 	restart_local_parameter_nicknames();
 	drop_local_environment();

@@ -6,21 +6,28 @@
 struct Lim_Global_Variables lim;
 
 void lim_init_env(void){
-	lim.files.source       = NULL;
-	lim.files.destine      = NULL;
-	lim.files.header_lim   = NULL;
+	lim.files.source                    = NULL;
+	lim.files.destine                   = NULL;
+	lim.files.header_lim                = NULL;
 
-	lim.buffers.destine_file = NULL;
+	lim.buffers.destine_file            = NULL;
+
 	lim.buffers.root.scope_func_pointer = NULL;
 	lim.buffers.root.scope_func_address = NULL;
+	
 	lim.buffers.root.lib_func           = NULL;
+	
 	lim.buffers.root.global_func        = NULL;
 	lim.buffers.root.global_var_tab     = NULL;
 	lim.buffers.root.global_for_loop    = NULL;
+	
 	lim.buffers.root.func_from_lua      = NULL;
 	lim.buffers.root.table_from_lua     = NULL;
+	
 	lim.buffers.root.func_from_header   = NULL;
 	lim.buffers.root.table_from_header  = NULL;
+	
+	lim.buffers.local.env_quant         = 0;
 	lim.buffers.local.top               = NULL;
 	lim.buffers.local.bottom            = NULL;
 }

@@ -11,7 +11,7 @@ typedef struct Func_Env_Stack{
 	Queue *local_var_tab;
 	Queue *local_for_loop;
 	Queue *parameter;
-	bool is_method; // foo:method != foo.functi
+	bool is_method; // register `self`
 	struct Func_Env_Stack *below;
 }Func_Env_Stack;
 
@@ -50,7 +50,7 @@ struct Lim_Global_Variables{
 		}root;
 
 		struct{
-			// Queue *local_func, *local_var_tab, *parameter;
+			unsigned short env_quant;
 			Func_Env_Stack *top;
 			Func_Env_Stack *bottom;
 		}local;
