@@ -11,7 +11,7 @@ typedef enum{
 	SCOPE_FOR_LOOP,
 	// NOTE: there is not a PARAMETER or
 	// FOR_LOOP scope, this is only to
-	// choose it a nickname
+	// choose its nickname
 }SCOPE_ID;
 
 typedef struct Stack_Nick_Memory{

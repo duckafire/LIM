@@ -251,11 +251,11 @@ bool is_identifier(char c, char **tmp){
 	if(table_key != NULL){
 		if(is_from_lua(ident, CKIA_LUA_STD_TABLE)){
 			code_to_pverbose = 0;
-			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_lua));
+			treat_standard(ident, table_key, &(lim.buffers.root.table_from_lua));
 
 		}else if(is_from_header(ident, lim.header_partitions.table_list)){
 			code_to_pverbose = 1;
-			treat_standard_from(true, ident, table_key, &(lim.buffers.root.table_from_header));
+			treat_standard(ident, table_key, &(lim.buffers.root.table_from_header));
 
 		}else{
 			code_to_pverbose = 2;
@@ -269,19 +269,19 @@ bool is_identifier(char c, char **tmp){
 
 		}else if(is_from_lua(ident, CKIA_LUA_STD_FUNC)){
 			code_to_pverbose = 0;
-			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_lua));
+			treat_standard(ident, NULL, &(lim.buffers.root.func_from_lua));
 
 		}else if(is_from_lua(ident, CKIA_LUA_STD_TABLE)){
 			code_to_pverbose = 0;
-			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_lua));
+			treat_standard(ident, NULL, &(lim.buffers.root.table_from_lua));
 
 		}else if(is_from_header(ident, lim.header_partitions.funct_list)){
 			code_to_pverbose = 1;
-			treat_standard_from(true, ident, NULL, &(lim.buffers.root.func_from_header));
+			treat_standard(ident, NULL, &(lim.buffers.root.func_from_header));
 
 		}else if(is_from_header(ident, lim.header_partitions.table_list)){
 			code_to_pverbose = 1;
-			treat_standard_from(true, ident, NULL, &(lim.buffers.root.table_from_header));
+			treat_standard(ident, NULL, &(lim.buffers.root.table_from_header));
 
 		}else{
 			code_to_pverbose = 2;

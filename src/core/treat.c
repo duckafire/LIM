@@ -174,7 +174,7 @@ void treat_ident(char *_ident, char *_table_key){
 	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 }
 
-void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf){
+void treat_standard(char *_ident, char *_table_key, Queue **buf){
 	bool allocad = true;
 	char *full, *nick;
 
@@ -202,6 +202,10 @@ void treat_standard_from(bool lua, char *_ident, char *_table_key, Queue **buf){
 
 	if(allocad)
 		free(full);
+
+	dtoken = DT_NULL;
+	locald.start_declare = locald.expect_comma  = false;
+	functd.start_declare = functd.parameter_end = false;
 }
 
 static void default_const_treatment(char *str){
@@ -300,10 +304,10 @@ static void pop_function_declaration(void){
 static void check_if_space_is_need(char *str){
 	char firstc = str[0];
 
-	if(space_is_mandatory && (firstc == '_' || isalnum(firstc))){
+	if(space_is_mandatory && (firstc == '_' || isalnum(firstc)))
 		fprintf(CTT_BUF, " ");
-		space_is_mandatory = false;
-	}
+
+	space_is_mandatory = false;
 }
 
 static void set_if_space_is_mandatory(char *str){
