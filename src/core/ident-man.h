@@ -5,14 +5,11 @@
 #include "tools/queue.h"
 
 typedef enum{
-	SCOPE_STD_HDR,
-	SCOPE_IDENT,
-	SCOPE_PARAM,
-	SCOPE_FOR_LOOP,
-	// NOTE: there is not a PARAMETER or
-	// FOR_LOOP scope, this is only to
-	// choose its nickname
-}SCOPE_ID;
+	NICK_STD_HDR,
+	NICK_IDENT,
+	NICK_PARAM,
+	NICK_FOR_LOOP,
+}NICK_ID;
 
 typedef struct Stack_Nick_Memory{
 	char *save;
@@ -42,7 +39,7 @@ static void free_nick_mem_stack(Stack_Nick_Memory *mem);
 
 void new_local_environment(bool is_method);
 void drop_local_environment(void);
-char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf);
+char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, NICK_ID id, Queue **buf);
 char* get_nickname_of(char *ident, bool is_root);
 char* save_lib_func_in_buffer(char *ident);
 

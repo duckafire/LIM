@@ -270,16 +270,16 @@ void drop_local_environment(void){
 	free(top);
 }
 
-char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID id, Queue **buf){
+char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, NICK_ID id, Queue **buf){
 	// get a new nickname to "ident"
 	char *nick_tmp, **nick_buf;
 
 	if(ident[0] != '_'){
 		switch(id){
-			case SCOPE_IDENT:    nick_buf = ((is_root) ? nick_global_ident : nick_local_ident); break;
-			case SCOPE_STD_HDR:  nick_buf = nick_std_hdr;   break;
-			case SCOPE_PARAM:    nick_buf = nick_parameter; break;
-			case SCOPE_FOR_LOOP: nick_buf = nick_for_loop;  break;
+			case NICK_IDENT:    nick_buf = ((is_root) ? nick_global_ident : nick_local_ident); break;
+			case NICK_STD_HDR:  nick_buf = nick_std_hdr;   break;
+			case NICK_PARAM:    nick_buf = nick_parameter; break;
+			case NICK_FOR_LOOP: nick_buf = nick_for_loop;  break;
 		}
 		nick_tmp = get_and_update_nick(nick_buf);
 
@@ -292,7 +292,7 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, SCOPE_ID 
 	}
 
 
-	if(id == SCOPE_STD_HDR){
+	if(id == NICK_STD_HDR){
 		FILE **pointer, **address;
 		pointer = &(lim.buffers.root.scope_func_pointer);
 		address = &(lim.buffers.root.scope_func_address);

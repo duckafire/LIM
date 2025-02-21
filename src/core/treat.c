@@ -136,7 +136,7 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(IS_FPARAM){
-		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_PARAM, &(lim.buffers.local.top->parameter));
+		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_PARAM, &(lim.buffers.local.top->parameter));
 		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 		return;
 	}
@@ -148,7 +148,7 @@ void treat_ident(char *_ident, char *_table_key){
 		}
 
 		if(!for_loop.expect_comma){
-			fprintf(CTT_BUF, "%s", save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_FOR_LOOP, BUF_FOR_LOOP));
+			fprintf(CTT_BUF, "%s", save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_FOR_LOOP, BUF_FOR_LOOP));
 			space_is_mandatory = true;
 			for_loop.expect_comma = true;
 			return;
@@ -167,7 +167,7 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(locald.start_declare)
-		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, SCOPE_IDENT, BUF_VAR_TAB);
+		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, NICK_IDENT, BUF_VAR_TAB);
 	else
 		gident_nick = get_nickname_of(gident, IS_ROOT);
 
@@ -192,7 +192,7 @@ void treat_standard(char *_ident, char *_table_key, Queue **buf){
 
 	nick = get_nickname_of(full, IS_ROOT);
 	if(strcmp(nick, full) == 0) // nickname not defined
-		nick = save_ident_in_buffer(full, NULL, IS_ROOT, SCOPE_STD_HDR, buf);
+		nick = save_ident_in_buffer(full, NULL, IS_ROOT, NICK_STD_HDR, buf);
 
 
 	check_if_space_is_need(nick);
@@ -265,7 +265,7 @@ static void start_function_declaration(bool is_anony){
 				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
 
 		}else{
-			fprintf(CTT_BUF, "local function %s", save_ident_in_buffer(gident, NULL, IS_ROOT, SCOPE_IDENT, BUF_FUNC));
+			fprintf(CTT_BUF, "local function %s", save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_IDENT, BUF_FUNC));
 
 			if(gtable_key != NULL)
 				pverbose(V_WARNING, "An invalid table key was discarted:", "local function", gident, ">", gtable_key, "<", NULL);
