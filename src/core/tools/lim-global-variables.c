@@ -28,8 +28,7 @@ void lim_init_env(void){
 	lim.buffers.root.table_from_header  = NULL;
 	
 	lim.buffers.local.env_quant         = 0;
-	lim.buffers.local.top               = NULL;
-	lim.buffers.local.bottom            = NULL;
+	lim.buffers.local.stakc_top         = NULL;
 }
 
 void lim_free_env(void){
@@ -84,7 +83,7 @@ void lim_free_env(void){
 	qee_free_queue(lim.buffers.root.table_from_header);
 
 	Func_Env_Stack *cur, *below;
-	for(cur = lim.buffers.local.top; cur != NULL; cur = below){
+	for(cur = lim.buffers.local.stack_top; cur != NULL; cur = below){
 		qee_free_queue(cur->local_func);
 		qee_free_queue(cur->local_var_tab);
 		qee_free_queue(cur->parameter);

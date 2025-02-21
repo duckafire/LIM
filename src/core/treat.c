@@ -26,13 +26,13 @@ struct { bool start_declare, expect_comma, kw_placed; } for_loop = {false, false
 #define FORMAT(tk) ((tk == NULL) ? "%s" : "%s%s")
 #define MIN(a, b)  ((a < b) ? a : b)
 
-#define BUF_FUNC     ((IS_ROOT) ? &(lim.buffers.root.global_func)    : &(lim.buffers.local.top->local_func))
-#define BUF_VAR_TAB  ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.top->local_var_tab))
-#define BUF_FOR_LOOP ((IS_ROOT) ? &(lim.buffers.root.global_for_loop): &(lim.buffers.local.top->local_for_loop))
-#define CTT_BUF      ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.top->content)
+#define BUF_FUNC     ((IS_ROOT) ? &(lim.buffers.root.global_func)    : &(lim.buffers.local.stack_top->local_func))
+#define BUF_VAR_TAB  ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.stack_top->local_var_tab))
+#define BUF_FOR_LOOP ((IS_ROOT) ? &(lim.buffers.root.global_for_loop): &(lim.buffers.local.stack_top->local_for_loop))
+#define CTT_BUF      ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.stack_top->content)
 
 void finish_treatment(void){
-	while(lim.buffers.local.top != NULL){
+	while(lim.buffers.local.stack_top != NULL){
 		pverbose(V_WARNING, "function end not found.");
 		drop_local_environment();
 	}
@@ -136,7 +136,7 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(IS_FPARAM){
-		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_PARAM, &(lim.buffers.local.top->parameter));
+		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_PARAM, &(lim.buffers.local.stack_top->parameter));
 		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
 		return;
 	}

@@ -51,8 +51,7 @@ struct Lim_Global_Variables{
 
 		struct{
 			unsigned short env_quant;
-			Func_Env_Stack *top;
-			Func_Env_Stack *bottom;
+			Func_Env_Stack *stack_top;
 		}local;
 	}buffers;
 };

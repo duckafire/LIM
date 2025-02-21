@@ -218,16 +218,15 @@ void new_local_environment(bool is_method){
 				qee_add_item(&(buf), "self", NULL, "Sa", false, QEE_DROP); \
 		}
 
-	if(lim.buffers.local.bottom == NULL){
-		lim.buffers.local.bottom = new;
-		lim.buffers.local.top = new;
+	if(lim.buffers.local.stack_top == NULL){
+		lim.buffers.local.stack_top = new;
 
 		NICK_TO_SELF(new->local_var_tab)
 		return;
 	}
 
-	new->below = lim.buffers.local.top;
-	lim.buffers.local.top = new;
+	new->below = lim.buffers.local.stack_top;
+	lim.buffers.local.stack_top = new;
 	NICK_TO_SELF(new->local_var_tab)
 }
 
@@ -240,14 +239,11 @@ void drop_local_environment(void){
 	Func_Env_Stack *top;
 
 
-	top = lim.buffers.local.top;
-	lim.buffers.local.top = top->below;
+	top = lim.buffers.local.stack_top;
+	lim.buffers.local.stack_top = top->below;
 
-	dest = ((lim.buffers.local.top == NULL) ? lim.buffers.destine_file : lim.buffers.local.top->content);
+	dest = ((lim.buffers.local.stack_top == NULL) ? lim.buffers.destine_file : lim.buffers.local.stack_top->content);
 
-
-	if(lim.buffers.local.top == NULL)
-		lim.buffers.local.bottom = NULL;
 
 	fseek(top->content, 0, SEEK_SET);
 
@@ -331,7 +327,7 @@ char* get_nickname_of(char *ident, bool is_root){
 	if(!is_root){
 		Func_Env_Stack *env;
 
-		for(env = lim.buffers.local.top; env != NULL; env = env->below){
+		for(env = lim.buffers.local.stack_top; env != NULL; env = env->below){
 			bufs[0] = env->local_func;
 			bufs[1] = env->local_var_tab;
 			bufs[2] = env->local_for_loop;
