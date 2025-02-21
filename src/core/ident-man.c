@@ -19,7 +19,6 @@ static Stack_Nick_Memory *nick_local_mem = NULL;
 static Stack_Nick_Memory *nick_param_mem = NULL;
 
 static const short LEN_2C = sizeof(char) * 2;
-static Nick_For_Loop_Stack *nick_for_loop_data = NULL;
 static char *nick_lib_func = NULL; // different algorithm
 
 #define NICK_CURRENT(n) (n[0])
@@ -46,23 +45,6 @@ void restart_local_parameter_nicknames(void){
 void save_local_parameter_state(void){
 	save_nickname_of(nick_local_ident, &nick_local_mem);
 	save_nickname_of(nick_parameter,   &nick_param_mem);
-}
-
-void new_nicknames_env_to_for_loop(unsigned short layer_base){
-	Nick_For_Loop_Stack *new;
-
-	new = malloc( sizeof(Nick_For_Loop_Stack) );
-	new->save_state = string_copy( NICK_CURRENT(nick_for_loop) );
-	new->layer_base = layer_base;
-	new->below = NULL;
-
-	if(nick_for_loop_data == NULL){
-		nick_for_loop_data = new;
-		return;
-	}
-
-	new->below = nick_for_loop_data;
-	nick_for_loop_data = new;
 }
 
 static void restart_nickname_of(char *nick_buf[], Stack_Nick_Memory **mem){
@@ -143,29 +125,7 @@ static void update_nick_current(char *nick_buf[], const int last_char){
 	strcat(NICK_CURRENT(nick_buf), NICK_FIRST(nick_buf));
 }
 
-void pop_nicknames_env_to_for_loop(unsigned short cur_layer){
-	if(nick_for_loop_data == NULL || cur_layer > nick_for_loop_data->layer_base)
-		return;
-
-	free( NICK_CURRENT(nick_for_loop) );
-	NICK_CURRENT(nick_for_loop) = nick_for_loop_data->save_state;
-
-	drop_nicknames_env_to_for_loop();
-}
-
-static void drop_nicknames_env_to_for_loop(void){
-	Nick_For_Loop_Stack *tmp;
-
-	tmp = nick_for_loop_data;
-	nick_for_loop_data = nick_for_loop_data->below;
-	
-	free(tmp);
-}
-
 void free_nickname_buffers(void){
-	while(nick_for_loop_data != NULL)
-		drop_nicknames_env_to_for_loop();
-
 	free_nick_buf(nick_std_hdr);
 	free_nick_buf(nick_global_ident);
 	free_nick_buf(nick_local_ident);
@@ -197,6 +157,61 @@ static void free_nick_mem_stack(Stack_Nick_Memory *mem){
 }
 
 
+void new_nicknames_env_to_for_loop(unsigned short layer_base){
+	For_Loop_Stack *new;
+
+	new = malloc( sizeof(For_Loop_Stack) );
+	new->save_state = string_copy( NICK_CURRENT(nick_for_loop) );
+	new->layer_base = layer_base;
+	new->idents     = NULL;
+	new->below      = NULL;
+
+	if(lim.buffers.local.stack_top == NULL){
+		if(lim.buffers.root.for_loop_stack_top == NULL){
+			lim.buffers.root.for_loop_stack_top = new;
+			return;
+		}
+
+		new->below = lim.buffers.root.for_loop_stack_top;
+		lim.buffers.root.for_loop_stack_top = new;
+		return;
+	}
+
+	if(lim.buffers.local.stack_top->for_loop_stack_top == NULL){
+		lim.buffers.local.stack_top->for_loop_stack_top = new;
+		return;
+	}
+
+	new->below = lim.buffers.local.stack_top->for_loop_stack_top;
+	lim.buffers.local.stack_top->for_loop_stack_top = new;
+}
+
+void pop_nicknames_env_to_for_loop(unsigned short cur_layer){
+	For_Loop_Stack *stack;
+	if(lim.buffers.local.stack_top == NULL)
+		stack = lim.buffers.root.for_loop_stack_top;
+	else
+		stack = lim.buffers.local.stack_top->for_loop_stack_top;
+
+
+	if(stack == NULL || cur_layer > stack->layer_base)
+		return;
+
+	free( NICK_CURRENT(nick_for_loop) );
+	NICK_CURRENT(nick_for_loop) = stack->save_state;
+
+
+	if(lim.buffers.local.stack_top == NULL)
+		lim.buffers.root.for_loop_stack_top = stack->below;
+	else
+		lim.buffers.local.stack_top->for_loop_stack_top = stack->below;
+
+
+	qee_free_queue(stack->idents);
+	free(stack);
+}
+
+
 void new_local_environment(bool is_method){
 	Func_Env_Stack *new;
 	(lim.buffers.local.env_quant)++;
@@ -205,7 +220,6 @@ void new_local_environment(bool is_method){
 	new->content        = tmpfile();
 	new->local_func     = NULL;
 	new->local_var_tab  = NULL;
-	new->local_for_loop = NULL;
 	new->parameter      = NULL;
 	new->is_method      = is_method;
 	new->below          = NULL;
@@ -263,8 +277,18 @@ void drop_local_environment(void){
 	qee_free_queue(top->local_var_tab);
 	qee_free_queue(top->parameter);
 
+	For_Loop_Stack *cur, *below;
+	for(cur = top->for_loop_stack_top; cur != NULL; cur = below){
+		qee_free_queue(cur->idents);
+		free(cur->save_state);
+
+		below = cur->below;
+		free(cur);
+	}
+
 	free(top);
 }
+
 
 char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, NICK_ID id, Queue **buf){
 	// get a new nickname to "ident"
@@ -275,7 +299,6 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, NICK_ID i
 			case NICK_IDENT:    nick_buf = ((is_root) ? nick_global_ident : nick_local_ident); break;
 			case NICK_STD_HDR:  nick_buf = nick_std_hdr;   break;
 			case NICK_PARAM:    nick_buf = nick_parameter; break;
-			case NICK_FOR_LOOP: nick_buf = nick_for_loop;  break;
 		}
 		nick_tmp = get_and_update_nick(nick_buf);
 
@@ -317,53 +340,6 @@ char* save_ident_in_buffer(char *ident, char *table_key, bool is_root, NICK_ID i
 	return nick_tmp;
 }
 
-char* get_nickname_of(char *ident, bool is_root){
-	Queue *cur, *bufs[8];
-
-	if(ident[0] == '_')
-		return ident;
-
-
-	if(!is_root){
-		Func_Env_Stack *env;
-
-		for(env = lim.buffers.local.stack_top; env != NULL; env = env->below){
-			bufs[0] = env->local_func;
-			bufs[1] = env->local_var_tab;
-			bufs[2] = env->local_for_loop;
-			bufs[3] = env->parameter;
-
-			for(short i = 0; i < 4; i++){
-				cur = qee_get_item(bufs[i], ident);
-
-				if(cur != NULL)
-					return cur->nick;
-			}
-		}
-	}
-
-
-	bufs[0] = lim.buffers.root.global_func;
-	bufs[1] = lim.buffers.root.global_var_tab;
-	bufs[2] = lim.buffers.root.global_for_loop;
-	bufs[3] = lim.buffers.root.func_from_lua;
-	bufs[4] = lim.buffers.root.table_from_lua;
-	bufs[5] = lim.buffers.root.func_from_header;
-	bufs[6] = lim.buffers.root.table_from_header;
-	bufs[7] = lim.buffers.root.lib_func; // these is "rare"
-
-	for(short i = 0; i < 8; i++){
-		cur = qee_get_item(bufs[i], ident);
-
-		if(cur != NULL)
-			return cur->nick;
-	}
-
-
-	// here should have an error ;)
-	return ident;
-}
-
 char* save_lib_func_in_buffer(char *ident){
 	free(nick_lib_func);
 	nick_lib_func = malloc(strlen(ident) + 3);
@@ -377,4 +353,77 @@ char* save_lib_func_in_buffer(char *ident){
 		qee_add_item(&(lim.buffers.root.lib_func), ident, NULL, nick_lib_func, false, QEE_DROP);
 
 	return nick_lib_func;
+}
+
+char* save_for_loop_ident_in_buffer(char *ident){
+	For_Loop_Stack *buf;
+	char *nick;
+
+	if(lim.buffers.local.stack_top == NULL)
+		buf = lim.buffers.root.for_loop_stack_top;
+	else
+		buf = lim.buffers.local.stack_top->for_loop_stack_top;
+
+	nick = get_and_update_nick(nick_for_loop);
+
+	if(buf == NULL)
+		buf->idents = qee_create(ident, NULL, nick, false);
+	else
+		qee_add_item(&(buf->idents), ident, NULL, nick, false, QEE_DROP);
+
+	return nick;
+}
+
+
+char* get_nickname_of(char *ident, bool is_root){
+	Queue *cur, *bufs[7];
+	For_Loop_Stack *for_loop;
+
+	if(ident[0] == '_')
+		return ident;
+
+
+	if(!is_root){
+		Func_Env_Stack *env;
+
+		for(env = lim.buffers.local.stack_top; env != NULL; env = env->below){
+			bufs[0] = env->local_func;
+			bufs[1] = env->local_var_tab;
+			bufs[2] = env->parameter;
+
+			for(short i = 0; i < 3; i++)
+				if( (cur = qee_get_item(bufs[i], ident)) != NULL )
+					return cur->nick;
+			
+			for(for_loop = env->for_loop_stack_top; for_loop != NULL; for_loop = for_loop->below)
+				if( (cur = qee_get_item(for_loop->idents, ident)) != NULL )
+					return cur->nick;
+		}
+	}
+
+	const bool is_for_loop_stack_empty = (lim.buffers.root.for_loop_stack_top == NULL);
+	const short max = (is_for_loop_stack_empty) ? 6 : 7;
+
+	bufs[0] = lim.buffers.root.global_func;
+	bufs[1] = lim.buffers.root.global_var_tab;
+
+	bufs[2] = lim.buffers.root.func_from_lua;
+	bufs[3] = lim.buffers.root.table_from_lua;
+	
+	bufs[4] = lim.buffers.root.func_from_header;
+	bufs[5] = lim.buffers.root.table_from_header;
+	
+	if(!is_for_loop_stack_empty)
+		bufs[6] = lim.buffers.root.for_loop_stack_top->idents;
+
+	for(short i = 0; i < max; i++)
+		if( (cur = qee_get_item(bufs[i], ident)) != NULL )
+			return cur->nick;
+
+	for(for_loop = lim.buffers.root.for_loop_stack_top; for_loop != NULL; for_loop = for_loop->below)
+		if( (cur = qee_get_item(for_loop->idents, ident)) != NULL )
+			return cur->nick;
+
+
+	return ident;
 }

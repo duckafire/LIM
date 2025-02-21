@@ -19,7 +19,6 @@ void lim_init_env(void){
 	
 	lim.buffers.root.global_func        = NULL;
 	lim.buffers.root.global_var_tab     = NULL;
-	lim.buffers.root.global_for_loop    = NULL;
 	
 	lim.buffers.root.func_from_lua      = NULL;
 	lim.buffers.root.table_from_lua     = NULL;
@@ -28,7 +27,9 @@ void lim_init_env(void){
 	lim.buffers.root.table_from_header  = NULL;
 	
 	lim.buffers.local.env_quant         = 0;
-	lim.buffers.local.stakc_top         = NULL;
+	lim.buffers.local.stack_top         = NULL;
+
+	lim.buffers.root.for_loop_stack_top = NULL;
 }
 
 void lim_free_env(void){
@@ -76,7 +77,6 @@ void lim_free_env(void){
 	qee_free_queue(lim.buffers.root.lib_func);
 	qee_free_queue(lim.buffers.root.global_func);
 	qee_free_queue(lim.buffers.root.global_var_tab);
-	qee_free_queue(lim.buffers.root.global_for_loop);
 	qee_free_queue(lim.buffers.root.func_from_lua);
 	qee_free_queue(lim.buffers.root.table_from_lua);
 	qee_free_queue(lim.buffers.root.func_from_header);
@@ -92,4 +92,12 @@ void lim_free_env(void){
 		free(cur);
 	}
 
+	For_Loop_Stack *cur1, *below1;
+	for(cur1 = lim.buffers.root.for_loop_stack_top; cur1 != NULL; cur1 = below1){
+		qee_free_queue(cur1->idents);
+		free(cur1->save_state);
+
+		below1 = cur1->below;
+		free(cur1);
+	}
 }

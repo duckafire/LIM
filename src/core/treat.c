@@ -48,20 +48,15 @@ void treat_const(char *str){
 	gtable_key = NULL;
 
 
+	if(is_endkw)
+		pop_nicknames_env_to_for_loop(layer.height);
+
 	if(!IS_FPARAM && layer.height > 0){
 		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0)
 			update_layer(false);
 
 		else if(is_endkw && downdate_layer())
 			pop_function_declaration();
-
-	}
-	
-	if(is_endkw){
-		pop_nicknames_env_to_for_loop(layer.height);
-
-		default_const_treatment("end");
-		return;
 	}
 
 
@@ -148,7 +143,7 @@ void treat_ident(char *_ident, char *_table_key){
 		}
 
 		if(!for_loop.expect_comma){
-			fprintf(CTT_BUF, "%s", save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_FOR_LOOP, BUF_FOR_LOOP));
+			fprintf(CTT_BUF, "%s", save_for_loop_ident_in_buffer(gident));
 			space_is_mandatory = true;
 			for_loop.expect_comma = true;
 			return;

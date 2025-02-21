@@ -5,12 +5,19 @@
 #include <stdbool.h>
 #include "queue.h"
 
+typedef struct For_Loop_Stack{
+	Queue *idents;
+	char *save_state;
+	unsigned short layer_base;
+	struct For_Loop_Stack *below;
+}For_Loop_Stack;
+
 typedef struct Func_Env_Stack{
 	FILE *content;
 	Queue *local_func;
 	Queue *local_var_tab;
-	Queue *local_for_loop;
 	Queue *parameter;
+	For_Loop_Stack *for_loop_stack_top;
 	bool is_method; // register `self`
 	struct Func_Env_Stack *below;
 }Func_Env_Stack;
@@ -44,9 +51,10 @@ struct Lim_Global_Variables{
 		struct{
 			FILE *scope_func_pointer, *scope_func_address;
 			Queue *lib_func;
-			Queue *global_func, *global_var_tab, *global_for_loop;
+			Queue *global_func, *global_var_tab;
 			Queue *func_from_lua, *table_from_lua;
 			Queue *func_from_header, *table_from_header;
+			For_Loop_Stack *for_loop_stack_top;
 		}root;
 
 		struct{
