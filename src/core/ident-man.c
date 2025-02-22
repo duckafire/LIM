@@ -166,33 +166,19 @@ void new_nicknames_env_to_for_loop(unsigned short layer_base){
 	new->idents     = NULL;
 	new->below      = NULL;
 
-	if(lim.buffers.local.stack_top == NULL){
-		if(lim.buffers.root.for_loop_stack_top == NULL){
-			lim.buffers.root.for_loop_stack_top = new;
-			return;
-		}
-
-		new->below = lim.buffers.root.for_loop_stack_top;
-		lim.buffers.root.for_loop_stack_top = new;
+	if(lim.buffers.for_loop_stack_top == NULL){
+		lim.buffers.for_loop_stack_top = new;
 		return;
 	}
 
-	if(lim.buffers.local.stack_top->for_loop_stack_top == NULL){
-		lim.buffers.local.stack_top->for_loop_stack_top = new;
-		return;
-	}
-
-	new->below = lim.buffers.local.stack_top->for_loop_stack_top;
-	lim.buffers.local.stack_top->for_loop_stack_top = new;
+	new->below = lim.buffers.for_loop_stack_top;
+	lim.buffers.for_loop_stack_top = new;
+	return;
 }
 
 void pop_nicknames_env_to_for_loop(unsigned short cur_layer){
 	For_Loop_Stack *stack;
-	if(lim.buffers.local.stack_top == NULL)
-		stack = lim.buffers.root.for_loop_stack_top;
-	else
-		stack = lim.buffers.local.stack_top->for_loop_stack_top;
-
+	stack = lim.buffers.for_loop_stack_top;
 
 	if(stack == NULL || cur_layer > stack->layer_base)
 		return;
@@ -200,13 +186,7 @@ void pop_nicknames_env_to_for_loop(unsigned short cur_layer){
 	free( NICK_CURRENT(nick_for_loop) );
 	NICK_CURRENT(nick_for_loop) = stack->save_state;
 
-
-	if(lim.buffers.local.stack_top == NULL)
-		lim.buffers.root.for_loop_stack_top = stack->below;
-	else
-		lim.buffers.local.stack_top->for_loop_stack_top = stack->below;
-
-
+	lim.buffers.for_loop_stack_top = stack->below;
 	qee_free_queue(stack->idents);
 	free(stack);
 }
@@ -276,15 +256,6 @@ void drop_local_environment(void){
 	qee_free_queue(top->local_func);
 	qee_free_queue(top->local_var_tab);
 	qee_free_queue(top->parameter);
-
-	For_Loop_Stack *cur, *below;
-	for(cur = top->for_loop_stack_top; cur != NULL; cur = below){
-		qee_free_queue(cur->idents);
-		free(cur->save_state);
-
-		below = cur->below;
-		free(cur);
-	}
 
 	free(top);
 }
@@ -356,20 +327,14 @@ char* save_lib_func_in_buffer(char *ident){
 }
 
 char* save_for_loop_ident_in_buffer(char *ident){
-	For_Loop_Stack *buf;
 	char *nick;
-
-	if(lim.buffers.local.stack_top == NULL)
-		buf = lim.buffers.root.for_loop_stack_top;
-	else
-		buf = lim.buffers.local.stack_top->for_loop_stack_top;
 
 	nick = get_and_update_nick(nick_for_loop);
 
-	if(buf == NULL)
-		buf->idents = qee_create(ident, NULL, nick, false);
+	if(lim.buffers.for_loop_stack_top == NULL)
+		lim.buffers.for_loop_stack_top->idents = qee_create(ident, NULL, nick, false);
 	else
-		qee_add_item(&(buf->idents), ident, NULL, nick, false, QEE_DROP);
+		qee_add_item(&(lim.buffers.for_loop_stack_top->idents), ident, NULL, nick, false, QEE_DROP);
 
 	return nick;
 }
@@ -383,6 +348,11 @@ char* get_nickname_of(char *ident, bool is_root){
 		return ident;
 
 
+	for(for_loop = lim.buffers.for_loop_stack_top; for_loop != NULL; for_loop = for_loop->below)
+		if( (cur = qee_get_item(for_loop->idents, ident)) != NULL )
+			return cur->nick;
+
+
 	if(!is_root){
 		Func_Env_Stack *env;
 
@@ -394,15 +364,9 @@ char* get_nickname_of(char *ident, bool is_root){
 			for(short i = 0; i < 3; i++)
 				if( (cur = qee_get_item(bufs[i], ident)) != NULL )
 					return cur->nick;
-			
-			for(for_loop = env->for_loop_stack_top; for_loop != NULL; for_loop = for_loop->below)
-				if( (cur = qee_get_item(for_loop->idents, ident)) != NULL )
-					return cur->nick;
 		}
 	}
 
-	const bool is_for_loop_stack_empty = (lim.buffers.root.for_loop_stack_top == NULL);
-	const short max = (is_for_loop_stack_empty) ? 6 : 7;
 
 	bufs[0] = lim.buffers.root.global_func;
 	bufs[1] = lim.buffers.root.global_var_tab;
@@ -412,16 +376,11 @@ char* get_nickname_of(char *ident, bool is_root){
 	
 	bufs[4] = lim.buffers.root.func_from_header;
 	bufs[5] = lim.buffers.root.table_from_header;
+
+	bufs[6] = lim.buffers.root.lib_func;
 	
-	if(!is_for_loop_stack_empty)
-		bufs[6] = lim.buffers.root.for_loop_stack_top->idents;
-
-	for(short i = 0; i < max; i++)
+	for(short i = 0; i < 7; i++)
 		if( (cur = qee_get_item(bufs[i], ident)) != NULL )
-			return cur->nick;
-
-	for(for_loop = lim.buffers.root.for_loop_stack_top; for_loop != NULL; for_loop = for_loop->below)
-		if( (cur = qee_get_item(for_loop->idents, ident)) != NULL )
 			return cur->nick;
 
 

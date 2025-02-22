@@ -29,7 +29,7 @@ void lim_init_env(void){
 	lim.buffers.local.env_quant         = 0;
 	lim.buffers.local.stack_top         = NULL;
 
-	lim.buffers.root.for_loop_stack_top = NULL;
+	lim.buffers.for_loop_stack_top      = NULL;
 }
 
 void lim_free_env(void){
@@ -93,7 +93,7 @@ void lim_free_env(void){
 	}
 
 	For_Loop_Stack *cur1, *below1;
-	for(cur1 = lim.buffers.root.for_loop_stack_top; cur1 != NULL; cur1 = below1){
+	for(cur1 = lim.buffers.for_loop_stack_top; cur1 != NULL; cur1 = below1){
 		qee_free_queue(cur1->idents);
 		free(cur1->save_state);
 

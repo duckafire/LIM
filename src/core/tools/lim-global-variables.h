@@ -17,7 +17,6 @@ typedef struct Func_Env_Stack{
 	Queue *local_func;
 	Queue *local_var_tab;
 	Queue *parameter;
-	For_Loop_Stack *for_loop_stack_top;
 	bool is_method; // register `self`
 	struct Func_Env_Stack *below;
 }Func_Env_Stack;
@@ -47,6 +46,7 @@ struct Lim_Global_Variables{
 
 	struct{
 		FILE *destine_file;
+		For_Loop_Stack *for_loop_stack_top;
 
 		struct{
 			FILE *scope_func_pointer, *scope_func_address;
@@ -54,7 +54,6 @@ struct Lim_Global_Variables{
 			Queue *global_func, *global_var_tab;
 			Queue *func_from_lua, *table_from_lua;
 			Queue *func_from_header, *table_from_header;
-			For_Loop_Stack *for_loop_stack_top;
 		}root;
 
 		struct{
