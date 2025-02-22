@@ -15,6 +15,7 @@
 static char *gident_nick, *gident, *gtable_key; // Global
 static DECLARE_TOKEN dtoken = DT_NULL;
 static bool space_is_mandatory = false;
+static unsigned short no_block_layer = 0;
 
 struct { bool start_declare; bool expect_comma; } locald = {false, false};
 struct { bool start_declare; bool parameter_end; }functd = {false, false};
@@ -42,17 +43,25 @@ void treat_const(char *str){
 	const bool is_local = (strcmp(str, "local")    == 0);
 	const bool is_funct = (strcmp(str, "function") == 0);
 	const bool is_floop = (strcmp(str, "for")      == 0);
+	const bool is_ifels = (strcmp(str, "if")       == 0);
+	const bool is_while = (strcmp(str, "while")    == 0);
 	const bool is_endkw = (strcmp(str, "end")      == 0);
 
 	gident     = str;
 	gtable_key = NULL;
 
 
-	if(is_endkw)
-		pop_nicknames_env_to_for_loop(layer.height);
+	if(is_funct || is_floop || is_ifels || is_while){
+		no_block_layer++;
+
+	}else if(is_endkw && no_block_layer > 0){
+		pop_nicknames_env_to_for_loop(no_block_layer);
+		no_block_layer--;
+	}
+
 
 	if(!IS_FPARAM && layer.height > 0){
-		if(strcmp(str, "if") == 0 || strcmp(str, "do") == 0)
+		if(is_floop || is_ifels || is_while)
 			update_layer(false);
 
 		else if(is_endkw && downdate_layer())
@@ -97,7 +106,7 @@ void treat_const(char *str){
 			for_loop.start_declare = false;
 
 	}else if(is_floop){
-		new_nicknames_env_to_for_loop(layer.height);
+		new_nicknames_env_to_for_loop(no_block_layer);
 		for_loop.start_declare = true;
 		for_loop.expect_comma  = false;
 		for_loop.kw_placed     = false;
