@@ -18,7 +18,6 @@ void lim_init_env(void){
 	lim.env_buf.lib_func          = NULL;
 	lim.env_buf.var               = NULL;
 	lim.env_buf.func              = NULL;
-	lim.env_buf.special           = NULL;
 	lim.env_buf.func_from_lua     = NULL;
 	lim.env_buf.table_from_lua    = NULL;
 	lim.env_buf.func_from_header  = NULL;
@@ -73,7 +72,6 @@ void lim_free_env(void){
 	qee_free_queue(lim.env_buf.lib_func);
 	qee_free_queue(lim.env_buf.var);
 	qee_free_queue(lim.env_buf.func);
-	qee_free_queue(lim.env_buf.special);
 	qee_free_queue(lim.env_buf.func_from_lua);
 	qee_free_queue(lim.env_buf.table_from_lua);
 	qee_free_queue(lim.env_buf.func_from_header);

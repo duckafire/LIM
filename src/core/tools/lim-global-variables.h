@@ -44,12 +44,11 @@ struct Lim_Global_Variables{
 		Queue *table_list;
 	}header_partitions;
 
-
 	struct{
 		FILE *destine_file;
 		FILE *scope_fpointer, *scope_faddress;
 
-		Queue *lib_func, *var, *func, *special;
+		Queue *var, *func, *lib_func;
 
 		Queue *func_from_lua, *table_from_lua;
 		Queue *func_from_header, *table_from_header;

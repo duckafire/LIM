@@ -28,7 +28,7 @@ struct { bool start_declare, expect_comma, kw_placed; } floopd = {false, false};
 #define BUF_LIB_FUNC &(lim.env_buf.lib_func)
 #define BUF_VAR      ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.var)       : &(lim.env_buf.lenv_stack_top->var))
 #define BUF_FUNC     ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.func)      : &(lim.env_buf.lenv_stack_top->func))
-#define BUF_SPECIAL  ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.special)   : &(lim.env_buf.lenv_stack_top->special))
+#define BUF_SPECIAL  &(lim.env_buf.lenv_stack_top->special)
 #define BUF_CONTENT  ((lim.env_buf.lenv_quant == 0) ? lim.env_buf.destine_file : lim.env_buf.lenv_stack_top->content)
 
 void treat_const(char *str){

@@ -186,10 +186,9 @@ char* get_nickname_of(char *ident){
 				return cur_nick;
 	}
 
-	if(search_in_buffers(ident, 8,
+	if(search_in_buffers(ident, 7,
 		lim.env_buf.var,
 		lim.env_buf.func,
-		lim.env_buf.special,
 		lim.env_buf.lib_func,
 		lim.env_buf.func_from_lua,
 		lim.env_buf.table_from_lua,
