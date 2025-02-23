@@ -22,3 +22,6 @@ especiais literais, o que inclui quebras de linha.
 5. Apenas caracteres pertencentes à Tabela
 [ASCII](https://www.ascii-code.com/pt "Tabela ASCII") são suportados. Os demais gerarão
 *comportamentos indefinidos*.
+
+6. Sem suporte para blocos `do end`. Isso ocorre por conta da presença de `do` em múltiplas
+declarações de blocos, o que dificulta sua distinção.

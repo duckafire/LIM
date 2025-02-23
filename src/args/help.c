@@ -93,6 +93,9 @@ static void help_with_arg(char *arg){
 			N
 			"5 - Only characters from ASCII Table are supported. The use of other will" N
 			"    generate undefined behavior. See too: https://www.ascii-code.com" N
+			N
+			"6 - No support to `do end` blocks. This is due to the presence of `do` in multiple" N
+			"    block declarations, which makes it difficult to distinguish them." N
 		);
 	}
 	if(flag_cmp(arg, HELP_ARG_HEADER)){
