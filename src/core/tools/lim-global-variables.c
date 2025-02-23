@@ -6,30 +6,26 @@
 struct Lim_Global_Variables lim;
 
 void lim_init_env(void){
-	lim.files.source                    = NULL;
-	lim.files.destine                   = NULL;
-	lim.files.header_lim                = NULL;
+	lim.files.source              = NULL;
+	lim.files.destine             = NULL;
+	lim.files.header_lim          = NULL;
 
-	lim.buffers.destine_file            = NULL;
+	lim.env_buf.destine_file      = NULL;
 
-	lim.buffers.root.scope_func_pointer = NULL;
-	lim.buffers.root.scope_func_address = NULL;
+	lim.env_buf.scope_fpointer    = NULL;
+	lim.env_buf.scope_faddress    = NULL;
 	
-	lim.buffers.root.lib_func           = NULL;
+	lim.env_buf.lib_func          = NULL;
+	lim.env_buf.var               = NULL;
+	lim.env_buf.func              = NULL;
+	lim.env_buf.special           = NULL;
+	lim.env_buf.func_from_lua     = NULL;
+	lim.env_buf.table_from_lua    = NULL;
+	lim.env_buf.func_from_header  = NULL;
+	lim.env_buf.table_from_header = NULL;
 	
-	lim.buffers.root.global_func        = NULL;
-	lim.buffers.root.global_var_tab     = NULL;
-	
-	lim.buffers.root.func_from_lua      = NULL;
-	lim.buffers.root.table_from_lua     = NULL;
-	
-	lim.buffers.root.func_from_header   = NULL;
-	lim.buffers.root.table_from_header  = NULL;
-	
-	lim.buffers.local.env_quant         = 0;
-	lim.buffers.local.stack_top         = NULL;
-
-	lim.buffers.for_loop_stack_top      = NULL;
+	lim.env_buf.lenv_quant        = 0;
+	lim.env_buf.lenv_stack_top    = NULL;
 }
 
 void lim_free_env(void){
@@ -65,39 +61,37 @@ void lim_free_env(void){
 	qee_free_queue(lim.header_partitions.table_list);
 
 
-	if(lim.buffers.destine_file != NULL)
-		fclose(lim.buffers.destine_file);
+	if(lim.env_buf.destine_file != NULL)
+		fclose(lim.env_buf.destine_file);
 
-	if(lim.buffers.root.scope_func_pointer != NULL)
-		fclose(lim.buffers.root.scope_func_pointer);
+	if(lim.env_buf.scope_fpointer != NULL)
+		fclose(lim.env_buf.scope_fpointer);
 
-	if(lim.buffers.root.scope_func_address != NULL)
-		fclose(lim.buffers.root.scope_func_address);
+	if(lim.env_buf.scope_faddress != NULL)
+		fclose(lim.env_buf.scope_faddress);
 
-	qee_free_queue(lim.buffers.root.lib_func);
-	qee_free_queue(lim.buffers.root.global_func);
-	qee_free_queue(lim.buffers.root.global_var_tab);
-	qee_free_queue(lim.buffers.root.func_from_lua);
-	qee_free_queue(lim.buffers.root.table_from_lua);
-	qee_free_queue(lim.buffers.root.func_from_header);
-	qee_free_queue(lim.buffers.root.table_from_header);
+	qee_free_queue(lim.env_buf.lib_func);
+	qee_free_queue(lim.env_buf.var);
+	qee_free_queue(lim.env_buf.func);
+	qee_free_queue(lim.env_buf.special);
+	qee_free_queue(lim.env_buf.func_from_lua);
+	qee_free_queue(lim.env_buf.table_from_lua);
+	qee_free_queue(lim.env_buf.func_from_header);
+	qee_free_queue(lim.env_buf.table_from_header);
 
-	Func_Env_Stack *cur, *below;
-	for(cur = lim.buffers.local.stack_top; cur != NULL; cur = below){
-		qee_free_queue(cur->local_func);
-		qee_free_queue(cur->local_var_tab);
-		qee_free_queue(cur->parameter);
+	Local_Env *cur, *below;
+	for(cur = lim.env_buf.lenv_stack_top; cur != NULL; cur = below){
+		fclose(cur->content);
+
+		free(cur->save_local_ident);
+		free(cur->save_parameter);
+		free(cur->save_for_loop);
+
+		qee_free_queue(cur->var);
+		qee_free_queue(cur->func);
+		qee_free_queue(cur->special);
 
 		below = cur->below;
 		free(cur);
-	}
-
-	For_Loop_Stack *cur1, *below1;
-	for(cur1 = lim.buffers.for_loop_stack_top; cur1 != NULL; cur1 = below1){
-		qee_free_queue(cur1->idents);
-		free(cur1->save_state);
-
-		below1 = cur1->below;
-		free(cur1);
 	}
 }

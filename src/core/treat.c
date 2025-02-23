@@ -10,74 +10,54 @@
 #include "tools/verbose.h"
 #include "check-content.h"
 #include "treat.h"
-#include "ident-man.h"
+#include "layer-env.h"
+#include "nick-man.h"
 
 static char *gident_nick, *gident, *gtable_key; // Global
 static DECLARE_TOKEN dtoken = DT_NULL;
 static bool space_is_mandatory = false;
-static unsigned short no_block_layer = 0;
 
-struct { bool start_declare; bool expect_comma; } locald = {false, false};
-struct { bool start_declare; bool parameter_end; }functd = {false, false};
-struct { unsigned short height; Layer_Type *type; }layer = {0, NULL};
-struct { bool start_declare, expect_comma, kw_placed; } for_loop = {false, false};
+struct { bool start_declare; bool expect_comma; }       locald = {false, false};
+struct { bool start_declare; bool parameter_end; }      functd = {false, false};
+struct { bool start_declare, expect_comma, kw_placed; } floopd = {false, false};
 
-#define IS_ROOT    (layer.height == 0)
 #define IS_FPARAM  (functd.start_declare && !functd.parameter_end)
 #define FORMAT(tk) ((tk == NULL) ? "%s" : "%s%s")
 #define MIN(a, b)  ((a < b) ? a : b)
 
-#define BUF_FUNC     ((IS_ROOT) ? &(lim.buffers.root.global_func)    : &(lim.buffers.local.stack_top->local_func))
-#define BUF_VAR_TAB  ((IS_ROOT) ? &(lim.buffers.root.global_var_tab) : &(lim.buffers.local.stack_top->local_var_tab))
-#define BUF_FOR_LOOP ((IS_ROOT) ? &(lim.buffers.root.global_for_loop): &(lim.buffers.local.stack_top->local_for_loop))
-#define CTT_BUF      ((IS_ROOT) ? lim.buffers.destine_file : lim.buffers.local.stack_top->content)
-
-void finish_treatment(void){
-	while(lim.buffers.local.stack_top != NULL){
-		pverbose(V_WARNING, "function end not found.");
-		drop_local_environment();
-	}
-}
+#define BUF_LIB_FUNC &(lim.env_buf.lib_func)
+#define BUF_VAR      ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.var)       : &(lim.env_buf.lenv_stack_top->var))
+#define BUF_FUNC     ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.func)      : &(lim.env_buf.lenv_stack_top->func))
+#define BUF_SPECIAL  ((lim.env_buf.lenv_quant == 0) ? &(lim.env_buf.special)   : &(lim.env_buf.lenv_stack_top->special))
+#define BUF_CONTENT  ((lim.env_buf.lenv_quant == 0) ? lim.env_buf.destine_file : lim.env_buf.lenv_stack_top->content)
 
 void treat_const(char *str){
 	const bool is_local = (strcmp(str, "local")    == 0);
 	const bool is_funct = (strcmp(str, "function") == 0);
 	const bool is_floop = (strcmp(str, "for")      == 0);
-	const bool is_ifels = (strcmp(str, "if")       == 0);
-	const bool is_while = (strcmp(str, "while")    == 0);
-	const bool is_endkw = (strcmp(str, "end")      == 0);
 
 	gident     = str;
 	gtable_key = NULL;
 
 
-	if(is_funct || is_floop || is_ifels || is_while){
-		no_block_layer++;
-
-	}else if(is_endkw && no_block_layer > 0){
-		pop_nicknames_env_to_for_loop(no_block_layer);
-		no_block_layer--;
-	}
-
-
-	if(!IS_FPARAM && layer.height > 0){
-		if(is_floop || is_ifels || is_while)
-			update_layer(false);
-
-		else if(is_endkw && downdate_layer())
-			pop_function_declaration();
-	}
+	// checking included
+	add_layer_env(gident, NULL);
+	pop_layer_env(gident);
 
 
 	// parameters
 	if(IS_FPARAM){
-		fprintf(CTT_BUF, "%s", gident);
-		search_func_param_end();
+		fprintf(BUF_CONTENT, "%s", gident);
+		search_fparam_end();
+
+		if(functd.parameter_end)
+			space_is_mandatory = false;
 
 	// declaration "bases"
 	}else if(dtoken == DT_LIB_FUNC && gident[0] == '('){
-		start_function_declaration(true);
-		search_func_param_end();
+		declare_function(true);
+		add_layer_env(NULL, NULL);
+		search_fparam_end();
 
 	}else if(dtoken == DT_LOCAL && is_funct){
 		dtoken = DT_FUNCTION;
@@ -97,19 +77,18 @@ void treat_const(char *str){
 		default_const_treatment(str);
 
 	// for loop
-	}else if(for_loop.start_declare){
+	}else if(floopd.start_declare){
 		default_const_treatment(str);
 
-		if(for_loop.expect_comma && str[0] == ',')
-			for_loop.expect_comma = false;
+		if(floopd.expect_comma && str[0] == ',')
+			floopd.expect_comma = false;
 		else
-			for_loop.start_declare = false;
+			floopd.start_declare = false;
 
 	}else if(is_floop){
-		new_nicknames_env_to_for_loop(no_block_layer);
-		for_loop.start_declare = true;
-		for_loop.expect_comma  = false;
-		for_loop.kw_placed     = false;
+		floopd.start_declare = true;
+		floopd.expect_comma  = false;
+		floopd.kw_placed     = false;
 	
 	// default
 	}else{
@@ -129,8 +108,9 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(dtoken == DT_FUNCTION || dtoken == DT_LIB_FUNC){
-		check_if_space_is_need("f");
-		start_function_declaration(false);
+		check_mandatory_space("f");
+		declare_function(false);
+		add_layer_env(NULL, gtable_key);
 		return;
 
 	}else if(dtoken == DT_LOCAL){
@@ -140,42 +120,41 @@ void treat_ident(char *_ident, char *_table_key){
 	}
 
 	if(IS_FPARAM){
-		gident_nick = save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_PARAM, &(lim.buffers.local.stack_top->parameter));
-		fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
+		gident_nick = save_ident(gident, NULL, NICK_PARAM, BUF_SPECIAL);
+		fprintf(BUF_CONTENT, FORMAT(gtable_key), gident_nick, gtable_key);
 		return;
 	}
 
-	if(for_loop.start_declare){
-		if(!for_loop.kw_placed){
-			for_loop.kw_placed = true;
+	if(floopd.start_declare){
+		if(!floopd.kw_placed){
+			floopd.kw_placed = true;
 			default_const_treatment("for "); // space included
 		}
 
-		if(!for_loop.expect_comma){
-			fprintf(CTT_BUF, "%s", save_for_loop_ident_in_buffer(gident));
+		if(!floopd.expect_comma){
+			fprintf(BUF_CONTENT, "%s", save_ident(gident, NULL, NICK_FOR_LOOP, BUF_SPECIAL));
 			space_is_mandatory = true;
-			for_loop.expect_comma = true;
+			floopd.expect_comma = true;
 			return;
 		}
 
-		for_loop.start_declare = false;
+		floopd.start_declare = false;
 	}
 
 	// use or call
-	check_if_space_is_need(gident);
-	set_if_space_is_mandatory(gident);
+	check_mandatory_space(gident);
 
 	if(strcmp(gident, "_G") == 0){
-		fprintf(CTT_BUF, "_.%s", &(gtable_key[1]) );
+		fprintf(BUF_CONTENT, "_.%s", &(gtable_key[1]) );
 		return;
 	}
 
 	if(locald.start_declare)
-		gident_nick = save_ident_in_buffer(gident, gtable_key, IS_ROOT, NICK_IDENT, BUF_VAR_TAB);
+		gident_nick = save_ident(gident, gtable_key, NICK_IDENT, BUF_VAR);
 	else
-		gident_nick = get_nickname_of(gident, IS_ROOT);
+		gident_nick = get_nickname_of(gident);
 
-	fprintf(CTT_BUF, FORMAT(gtable_key), gident_nick, gtable_key);
+	fprintf(BUF_CONTENT, FORMAT(gtable_key), gident_nick, gtable_key);
 }
 
 void treat_standard(char *_ident, char *_table_key, Queue **buf){
@@ -194,15 +173,14 @@ void treat_standard(char *_ident, char *_table_key, Queue **buf){
 	}
 
 
-	nick = get_nickname_of(full, IS_ROOT);
+	nick = get_nickname_of(full);
 	if(strcmp(nick, full) == 0) // nickname not defined
-		nick = save_ident_in_buffer(full, NULL, IS_ROOT, NICK_STD_HDR, buf);
+		nick = save_ident(full, NULL, NICK_STD_HDR, buf);
 
 
-	check_if_space_is_need(nick);
-	set_if_space_is_mandatory(nick);
+	check_mandatory_space(nick);
 
-	fprintf(CTT_BUF, "%s", nick);
+	fprintf(BUF_CONTENT, "%s", nick);
 
 	if(allocad)
 		free(full);
@@ -210,85 +188,44 @@ void treat_standard(char *_ident, char *_table_key, Queue **buf){
 	dtoken = DT_NULL;
 	locald.start_declare = locald.expect_comma  = false;
 	functd.start_declare = functd.parameter_end = false;
+	floopd.start_declare = floopd.expect_comma  = floopd.kw_placed = false;
 }
 
 static void default_const_treatment(char *str){
-	check_if_space_is_need(str);
-	set_if_space_is_mandatory(str);
+	check_mandatory_space(str);
 
 	dtoken = DT_NULL;
-	fprintf(CTT_BUF, "%s", str);
+	fprintf(BUF_CONTENT, "%s", str);
 }
 
-
-static void update_layer(bool is_func){
-	pverbose(V_NEW_THING, ++layer.height, "Layer block");
-
-	Layer_Type *new;
-
-	new = malloc(sizeof(Layer_Type));
-	new->is_func_layer = is_func;
-
-	if(layer.type == NULL){
-		new->below = NULL;
-		layer.type = new;
-		return;
-	}
-
-	new->below = layer.type;
-	layer.type = new;
-}
-
-static bool downdate_layer(void){
-	pverbose(V_END_THING, layer.height--, "Layer block");
-
-	Layer_Type *tmp;
-	tmp = layer.type;
-	layer.type = layer.type->below;
-
-	const bool is_func = tmp->is_func_layer;
-	free(tmp);
-
-	pop_nicknames_env_to_for_loop(layer.height);
-	return is_func;
-}
-
-
-static void start_function_declaration(bool is_anony){
+static void declare_function(bool is_anony){
 	if(is_anony){
-		if(space_is_mandatory)
-			fprintf(CTT_BUF, " function%s", gident);
+		if(space_is_mandatory) // gident == "(*"
+			fprintf(BUF_CONTENT, " function%s", gident);
 		else
-			fprintf(CTT_BUF, "function%s", gident);
+			fprintf(BUF_CONTENT, "function%s", gident);
 
 	}else{
 		if(dtoken == DT_LIB_FUNC){
 			if(gtable_key == NULL)
-				fprintf(CTT_BUF, "function %s", save_lib_func_in_buffer(gident));
+				fprintf(BUF_CONTENT, "function %s", save_ident(gident, NULL, NICK_LIB_FUNC, BUF_LIB_FUNC));
 			else
-				fprintf(CTT_BUF, "function %s%s", get_nickname_of(gident, IS_ROOT), gtable_key);
+				fprintf(BUF_CONTENT, "function %s%s", get_nickname_of(gident), gtable_key);
 
 		}else{
-			fprintf(CTT_BUF, "local function %s", save_ident_in_buffer(gident, NULL, IS_ROOT, NICK_IDENT, BUF_FUNC));
+			fprintf(BUF_CONTENT, "local function %s", save_ident(gident, NULL, NICK_IDENT, BUF_FUNC));
 
 			if(gtable_key != NULL)
 				pverbose(V_WARNING, "An invalid table key was discarted:", "local function", gident, ">", gtable_key, "<", NULL);
 		}
 	}
 
-	update_layer(true);
-
 	functd.start_declare = true;
 	functd.parameter_end = false;
-	new_local_environment( (!is_anony && gtable_key != NULL && strchr(gtable_key, ':') != NULL) );
-
-	save_local_parameter_state();
-
 	dtoken = DT_NULL;
-	pverbose(V_NEW_THING, lim.buffers.local.env_quant, "Function declaration");
 }
 
-static void search_func_param_end(void){
+static void search_fparam_end(void){
 	for(short i = 0; gident[i] != '\0'; i++){
 		if(gident[i] == ')'){
 			functd.parameter_end = true;
@@ -297,25 +234,14 @@ static void search_func_param_end(void){
 	}
 }
 
-static void pop_function_declaration(void){
-	pverbose(V_END_THING, lim.buffers.local.env_quant, "Function declaration");
-
-	restart_local_parameter_nicknames();
-	drop_local_environment();
-}
-
-
-static void check_if_space_is_need(char *str){
+static void check_mandatory_space(char *str){
 	char firstc = str[0];
-
-	if(space_is_mandatory && (firstc == '_' || isalnum(firstc)))
-		fprintf(CTT_BUF, " ");
-
-	space_is_mandatory = false;
-}
-
-static void set_if_space_is_mandatory(char *str){
 	char lastc = str[ strlen(str) - 1 ];
 
+	// check now
+	if(space_is_mandatory && (firstc == '_' || isalnum(firstc)))
+		fprintf(BUF_CONTENT, " ");
+
+	// set to future checking
 	space_is_mandatory = (lastc == '_' || isalnum(lastc));
 }

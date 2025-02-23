@@ -7,7 +7,7 @@
 #include "process-master.h"
 #include "check-content.h"
 #include "treat.h"
-#include "ident-man.h"
+#include "nick-man.h"
 
 static char c;
 
@@ -17,7 +17,7 @@ void read_source_file(void){
 	char *tmp = NULL;
 
 	lim.files.source = fopen(lim.files.source_name, "r");
-	lim.buffers.destine_file = tmpfile();
+	lim.env_buf.destine_file = tmpfile();
 
 	start_nickname_buffers();
 
@@ -56,7 +56,6 @@ void read_source_file(void){
 		is_special_char(c, &tmp);
 	}
 
-	finish_treatment();
 	free_nickname_buffers();
 	string_set(&tmp, STR_END);
 
@@ -94,11 +93,11 @@ void build_destine_file(void){
 
 	fprintf(lim.files.destine, "local _={}\ndo ");
 
-	get_and_put_from_buffer(lim.header_partitions.code_scope,    true,  "'Code scope'", "'Code scope' partition, from 'header.lim'");
-	get_and_put_from_buffer(lim.buffers.root.scope_func_pointer, false, "Functions scope", "Functions, from Lua and 'header.lim', that were used");
-	get_and_put_from_buffer(lim.buffers.root.scope_func_address, true,  NULL, NULL);
+	get_and_put_from_buffer(lim.header_partitions.code_scope, true,  "'Code scope'", "'Code scope' partition, from 'header.lim'");
+	get_and_put_from_buffer(lim.env_buf.scope_fpointer,       false, "Functions scope", "Functions, from Lua and 'header.lim', that were used");
+	get_and_put_from_buffer(lim.env_buf.scope_faddress,       true,  NULL, NULL);
 
-	get_and_put_from_buffer(lim.buffers.destine_file, false, "Compacted content", "Compacted content from input file");
+	get_and_put_from_buffer(lim.env_buf.destine_file, false, "Compacted content", "Compacted content from input file");
 
 	pverbose(V_INSERTING, "End of 'do end' block + reference to library table");
 	fprintf(lim.files.destine, " end\nlocal %s=_", lim.flags.lib_name);

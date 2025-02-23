@@ -5,21 +5,21 @@
 #include <stdbool.h>
 #include "queue.h"
 
-typedef struct For_Loop_Stack{
-	Queue *idents;
-	char *save_state;
-	unsigned short layer_base;
-	struct For_Loop_Stack *below;
-}For_Loop_Stack;
+typedef enum{
+	LET_NULL,
+	LET_FUNC,
+	LET_METHOD, // like function, but with `self` included
+	LET_REPEAT,
+	LET_OTHER,
+}Local_Env_Type;
 
-typedef struct Func_Env_Stack{
+typedef struct Local_Env{
 	FILE *content;
-	Queue *local_func;
-	Queue *local_var_tab;
-	Queue *parameter;
-	bool is_method; // register `self`
-	struct Func_Env_Stack *below;
-}Func_Env_Stack;
+	char *save_local_ident, *save_parameter, *save_for_loop;
+	Queue *var, *func, *special;
+	Local_Env_Type type;
+	struct Local_Env *below;
+}Local_Env;
 
 struct Lim_Global_Variables{
 	struct{
@@ -44,23 +44,19 @@ struct Lim_Global_Variables{
 		Queue *table_list;
 	}header_partitions;
 
+
 	struct{
 		FILE *destine_file;
-		For_Loop_Stack *for_loop_stack_top;
+		FILE *scope_fpointer, *scope_faddress;
 
-		struct{
-			FILE *scope_func_pointer, *scope_func_address;
-			Queue *lib_func;
-			Queue *global_func, *global_var_tab;
-			Queue *func_from_lua, *table_from_lua;
-			Queue *func_from_header, *table_from_header;
-		}root;
+		Queue *lib_func, *var, *func, *special;
 
-		struct{
-			unsigned short env_quant;
-			Func_Env_Stack *stack_top;
-		}local;
-	}buffers;
+		Queue *func_from_lua, *table_from_lua;
+		Queue *func_from_header, *table_from_header;
+
+		unsigned short lenv_quant;
+		Local_Env *lenv_stack_top;
+	}env_buf;
 };
 
 extern struct Lim_Global_Variables lim;
