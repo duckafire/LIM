@@ -112,11 +112,11 @@ char* save_ident(char *ident, char *table_key, NICK_ID id, Queue **buf){
 
 		cur_nick = get_and_update_nick(nick_buf);
 
-	}else if(ident[1] == '\0'){ // ident == "_"
-		cur_nick = "__";
+	}else{
+		if(ident[1] == '\0') // ident == "_"
+			return "__";
 
-	}else{ // ident == "_*"
-		cur_nick = ident;
+		return ident; // ident == "_*"
 	}
 
 
@@ -178,6 +178,13 @@ static bool search_in_buffers(char *ident, short max, ...){
 }
 
 char* get_nickname_of(char *ident){
+	if(ident[0] == '_'){
+		if(ident[1] == '\0') // ident == "_"
+			return "__";
+
+		return ident; // ident == "_*"
+	}
+
 	if(lim.env_buf.lenv_quant > 0){
 		Local_Env *cur_lenv;
 
