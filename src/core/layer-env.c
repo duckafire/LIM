@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "tools/lim-global-variables.h"
+#include "tools/verbose.h"
 #include "tools/queue.h"
 #include "layer-env.h"
 #include "nick-man.h"
@@ -59,6 +60,9 @@ void add_layer_env(char *kw, char *tk){
 	save_nicknames_state(lenv);
 	lim.env_buf.lenv_quant++;
 
+	// after increment
+	pverbose(V_NEW_THING, lim.env_buf.lenv_quant, "Environment block");
+
 	if(type == LET_METHOD)
 		lenv->special = qee_create("self", NULL, "Sa", false);
 
@@ -82,6 +86,10 @@ void pop_layer_env(char *kw, bool force){
 
 	lenv = lim.env_buf.lenv_stack_top;
 	lim.env_buf.lenv_stack_top = lenv->below;
+
+	// before decrement
+	if(!force)
+		pverbose(V_END_THING, lim.env_buf.lenv_quant, "Environment block");
 
 	restart_nicknames_state(lenv);
 	lim.env_buf.lenv_quant--;
@@ -116,6 +124,8 @@ void pop_layer_env(char *kw, bool force){
 void finish_forgot_env(void){
 	Local_Env *cur;
 
-	while( (cur = lim.env_buf.lenv_stack_top) != NULL )
+	while( (cur = lim.env_buf.lenv_stack_top) != NULL ){
+		pverbose(V_WARNING, "Environment end not found", NULL);
 		pop_layer_env(NULL, true);
+	}
 }
