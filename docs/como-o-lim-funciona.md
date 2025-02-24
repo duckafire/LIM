@@ -57,7 +57,7 @@ peculiar quanto o deste. Nesse artigo, pretendo explicar **todos** os processos 
 como ocorrem, quando ocorrem, porque ocorrem e afins.
 
 Esse conteúdo é destinado a todo e qualquer indivíduo que, por algum motivo, decida
-estudar, modificar ou aprimorar o código deste projeto, podendo também ser aproveitado
+estudar, modificar ou aprimorar o código deste projeto. Podendo também ser aproveitado
 por usuários entusiastas que queiram mais informações sobre como as coisas ocorrem
 por baixo dos panos.
 
@@ -132,7 +132,7 @@ de depuração. Geralmente envolve um arquivo principal e "pequenas" dependênci
 algoritmos.
 
 > [!NOTE]
-> `debug-common.h` contém algumas macros "facilitadoras", utilizadas em `main.c`.
+> `debug-common.h` contém algumas macros "facilitadoras", utilizadas por `main.c`.
 
 Agora que o intuito desse padrão foi compreendido, chegou o momento de entendermos como
 o algoritmo responsável por manipular tais arquivos funciona. Este é formado pelos
@@ -196,7 +196,7 @@ fonte necessário para compilar o Lim.
 > [Por trás dos panos](#por-trás-dos-panos).
 
 Seu modelo de arquitetura, nomeado como *Padrão de Arquitetura em Pirâmide*, foi
-desenvolvido com o intuito cobrir os seguintes pontos:
+desenvolvido com o intuito de cobrir os seguintes pontos:
 
 * Limitar o "alcance" de interação entre arquivos, de modo a evitar que arquivos "olhem
 para trás".
@@ -297,7 +297,7 @@ vamos dar uma olhada nesse subdiretório:
    +-> core/
          +-> check-content.c/h
          +-> nick-man.c/h
-         +-> layer_env.c/h
+         +-> layer-env.c/h
          +-> process-master.c/h
          +-> treat.c/h
          +-> tools/
@@ -308,8 +308,9 @@ vamos dar uma olhada nesse subdiretório:
                +-> verbose.c/h
 ```
 
-Agora que você adquiriu conhecimento sobre **todo** o conteúdo de `./src/`, iremos navegar
-dentro de seus subdiretórios, em busca de compreender o funcionamento de seu interior.
+Agora que adquirimos conhecimento sobre **todo** o conteúdo contido em `./src/`, chegou a
+hora de navegarmos em seus subdiretório. Adentraremos essa aventura visando compreender o
+funcionamento de seus algoritmos e, consequentemente, entender de que modo o Lim funciona.
 
 ## Cabeçalhos do *Cmake*
 
@@ -325,19 +326,19 @@ Sabendo disso, esse diretório foi criado para armazenar, tanto os "arquivos de 
 (*criados pelo Cmake; e ignorados pelo Git*).
 
 > [!NOTE]
-> Use a extensão `.h.in` em "arquivos de entrada".
+> Use a extensão `.h.in` em "arquivos de entrada" e `.h` para "arquivos de saída".
 
 ## O grande maestro
 
 Assim como todo projeto escrito em *C*, este também possui uma função `main`, localizada no
-"arquivo mestre" `./src/main.c` (*sendo a única presente no arquivo*). Seu código é mínimo,
-mas seu trabalho é de extrema importância, consistindo em:
+"arquivo mestre" `./src/main.c` (*sendo a única presente nele*). Seu código é mínimo, mas
+seu trabalho é de extrema importância, consistindo em:
 
 1. Capturar os argumentos do programa.
 2. Inicializar os membros de estruturas globais.
 3. Adicionar funções de "liberação" à pilha da função `atexit`.
 4. Fazer a *comunicação* entre diferentes algoritmos.
-5. Chamar "funções centrais", as quais, majoritariamente, originam-se de outros mestres.
+5. Chamar "funções centrais", as quais, majoritariamente, originam-se de outros "mestres".
 
 ## Verificando e validando argumentos
 
@@ -345,9 +346,10 @@ Chegou o momento de tratar de um algoritmo mais complexo. Falaremos agora sobre 
 responsável por verificar e validar os argumentos passados ao Lim, a qual localiza-se em
 `./src/args/`.
 
-É de grande importância entendermos todo o contexto desse conteúdo antes de realmente
-partirmos para a explicação desse algoritmo, por conta disso, iremos navegar por este
-subdiretório, visando compreendê-lo.
+É de grande importância que obtenhamos conhecimento sobre todo o contexto de seu interior
+para que tornemo-nos capazes de compreender seu algoritmo como um todo, por conta disso,
+navegaremos por todos os arquivos contidos em `./src/args/` antes de abordar o
+funcionamento de seu algoritmo.
 
 ### Mensagens fatais
 
@@ -359,13 +361,13 @@ arquivos de cabeçalho, formados por macros padronizadas, onde ambas:
 
 Elas estão divididas em dois grupos:
 
-* `error.h`: encerra o programa após um dado erro durante a verificação dos argumentos.
+* `error.h`: encerra o programa após um dado erro, durante a verificação dos argumentos.
 Cada macro possui seu próprio código de erro. Veja:
 [Códigos de erro](https://github.com/duckafire/lim/blob/main/docs/codigos-de-erro.md).
 
 * `info.h`: encerra o programa após uma *bandeira informativa* ser encontrada. Todas as
-macros encerram o programa com sucesso (`0`). Veja:
-[Bandeiaras](https://github.com/duckafire/lim/blob/main/docs/bandeiras.md).
+macros encerram o programa com sucesso (*`0`*). Veja:
+[Bandeiras](https://github.com/duckafire/lim/blob/main/docs/bandeiras.md).
 
 A estruturas de tais macros **assemelha-se** a seguinte:
 
@@ -392,7 +394,7 @@ Seu interior é compostos por alguns poucos arquivos, responsáveis pela:
 * `./src/args/flags/list.h`: Declaração das bandeiras, no formato de constantes de
 pré-processamento (*ambas prefixadas por `FLAG_`*).
 
-* `./src/args/flags/cmp.c/h`: Declaração da "função de comparação" (`flag_cmp`).
+* `./src/args/flags/cmp.c/h`: Declaração da "função de comparação" (*`flag_cmp`*).
 
 Como sabemos, Lim possui duas versões (*"curta" e "longa"*) para todas as suas bandeiras,
 logo, faz-se necessário declarar uma constante para cada, entretanto, visto que as
@@ -419,18 +421,18 @@ bool flag_cmp(char *arg, char *f, char *flag){
 }
 ```
 
-> [!NOTE]
-> Veja esse exemplo de uso:
+> [!TIP]
+> Observe esse exemplo de uso:
 >
 > ``` c
-> if( flag_cmp("arg-foo", FLAG_FOO) );
+> if( flag_cmp("arg-foo", FLAG_FOO) )
 > 	puts("Foo");
 > ```
 
 Dito isso, podemos concluir que:
 
-* As "representações gráficas" das bandeiras são usadas apenas em comparações (entre elas e
-uma dado argumento).
+* As "representações gráficas" das bandeiras são usadas apenas em comparações
+(*entre elas e uma dado argumento*).
 
 * Ambas as versões de uma mesma bandeira são detidas dentro da mesma constante de
 pré-processamento.
@@ -440,9 +442,9 @@ pré-processamento.
 
 > [!IMPORTANT]
 > Vale ressaltar que, além das bandeiras do Lim, constantes para palavras-chave de
-> bandeiras também são definidas em `flags/list.h`, como é o caso de (`l`) `list`,
-> palavra-chave da bandeira (`-h`) `--help`. Ambas seguem o mesmo padrão de "declaração
-> conjunta".
+> bandeiras também são definidas em `flags/list.h`, como é o caso de (*`l`*) `list`,
+> palavra-chave da bandeira (*`-h`*) `--help`. Ambas seguem o mesmo padrão de "declaração
+> conjunta". Elas são prefixadas por `<FLAG-NAME> + _ARG_ + <ARG_NAME>`.
 
 ### Mensagens de auxílio
 
@@ -451,9 +453,9 @@ contido em `help.c/h`, que, como é de se imaginar, é voltado à ajuda
 (*durante a execução do programa*).
 
 > [!TIP]
-> Tais informações podem ser acessadas por meio da utilização da bandeira (`-h`) `--help`.
-> Para obter mais informações sobre acesse:
-> [Bandeiaras](https://github.com/duckafire/lim/blob/main/docs/bandeiras.md).
+> Tais informações podem ser acessadas por meio da utilização da bandeira (*`-h`*)
+> `--help`. Para obter mais informações sobre acesse:
+> [Bandeiras](https://github.com/duckafire/lim/blob/main/docs/bandeiras.md).
 
 As **funções** presentes nesses arquivos seguem o mesmo conceito das macros presentes em
 `./src/args/flags/info.h`, sendo eles:
@@ -461,7 +463,7 @@ As **funções** presentes nesses arquivos seguem o mesmo conceito das macros pr
 * Exibir uma mensagem.
 * Encerrar o programa com sucesso.
 
-> Com o acréscimo de verificarem o conteúdo recebido.
+Com o acréscimo de verificarem o conteúdo recebido.
 
 > [!NOTE]
 > Por conta da arquitetura desse projeto, `help.c/h` não pode ser posicionado dentro de
@@ -469,8 +471,8 @@ As **funções** presentes nesses arquivos seguem o mesmo conceito das macros pr
 
 ### O processo em si
 
-Enfim, chegou o momento de entendermos esse algoritmo. Mas primeiro, é necessário
-conhecermos sua estrutura global e seus membros:
+Enfim, chegou o momento de entendermos esse algoritmo. Primeiro vamos conhecer sua
+estrutura globais:
 
 ``` c
 struct Args_Flags_And_Status{
@@ -497,7 +499,7 @@ struct Args_Flags_And_Status{
 extern struct Args_Flags_And_Status args;
 ```
 
-* `index`: último índice do vetor de argumentos (`argv`).
+* `index`: último índice do vetor de argumentos (*`argv`*).
 * `**value`: ponteiro para o vetor de argumentos.
 * `content_version`: cadeia de caracteres contida em `LIM_VERSION`.
 * `content_shared`: indica se os valores armazenados nesta estrutura foram compartilhados
@@ -540,7 +542,7 @@ argumentos passado ao Lim, onde:
 
 #### Buscando o arquivo de entrada
 
-Caso o programa não seja interrompido na etapa anterior, será intendido que a intensão do
+Caso o programa não seja interrompido na etapa anterior, será entendido que a intensão do
 usuário é compactar um arquivo. Então o fluxo do programa retornará a função
 `check_program_arguments`, que chamará a função de verificação
 `void search_and_set_source_file(void)`.
@@ -563,9 +565,10 @@ Caso algumas dessas afirmações seja verdadeira, um respectivo erro fatal ocorr
 > [!WARNING]
 > O nome do arquivo de origem não deve começar com '-'.
 
-Em meio a esses processos, o membro `args.files_name.source` receberá o primeiro argumento
-passado ao Lim, que será usado para abrir o arquivo entrada (*para leitura*) em processos
-posteriores.
+> [!NOTE]
+> Em meio a esses processos, o membro `args.files_name.source` receberá o primeiro 
+> argumento passado ao Lim, que será usado para abrir o arquivo entrada (*para leitura*) em 
+> processos posteriores.
 
 #### Verificando os demais argumentos
 
@@ -574,9 +577,9 @@ a `check_program_arguments`, que, dessa vez, chamará a função de verificaçã
 `void read_other_arguments(void)`.
 
 `read_other_arguments` foi criada para verificar os demais argumentos que foram passados
-ao Lim, mas isso, primeiro ela verifica se há mais algum argumento além do primeiro, em
+ao Lim, para isso, primeiro, ela verifica se há mais algum argumento além do primeiro, em
 caso negativo, ela se interromperá e fazendo o fluxo retornar a `check_program_arguments`,
-em caso positivo, ele fará o seguinte.
+em caso positivo, ele fará o seguinte:
 
 1. Iniciará um *loop* para ler os argumentos (*partindo do segundo*).
 2. Comparará cada um dos argumentos restantes com todas as bandeiras do programa.
@@ -600,10 +603,10 @@ de referência (*para a biblioteca*) são argumentos opcionais, entretanto eles 
 indispensáveis para os processos do Lim, por conta disso, faz-se necessário que tal
 programa defina um "valor padrão" para esses campos.
 
-Sabendo disso, após a chamada da função de verificação `read_other_arguments`, em
-`check_program_arguments`, é verificado se tais valores foram especificados e corretamente
-salvos pelo processo anterior, caso não, algumas funções serão chamadas para executar
-um tratamento padrão.
+Sabendo disso, após a chamada da função de verificação `read_other_arguments`,
+(*em `check_program_arguments`*), é verificado se tais valores foram especificados e
+corretamente salvos pelo processo anterior, caso não, algumas funções serão chamadas para
+executar um tratamento padrão.
 
 ##### Arquivo de destino
 
@@ -628,7 +631,7 @@ argumento.
 
 O algoritmo presente em `set_lib_name` efetua os seguintes processos:
 
-1. O conteúdo de seu argumento é copiado para uma variável local.
+1. O conteúdo de seu argumento é copiado para um endereço dinâmico.
 2. Caso o conteúdo possua a extensão `.lua`, a mesma será removida.
 3. Se houver um caminho embutido no conteúdo, tal caminho será removido.
 4. **Se**:
@@ -660,22 +663,13 @@ encerrará, fazendo o fluxo voltar para a função `main`.
 
 #### Compartilhando valores
 
-De volta a `./src/main.c`, podemos observar uma importante tarefa, que está prestes a ser
+De volta a `./src/main.c`, podemos observar que uma importante tarefa está prestes a ser
 executada: as informações principais armazenadas na estrutura global de `./src/args/` terão
 sua custodia dada à estrutura global de `./src/core/`.
-
-> [!IMPORTANT]
-> Essa ação faz-se necessária por conta da arquitetura desse projeto, veja:
-> [A arquitetura do projeto](#a-arquitetura-do-projeto).
 
 Junto a esse conjunto de atribuições, o valor de `args.content_shared` será atualizado
 para `true`, assim desabilitando a função de limpeza responsável por liberar a memória
 alocada para a estrutura de `./src/args/`.
-
-> [!NOTE]
-> **VERBOSE**: Ao fim dessa tarefa, uma mensagem exibindo o estado de definição das
-> bandeiras será imprimida. Veja mais sobre o *modo verboso* em:
-> [Modo verboso](#modo-verboso).
 
 ## *Buffers*
 
@@ -687,7 +681,7 @@ anterior, de modo a que variáveis e vetores tornem-se insuficientes para tal ta
 Tais dados podem ser divididos em dois tipos:
 
 1. Valores extremamente volumosos e imprevisíveis, que são (*opcionalmente*) formatados/
-filtrados de modo simples (*antes de sua gravação na memória*), exigidos apenas uma vez.
+filtrados de modo simples (*antes de sua gravação na memória*). Exigidos apenas uma vez.
 
 2. Dados majoritariamente curtos, mas numerosos, que necessitam ser capturados e isolados
 uns dos outros. São constantemente lido e requeridos.
@@ -695,9 +689,6 @@ uns dos outros. São constantemente lido e requeridos.
 Visto que a solução empregada a esses problemas é muito popular nos algoritmos seguintes,
 faremos uma pausa na explicação linear que estava ocorrendo e adentraremos nesse
 importantíssimo assunto.
-
-> [!NOTE]
-> *A explicação* continua a partir de: [Lendo o *header.lim*](#lendo-o-headerlim).
 
 ### Arquivos temporários
 
@@ -708,7 +699,7 @@ a filtros e, só então, salvas no *buffer*.
 Sabendo disso, organizei alguns pontos relacionados com tais dados:
 
 * Serão salvos linearmente, ou seja, na ordem em que foram capturados.
-* Não precisarão ser editadas.
+* Não precisarão ser editadas após sua escrita.
 * Nenhum algoritmo exigirá trechos de seu conteúdo.
 * Serão exigidos apenas uma vez e como um todo.
 * Exigirão um espaço dinâmico para que possam ser armazenados.
@@ -716,7 +707,7 @@ Sabendo disso, organizei alguns pontos relacionados com tais dados:
 Tendo isso em mente, pude concluir que a melhor forma de armazenar dados com estas
 características seria por meio de *arquivos temporários*, pois:
 
-* Eles expandem-se até onde o sistema operacional permitir.
+* Eles expandem-se dinamicamente.
 * Possuem uma *API* considerável em `stdio.h`.
 * São seguros quanto à memória.
 
@@ -732,8 +723,8 @@ Mas: *por que não armazenar essas informações diretamente no destino?*
 
 Agora que um dos "problemas" havia sido resolvido, bastava buscar uma solução para o outro.
 Este era um pouco mais complexo, já que seus dados precisariam ser gravados, lidos e
-obtidos em números imprevisíveis, logo seu meio de armazenamento deveria ser rápido,
-expansível e flexível (*para que pudesse ser empregado em múltiplas situações*).
+obtidos imprevisíveis vezes, logo seu meio de armazenamento deveria ser rápido, expansível
+e flexível (*para que pudesse ser empregado em múltiplas situações*).
 
 Baseado nisso, bastava encontrar a melhor estrutura de dados para que tal problema desaparecesse. Após algumas ideias, cheguei a conclusão de que **filas** seriam a melhor
 escolha, por conta de sua flexibilidade, lógica simples e maleabilidade.
@@ -758,7 +749,7 @@ escolha, por conta de sua flexibilidade, lógica simples e maleabilidade.
 Visto que a solução já estava em mãos, fazia-se necessários desenvolver uma estrutura para
 os itens, além de uma "mini *API*" para realizar operações com tais tipos compostos.
 
-Começando pela estrutura, temos:
+Sabendo disso, a seguinte estrutura foi construída:
 
 ``` c
 typedef struct Queue{
@@ -776,8 +767,8 @@ typedef struct Queue{
 	contexto, mas, geralmente, é o identificador de uma variável, tabela ou função extraída
 	do arquivo de entrada.
 	* `table_key`: para o caso de `ident` ser o identificador de uma tabela *em uso*,
-	tal vetor armazenará todo o conteúdo após `.` ou `:` (`foo.x`; `foo:draw()`), do
-	contrário armazenará `NULL`.
+	tal vetor armazenará todo o conteúdo após `.` ou `:` (*`foo.x -> .x`*), do contrário
+	armazenará `NULL`.
 	* `nick`: "versão" compactada de `ident` ou `NULL`, caso o contexto não exija
 	compactação.
 * Utilitários: usados pela "mini *API*" para realizar operações.
@@ -796,7 +787,7 @@ compreender o funcionamento da "mini *API*" que está armazenada em
 envolvendo filas.
 
 A primeira função que iremos ver é a
-`Queue* qee_create(char *nick, char *ident, char *table_key, bool is_const);`, que, como
+`Queue* qee_create(char *nick, char *ident, char *table_key, bool is_const)`, que, como
 seu nome dá a entender, é encarregada de criar um item de fila, além de inicializar seus
 membros, tanto com os argumentos que lhe foram passados, quanto com valores padrão.
 
@@ -820,7 +811,7 @@ Queue* qee_create(char *ident, char *table_key, char *nick, bool is_const){
 > ele não é o único, havendo também:
 >
 > ``` c
-> static bool qee_add_item_status;
+> static bool qee_add_item_return;
 > static bool qee_add_item_quant_upped;
 > static Queue *new_item;
 > static Queue *tmp_item;
@@ -837,15 +828,16 @@ Queue* qee_create(char *ident, char *table_key, char *nick, bool is_const){
 > }IS_DUPLIC;
 > ```
 >
-> Onde:
+> Onde suas macros indicam de que modo itens duplicados devem ser tratados,
+> respectivamente:
 >
-> * `QEE_DROP`: indica que itens duplicados devem ser descartados.
+> * `QEE_DROP`: devem ser descartados.
 >
-> * `QEE_UP_QUANT`: indica que itens duplicados devem ser descartados e suas "versões" já
-> presentes na fila devem ter seu membro `quantity` incrementado em `+1`.
+> * `QEE_UP_QUANT`: devem ser descartados e suas "versões" já presentes na fila devem ter
+> seu membro `quantity` incrementado em `+1`.
 >
-> * `QEE_INSERT`: indica que itens duplicados devem ser adicionados a fila, após os
-> similares já presentes na mesma. Não altera a quantidade de nenhum item.
+> * `QEE_INSERT`: devem ser adicionados a fila (*após os similares já presentes na mesma.*)
+> Não altera a quantidade de nenhum item.
 
 #### Adicionando
 
@@ -861,61 +853,60 @@ Esse conjunto de funções é responsável por duas coisas:
 
 Partindo do início, vamos entender tal grupo de funções:
 
-* Tudo inicia-se após a chamada de `qee_add_item`, onde os valores das seguintes variáveis
+1. Tudo inicia-se após a chamada de `qee_add_item`, onde os valores das seguintes variáveis
 e ponteiros serão definidos:
-	* `new_item = qee_create(ident, table_key, is_const);`: *possivelmente* será
+	* `new_item = qee_create(ident, table_key, is_const)`: *possivelmente* será
 	adicionado à fila.
 	* `treat_duplicated_item = treat;`: define como itens duplicados serão tratados
 	(*o valor de `ident` é usado para definir quais valores são duplicados*).
-	* `qee_add_item_status = false;`: valor que será retornado por `qee_add_item`.
+	* `qee_add_item_return = false;`: valor que será retornado por `qee_add_item`.
 	* `qee_add_item_quant_upped = false;`: indica se a quantidade de algum item da fila foi
 	atualizada.
 
-* Então, a função `insert_item` é chamada (*`*head = insert_node(*head)`;*
+2. Então, a função `insert_item` é chamada (*`*head = insert_node(*head)`;*
 *seu algoritmo é simples, mas o fato de ser recursivo pode dar um nó na cabeça*):
 	
-	* Ela, primeiramente, verificará se seu argumento é `NULL`, retornando `new_item` caso
-	verdadeira.
+	1. Ela, primeiramente, verificará se seu argumento é `NULL`, retornando `new_item` caso
+	verdadeiro.
 
-	* Após a condição anterior falhar, o valor de `bigger_to_lower_is_allow` será
+	2. Após a condição anterior falhar, o valor de `bigger_to_lower_is_allow` será
 	verificado, caso verdadeiro, o caso seguinte da condição será verificado, nele ocorrerá
 	uma comparação entre os membros `quantity` e o comprimento dos membros `ident` do
 	*item atual* e de `new_item`, que, se dada como verdadeira, resultará na inserção do
-	*novo item* entre dois itens já existentes, da seguinte forma.
+	*novo item* entre dois itens já existentes.
 
-	* Seguido de uma nova falha condicional, o conteúdo presente no membro `ident`, do
+	3. Seguido de uma nova falha condicional, o conteúdo presente no membro `ident`, do
 	*item atual* e de `new_item`, será comparado, onde, se ambos forem iguais, um devido
 	tratamento será empregado a `new_item`, baseado no valor de `treat_duplicated_item`.
 
-	* Por fim, caso nenhum processo anterior finalize a função, a mesma chamará a si,
+	4. Por fim, caso nenhum processo anterior finalize a função, a mesma chamará a si,
 	usando o próximo item como argumento e receptor de retorno, a modo a repetir todo esse
-	procedimento, até que o item seja adicionado á fila ou descartado. Após tal chamada
+	procedimento, até que `new_item` seja adicionado á fila ou descartado. Após tal chamada
 	recursiva, a função retornará seu próprio argumento.
 
-* Com o fim do trabalho de `insert_item`, em `qee_add_item`, será verificado se
-`bigger_to_lower_is_allow` e `qee_add_item_quant_upped` são verdadeiros., onde, em caso
+3. Com o fim do trabalho de `insert_item`, em `qee_add_item`, será verificado se
+`bigger_to_lower_is_allow` e `qee_add_item_quant_upped` são verdadeiros, onde, em caso
 positivo, a função de ordenação `ordenate_queue` será chamado. Seu objetivo é garantir que
-os itens presente na fila permanecerão ordenados do maior ao menor
-(*mais informações na primeira nota abaixo*).
+os itens presente na fila permaneçam ordenados do maior ao menor.
 
-	* Inicialmente, `ordenate_queue` verificará se o *item atual* é `NULL`, caso não,
+	1. Inicialmente, `ordenate_queue` verificará se o *item atual* é `NULL`, caso não,
 	verificará se o *próximo item* é `NULL`. Qualquer condição destas que se provar
 	verdadeira resultará no retorno do *item atual*.
 
-	* Após a falha da condição citada acima, ocorrerá uma comparação entre os membros
+	2. Após a falha da condição citada acima, ocorrerá uma comparação entre os membros
 	`quantity` e o comprimento dos membros `ident` do *item atual* e do *próximo item*,
 	que, se dada como verdadeira, resultará em um troca de posições, onde o
 	*próximo item* tomará o lugar do *item atual*. Seguidamente, o atual "novo
-	*item atual*" receberá o retorno uma chamada recursiva à da função `ordenate_queue`,
-	que terá o "novo *próximo item*" como argumento.
+	*item atual*" receberá o retorno uma chamada recursiva à `ordenate_queue`, que terá o
+	"novo *próximo item*" como argumento.
 
-	* Ao final, caso a função não tenha sido finalizada anteriormente, `ordenate_queue`
-	será chamada recursivamente, com o *próximo item* seu argumento e receptor de seu
+	3. Ao final, caso a função não tenha sido finalizada anteriormente, `ordenate_queue`
+	será chamada recursivamente, com o *próximo item* como argumento e receptor de seu
 	retorno, o que desencadeará a repetição do processo acima, até que todos os valores
 	sejam estejam ordenados corretamente. Depois dessa chamada, `ordenate_queue` retornará
 	seu próprio argumento.
 
-* No final de `qee_add_item`, a mesma retornará `qee_add_item_status`, para indicar se
+4. No final de `qee_add_item`, a mesma retornará `qee_add_item_return`, para indicar se
 o novo item foi inserido na fila em questão.
 
 > [!WARNING]
@@ -928,11 +919,32 @@ o novo item foi inserido na fila em questão.
 > comparado para definir qual deles deverá ser posto primeiro. Se ambos os valores forem
 > igual, o *novo item* será posto atrás do item atual, a menos que este padrão se repita
 > para eles, nesse caso, tal procedimento será repetido até que o novo item seja
-> devidamente tratado.
+> devidamente posicionado.
+> 
+> Observe o exemplo abaixo:
+> 
+> ```
+> +---+
+> |cpp| [add]
+> |x0 |
+> +---+
+> 
+> +---+   +---+
+> |lua| > |js |
+> |x0 |   |x0 |
+> +---+   +---+
+> ```
+> 
+> ```
+> +---+   +---+   +---+
+> |lua| > |cpp| > |js |
+> |x0 |   |x0 |   |x0 |
+> +---+   +---+   +---+
+> ```
 
 > [!IMPORTANT]
-> O valor de `qee_add_item` se tornará verdadeiro sempre que um item for introduzido à
-> fila.
+> O valor de `qee_add_item_return` se tornará verdadeiro sempre que um item for introduzido
+> à fila.
 
 > [!NOTE]
 > Após `insert_item` alterar a quantidade de um dado item, surgem grandes chances de sua
@@ -951,22 +963,21 @@ para obter um dado item de uma determinada fila.
 
 Sua lógica consiste em três pontos:
 
-1. Validação: seu o item atual for igual a `NULL`, a função retornará `NULL`.
+1. Validação: se o item atual for igual a `NULL`, a função retornará `NULL`.
 2. Comparação: se o conteúdo do seu segundo argumento for igual ao conteúdo do membro
 `ident` do *item atual*, a função retornará o *item atual*.
-3. Avanço: a função será chamada recursivamente, utilizando o *próximo item* como primeiro
-argumento e mantendo o segundo.
+3. Avanço: a função retornará uma chamada recursiva, que utilizará o *próximo item* como
+primeiro argumento (*o segundo será mantido*).
 
 #### Liberando
 
-Como últimos membro dessa "mini *API*", temos as funções `void qee_free_queue(Queue *item)`
+Como último membro dessa "mini *API*", temos as funções `void qee_free_queue(Queue *item)`
 e `static void free_item(Queue *item)`, que, como é possível imaginar, são encarregadas de
 liberar a memória alocada para os itens de uma fila.
 
-Depois que o primeiro item de uma dada fila é dado como argumento a `qee_free_queue`, tal
+Depois que o primeiro item de uma dada fila é dado como argumento à `qee_free_queue`, tal
 função executará uma série de chamadas recursivas, que resultarão na liberação das memórias
-alocadas para `ident`, `table_key`, `nick` e para a própria estrutura de **todos** os itens
-presentes na fila.
+alocadas para `ident`, `table_key`, `nick` e para a própria estrutura.
 
 > [!NOTE]
 > `free_item` existe apenas por conta que seu código é utilizado em duas funções, sendo
@@ -998,17 +1009,10 @@ verificações, que, se dadas como falsas, acarretam na leitura do conteúdo do 
 > 	HF_CONTENT_READED,
 > }HF_OUT_STATUS;
 > ```
->
-> Onde suas constantes representam os seguintes estados de saída:
->
-> * `HF_READING_DISABLE`: indica que a leitura do *header.lim* foi desabilitada.
-> * `HF_NOT_FOUND`: indica que o *header.lim* não foi encontrado.
-> * `HF_IS_EMPTY`: indica que o *header.lim* foi encontrado, mas está vazio.
-> * `HF_CONTENT_READED`: indica que o *header.lim* foi lido com sucesso.
 
 Antes de adentrarmos `read_header_file`, é importante que tenhamos ciência sobre uma coisa:
 tanto o processo de leitura do *header.lim* (*como um todo*), quanto a leitura de suas
-partições (*individualmente*) gera um "estado de saída".
+partições (*individualmente*) geram um "estado de saída" distinto.
 
 Sabendo isso, antes de chamar `read_header_file`, a função `main` declara o seguinte:
 
@@ -1024,7 +1028,7 @@ Onde ambos são responsáveis por:
 para `read_header_file`.
 
 * `file_status`: capturar o código de estado de saída do *header.lim*, que indica o que
-ocorreu durante sua verificação. Tal valor será retornado por `read_header_file`.
+ocorreu durante sua verificação. Esse valor será retornado por `read_header_file`.
 
 Agora que você já entende o propósito dos "periféricos" que acompanham a chamada da função
 `read_header_file` (*na `main`*), vamos mergulhar em seu interior, visando compreender de
@@ -1055,30 +1059,30 @@ FSEEK;
 Como é possível imaginar, esse pequeno trecho é responsável por verificar, respectivamente:
 
 1. Se a leitura do *header.lim* foi bloqueada.
-2. Se o *header.lim* existe.
+2. Se o *header.lim* não existe.
 3. Se o *header.lim* está vazio.
 
 Caso ambas falhem, isso acarretará, inevitavelmente, no retorno de `HF_CONTENT_READED`, que
-encontra-se ao fim do arquivo.
+encontra-se ao fim de `read_header_file`.
 
 ### Buscando as partições
 
-Após tais condições, um vetor local, do tipo `HF_READ_STATUS`, será declarado, o qual é
-utilizado como argumento para a função
-`static void start_reading(HF_READ_STATUS *refined_status)`, que será chamada em seguida.
-Tal função utilizará seu argumento para armazenar o estado de saída de todas as partições
-do *header.lim*.
+Após tais condições, um vetor local, do tipo `HF_READ_STATUS`, será declarado, o qual será
+utilizado como argumento para uma chamada da função
+`static void start_reading(HF_READ_STATUS *refined_status)`, que ocorrerá em seguida. Tal
+função utilizará seu argumento para armazenar o estado de saída de todas as partições do
+*header.lim*.
 
 Ao adentrarmos em `start_reading`, podemos notar que o estado das partições é dividido em
 dois: *bruto* e *refinado*. Onde:
 
-* Estado bruto (`bool`): caso verdadeiro, indica que a próxima partição foi encontrada,
+* Estado bruto (*`bool`*): caso verdadeiro, indica que a próxima partição foi encontrada,
 caso falso, indica que o final de *header.lim* foi encontrado. Cada partição possui seu
 próprio "estado bruto".
 
-* Estado refinado (`int`): é o estado de saída de cada partição, obtido através de um
+* Estado refinado (*`int`*): é o estado de saída de cada partição, obtido através de um
 processo que consiste na análise do "estado bruto" junto ao estado do *buffer*
-(*vazio ou não vazio*).
+(*vazio ou não vazio*) de uma dada partição.
 
 Os "estados brutos" são preenchidos pelo retorno das funções de leitura abaixo:
 
@@ -1091,7 +1095,7 @@ Os "estados brutos" são preenchidos pelo retorno das funções de leitura abaix
 
 Seguidamente, a função
 `static HF_READ_STATUS refine_brute_status(FILE **buf, Queue **list, bool new_part_found, bool isfile)`
-é utilizada para *refinar* os "estados brutos". Seu retorno é armazenado no índices do
+é utilizada para *refinar* os "estados brutos". Seu retorno é armazenado nos índices do
 argumento de `start_reading`.
 
 ### Aprontando as saídas
@@ -1100,8 +1104,8 @@ Depois que `start_reading` preenche os índices de seu argumento, o fluxo do pro
 para `char` e será armazenado no endereço apontado pelo argumento de `read_header_file`, o
 qual receberá um espaço em memória justo, destinado a tal finalidade.
 
-Por fim, `read_header_file` retornará `HF_OUT_STATUS`, indicando que o *header.lim* foi
-encontrado e lido com sucesso.
+Por fim, `read_header_file` retornará `HF_CONTENT_READED`, indicando que o *header.lim* foi
+lido com sucesso.
 
 ## O núcleo
 
@@ -1116,10 +1120,10 @@ pelo "algoritmo principal".
 ### As ferramentas
 
 Ao contrário do que se possa imaginar, `./src/core/` não detém apenas os arquivos que
-formam o algoritmo de compactação do arquivo de entrado e construção do arquivo de saída,
-em seu interior há uma pasta chamada `tools/`, a qual é encarregada de armazenar uma
-série de pequenos algoritmos, criados para facilitar o desenvolvimento dos processos
-principais.
+formam o algoritmo de compactação do arquivo de entrado e o algoritmo de construção do
+arquivo de saída, em seu interior há uma pasta chamada `./src/core/tools/`, a qual é
+encarregada de armazenar uma série de pequenos algoritmos, criados para facilitar o
+desenvolvimento dos processos principais.
 
 #### A estrutura global
 
@@ -1179,8 +1183,8 @@ extern struct Lim_Global_Variables lim;
 > [!NOTE]
 > Inicialmente, foi planejado que tal estrutura fosse utilizada por todo o programa,
 > entretanto, por conta da arquitetura empregada em `./src/`, essa ideia foi
-> descartada. Mesmo assim, o "nome original" da estrutura e de seus arquivos de origem
-> foram mantidos.
+> descartada. Mesmo assim, o "nome original" da estrutura, e de seus arquivos de origem,
+> foi mantidos.
 
 #### O tipo *Queue*
 
@@ -1197,8 +1201,9 @@ Essa poderosa estrutura de dados é amplamente utilizada pelos algoritmos de
 #### Arquivo opcional
 
 Outro par de arquivos com grande importar é o `./src/core/tools/read-header-lim.c/h`, que,
-como seus nomes sugerem, são responsável por efetuar a leitura do *header.lim*, o que
-inclui a busca pelo arquivo, separação de seu conteúdo e afins.
+como seus nomes sugerem, são responsável por conter o algoritmo encarregado de efetuar a
+leitura do *header.lim*, o que inclui a busca pelo arquivo, separação de seu conteúdo e
+afins.
 
 > [!IMPORTANTE]
 > Para informações relacionadas ao funcionamento interno desse algoritmo, consulte:
@@ -1211,7 +1216,7 @@ utilizado por funções contidas nesse subdiretório. Sua **única** chamada oco
 #### Tratamento seguro para cadeias
 
 O *Padrão C* conta com inúmeras bibliotecas padrão, destinadas a usos gerais, dentre elas
-podemos destacar a `string.h`, a qual fornece funções reservada ao tratamento de vetores,
+podemos destacar a `string.h`, a qual fornece funções destinadas ao tratamento de vetores,
 com ênfase para cadeias de caracteres.
 
 Por mais que essa seja uma ótima biblioteca, o fato de algumas de suas funções não
@@ -1245,8 +1250,8 @@ utilizado pelos algoritmos de `./src/core/`, onde:
 1. `string_set`: inicializa, reinicia e/ou finaliza uma cadeia de caracteres dinâmica.
 2. `string_add`: adiciona uma caractere no final de uma cadeia de caracteres dinâmica.
 
-> [!CAUTION]
-> Todas as cadeias de caracteres dinâmicas inicializadas, **devem** ser finalizadas em
+> [!WARNING]
+> Todas as cadeias de caracteres dinâmicas inicializadas **devem** ser finalizadas em
 > algum momento.
 
 > [!IMPORTANT]
@@ -1265,7 +1270,7 @@ utilizado pelos algoritmos de `./src/core/`, onde:
 #### Modo verboso
 
 Assim como muitos outros programas de terminal, Lim também possui seu próprio
-*modo verboso*, o qual pode ser ativado através da utilização da bandeira (`-V`)
+*modo verboso*, o qual pode ser ativado através da utilização da bandeira (*`-V`*)
 `--verbose`.
 
 > [!TIP]
@@ -1301,23 +1306,23 @@ Essa funcionalidade possui seu próprio algoritmo, que está localizado em
 As mensagem geradas durante o *modo verboso* são referentes à algumas das principais
 tarefas do Lim, como um todo.
 
-* Estado de definição das bandeiras do Lim.
-* Mostra o estado de saída do *header.lim* e de suas partições.
-* Indica que um dado processo foi iniciado.
-* Indica que um dado processo foi encerrado.
-* Exibe as constantes encontradas durante a leitura do arquivo de entrada.
-* Exibe os identificadores encontrados, junto a sua "chave de tabela"
+* Mostrar o estado de definição das bandeiras do Lim.
+* Mostrar o estado de saída do *header.lim* e de suas partições.
+* Indicar que um dado processo foi iniciado.
+* Indicar que um dado processo foi encerrado.
+* Exibir as constantes encontradas durante a leitura do arquivo de entrada.
+* Exibir os identificadores encontrados, junto a sua "chave de tabela"
 (*quando disponível*), durante a leitura do arquivo de entrada.
 * Imprime avisos, como forma de justificar certas ações ou a ausência de *algo*.
 * Explícita que "algo" (*geralmente um "ambiente"*) foi iniciado/criado, foi
 perdido/descartado ou foi encerrado/liberado.
 
-Como forma de facilitar a leitura das mensagens geradas durante o *modo verbose*, ambas
+Como forma de facilitar a leitura das mensagens geradas durante o *modo verboso*, ambas
 foram separadas em "**tipos**", que são pequenos prefixos à mensagem em questão.
 
-* `[lim]`: texto comum.
-* `>lim>`: início de um processo.
-* `<lim<`: encerramento de um processo.
+* `[lim]`: texto comum, geralmente exige estados de saída.
+* `>lim>`: início de um processo de tamanho considerável.
+* `<lim<`: encerramento de um processo de tamanho considerável.
 * `|lim|`: uma constante (*ou identificador*) foi encontrada.
 * `{lim}`: um dado está sendo inserido em uma dada localizada.
 * `[LIM]`: aviso/alerta/justificativa de considerável importância.
@@ -1363,7 +1368,7 @@ dígitos.
 (*simples ou duplas*). Respeita barras invertidas.
 
 * `bool is_table(char c, char **tmp)`: captura ambientes de tabela. Remove espaçamentos
-desnecessários e comentários. Respeita cadeias de caracteres e a abertura de novos
+desnecessários e comentários. Respeita cadeias de caracteres; respeita a abertura de novos
 ambientes de tabela.
 
 * `bool is_commentary(char c)`: identifica e descarta comentários, seja em linha, seja em
@@ -1376,8 +1381,8 @@ caracteres especiais. Remove espaçamentos e comentários. Segue algumas regras:
 	3. `_'{"` são inválidos para esse operação e desencadeiam seu fim.
 
 * `bool is_identifier(char c, char **tmp)`: captura conjuntos iniciados com alfabéticos ou
-`'_'`, identifica seu tipo e o envia para o devido tratamento. As cadeias coletadas são
-divididas em:
+`'_'`, identifica seu tipo e envia o trecho para o devido tratamento. As cadeias coletadas
+são divididas em:
 	* Palavra-chave de *Lua*.
 	* Função ou tabela (*biblioteca*) do *Padrão Lua*.
 	* Identificadores registrados no *header.lim*.
@@ -1390,13 +1395,13 @@ divididas em:
 
 > [!NOTE]
 > Funções que possuem o parâmetro `char **tmp` o utilizarão para armazenar todo o conteúdo
-> capturado, com exceção de `is_identifier` que fará isso apenas se tal trecho for uma
+> capturado, com exceção de `is_identifier`, que fará isso apenas se tal trecho for uma
 > palavra-chave de *Lua*, do contrário o fragmento será enviado diretamente para
 > tratamento. Aquelas que não o possuem descartarão os conteúdos coletados.
 
 > [!TIP]
 > Essa tabela indica quais encontros, ocorridos após `c` ser "aprovado", desencadeiam o fim
-> das operações de cada função acima.
+> das operações de cada função acima:
 >
 > | Funções            | Alfab. | Dígito | C. Especial | Espaçam. | Específ. |
 > | :--                | :-:    | :-:    | :-:         | :-:      | :-:      |
@@ -1408,7 +1413,8 @@ divididas em:
 > | is_special_char    | *      | *      |             |          | `_'{"`   |
 > | is_identifier      |        |        | *           | *        |          |
 >
-> * *Alfab* também engloba sublinhados (`'_'`).
+> * *Alfab* também engloba `'_'`.
+> * *C. Especial* não inclui `'_'`.
 > * Todos são finalizados após um encontro com o final do arquivo.
 
 #### Tratando fragmentos
@@ -1416,7 +1422,7 @@ divididas em:
 Agora que vimos de que modo os dados são coletados, adentraremos
 `./src/core/check-content.c/h` e descobriremos como eles são tratados.
 
-O conjunto de funções presentes em `./src/core/check-content.c/h` permite que certas
+O conjunto de funções presente em `./src/core/check-content.c/h` permite que certas
 cadeias possam modificar o modo como cadeias futuras serão tratadas, por exemplo:
 
 > Caso a palavra chave `local` seja recebida, o algoritmo entenderá que uma declaração de
@@ -1429,11 +1435,7 @@ cadeias possam modificar o modo como cadeias futuras serão tratadas, por exempl
 Seu algoritmo é formado por três funções principais, sendo elas:
 
 * `void treat_const(char *str)`: recebe apenas conjuntos que não deverão ser compactados,
-e, com base neles, define o contexto atual:
-	* Declaração de variáveis, função ou parâmetros.
-	* Inicialização de um *for loop*.
-	* Fim de um bloco (*`do`, `function` ou `if`*).
-	* Dentre outros.
+e, com base neles, define o contexto atual.
 
 * `void treat_ident(char *_ident, char *_table_key)`: recebe, majoritariamente, cadeias que
 deverão ser compactados, as quais poderão ser utilizados para definir/atualizar o que é
@@ -1441,12 +1443,12 @@ esperado para o contexto atual.
 
 * `void treat_standard(char *_ident, char *_table_key, Queue **buf)`: recebe
 identificadores (*tabelas e funções*) do *Padrão Lua* e do *header.lim* para compactação.
-Redefine o contexto atual para nulo, independente de seu estado atual.
+Redefine o contexto atual para nulo, independente de qual seja.
 
 > [!IMPORTANT]
 > Ambas as funções listadas acima são encarregadas de atualizar os ponteiros estáticos
-> `char *gident` e `char *gtable_key`, os quais são utilizados, por diversas funções,
-> para as mais variadas operações.
+> `char *gident` e `char *gtable_key`, os quais são utilizados por diversas funções para
+> as mais variadas operações.
 >
 > * `treat_const` define: `gident = str; gtable_key = NULL;`.
 
@@ -1455,9 +1457,9 @@ Redefine o contexto atual para nulo, independente de seu estado atual.
 > 
 > * Nulo.
 > * Inicialização de declaração.
-> * Declaração de variáveis locais.
-> * Declaração de parâmetros.
-> * Declaração de identificador de blocos *for loop*.
+> * Declaração de variável(*is*) local(*is*).
+> * Declaração de parâmetro(*s*).
+> * Declaração de identificador(*es*) de blocos *for loop*.
 > 
 > Os contextos são utilizados para definir quando é necessário salvar novos apelidos e
 > quando é necessário solicitar apelidos já definidos.
@@ -1468,7 +1470,7 @@ As demais funções desses arquivos encontram-se listadas abaixo:
 `str`.
 
 * `declare_function(bool is_anony)`: define a estrutura de declaração de uma dada função e
-o contexto para: **possível** declaração de argumentos.
+define o contexto atual para: declaração de argumentos.
 
 * `search_fparam_end(void)`: utilizada para verificar o fim do contexto de "declaração de
 argumentos".
@@ -1482,7 +1484,96 @@ estado, para futuras verificações.
 
 #### Escopos de ambientes
 
-FOO
+Assim como a maioria das linguagens de programação, *Lua* também possui dois escopos de
+identificadores:
+
+* Global: disponível em todo o arquivo, a partir de sua declaração.
+* Local: disponível apenas em um dado bloco, a partir de sua declaração.
+
+Dado que esse recurso possibilita a reutilização de nomes de identificadores, foi
+desenvolvido um sistema de ambientes, capaz de reutilizar apelidos e descartar
+(*da memória*) informações não mais necessárias, assim permitindo uma código de saída mais
+compacto e um processo de compressão mais otimizado.
+
+Para gerenciar esses ambientes, um conjunto de funções foi desenvolvido e depositado em
+`./src/core/layer-env.c/h`, as quais estão listadas abaixo:
+
+* `static bool is_valid_open(char *kw, char *tk)`: verifica se a palavra-chave (*`kw`*)
+recebida indica a declaração de algum bloco de código suportado. `tk` é utilizado para
+verificar a declaração de métodos e funções.
+
+* `static bool is_valid_clse(char *kw)`: verifica se há algum ambiente na pilha e se a
+palavra-chave recebida é capaz de encerra o ambiente atual.
+
+* `void add_layer_env(char *kw, char *tk)`: cria uma nova camada para a pilha de ambientes
+e salva o estado atual de *alguns* apelidos em seus membros.
+
+* `void pop_layer_env(char *kw, bool force)`: remove a última camada da pilha de ambientes
+e atribuí os estados salvos aos seus determinados "*buffers* de apelidos".
+
+* `void finish_forgot_env(void)`: encerra todos os ambientes na pilha, forçadamente.
+
+> [!TIP]
+> O ponteiro encarregado de armazenar essa pilha localiza-se no membro
+> `lim.env_buf.lenv_stack_top`.
+
+Abaixo encontra-se a estrutura utilizada para construir as camadas da pilha de ambiente:
+
+``` c
+typedef struct Local_Env{
+	FILE *content;
+	
+	char *save_local_ident;
+	char *save_parameter;
+	char *save_for_loop;
+	
+	Queue *var, *func, *special;
+	
+	Local_Env_Type type;
+	struct Local_Env *below;
+}Local_Env;
+```
+
+* `content`: armazena o conteúdo, oriundo do arquivo de entrada, capturado enquanto o
+ambiente em questão estava "ativo".
+
+* `save_*`: detém o estado de dadas "classes" (*local, parâmetro e "for loop"*) de
+apelidos, que será utiliza para reaproveitar os apelidos utilizados no novo ambiente.
+
+* *Filas*: armazenam os identificadores e apelidos locais encontrado no bloco/ambiente
+atual.
+
+* `type`: tipo do ambiente, utilizado para realizar operações específicas.
+
+* `below`: próximo item a ocupar o topo da pilha.
+
+> [!IMPORTANT]
+> `content` existe para possibilitar a implantação de trechos em seu conteúdo, a qual
+> ocorre durante o envio de seus dados para um determinado destino
+> (*após seu encerramento*).
+> 
+> A exemplo, é possível citar a inclusão de `local Sa=self;`, que ocorre em métodos, após
+> o fim da declaração de seus parâmetros.
+
+> [!NOTE]
+> `special` refere-se a parâmetros de funções ou identificadores declarados junto a blocos
+> *for loop*.
+
+> [!TIP]
+> `Local_Env_Type` é um tipo utilizado para definir a tipagem de diferentes ambientes,
+> assim definindo tratamentos específicos para o mesmo. Este baseia-se no seguinte `enum`:
+> 
+> ``` c
+> typedef enum{
+> 	LET_NULL,
+> 	LET_FUNC,
+> 	LET_METHOD,
+> 	LET_REPEAT,
+> 	LET_OTHER,
+> }Local_Env_Type;
+> ```
+> 
+> O qual situa-se em `./src/core/tools/lim-global-variables.h`.
 
 #### Apelidos
 
@@ -1495,10 +1586,10 @@ substituir os identificadores embutidos no arquivo de entrada.
 Os apelidos são formados por cadeias de caracteres alfabéticos, os quais podem ser
 minúsculos ou maiúsculos, prefixados ou não, a depender de sua "classe".
 
-A lógica de seu algoritmo é simples, consistindo em operações matemáticas envolvendo
+A lógica de seu algoritmo é simples, sendo constituída por operações matemáticas envolvendo
 valores do tipo `char`, a qual assemelha-se bastante com a abordagem utilizadas pelos
-numerais decimais. Observe esse exemplo, onde cada linha represente uma atualização
-do valor presente na linha acima:
+numerais decimais. Observe esse exemplo, onde as linha representam uma atualização do valor
+presente acima:
 
 ```
 a  | fh | zzz  | mkz
@@ -1525,14 +1616,14 @@ identificador na memória (*`*buf`*) e lhe atribuí um apelido, com base em `id`
 ordem:
 	1. Variáveis locais.
 	2. Funções locais.
-	3. Parâmetros/identificador de blocos *for loop*.
+	3. Parâmetros/identificador de blocos *for loop* (*locais*).
 	4. Variáveis "privadas".
 	5. Funções "privadas".
 	6. Funções adicionadas à biblioteca.
 	7. Funções do *Padrão Lua*.
-	8. Variáveis do *Padrão Lua*.
+	8. Tabelas do *Padrão Lua*.
 	9. Funções registrados no *header.lim*.
-	10. Variáveis registrados no *header.lim*.
+	10. Tabelas registrados no *header.lim*.
 
 * `void free_nickname_buffers(void)`: encerra os *buffers* responsáveis por armazenar o
 estado atual de cada "classe" de apelido.
@@ -1542,11 +1633,11 @@ estado atual de cada "classe" de apelido.
 >
 > * O estado atual do apelido.
 > * O apelido atual (*prefixo + estado atual*).
-> * O primeiro caractere da sequência de incremento (*constante não literal*).
-> * O último caractere da sequência de incremento (*constante não literal*).
-> * O caractere utilizado como prefixo para os apelidos (*constante não literal*).
+> * O primeiro caractere da sequência de incremento (*"constante"*).
+> * O último caractere da sequência de incremento (*"constante"*).
+> * O caractere utilizado como prefixo para os apelidos (*"constante"*).
 >
-> Existem cinco *buffers* para tal, os quais pertencem às seguintes "classes":
+> Existem cinco *buffers* de apelidos, os quais pertencem às seguintes "classes":
 >
 > * Padrão e registrados: apelidos dados a identificadores oriundos do *Padrão Lua* e do
 > *header.lim*.
@@ -1557,7 +1648,7 @@ estado atual de cada "classe" de apelido.
 > 	* Prefixados por `G`.
 >
 > * Locais: apelidos para variáveis, tabelas e funções declaradas dentro de blocos/
-> ambientes locais, por meio da palavra-chave `local`.
+> ambientes, por meio da palavra-chave `local`.
 > 	* Prefixados por `L`.
 >
 > * Parâmetro: apelidos para parâmetros de funções.
@@ -1574,19 +1665,18 @@ estado atual de cada "classe" de apelido.
 Ao contrário dos identificadores declarados dentro do arquivo de origem, aqueles oriundos
 do *Padrão Lua* e do *header.lim* **não** podem ser compactados durante sua declaração,
 por conta disso, no topo do contêiner da biblioteca, é declarado um "escopo de
-referências", que consiste em uma estrutura de declarações cujos identificadores
-recebem uma dada função ou tabela originada no *Padrão Lua* ou no *header.lim*.
-Observe o exemplo abaixo:
+referências", que consiste em uma estrutura de declarações cujos identificadores recebem
+uma dada função ou tabela originada no *Padrão Lua* ou no *header.lim*. Observe o exemplo
+abaixo:
 
 ``` lua
 local A,B,C,D,E=print,math.random,type,string,string.sub;
 ```
 
 Diferente das chaves de tabela oriundas do arquivo de entrada (*que não são compactadas*),
-estas são fundidas com sua tabela de origem, e são tratadas como um único identificador.
-
-O processo de adição destes identificadores a tal escopo ocorre em `save_ident`, em 
-chamadas com `id == NICK_STD_HDR`.
+estas são fundidas com sua tabela de origem e são tratadas como um único identificador. Com
+relação ao processo de adição desses identificadores a tal escopo, este ocorre por meio de
+chamada à função `save_ident`.
 
 > [!NOTE]
 > `NICK_ID` é um tipo utilizado para definir que "classe" de apelido será utilizada para
