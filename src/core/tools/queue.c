@@ -100,7 +100,7 @@ Queue* qee_get_item(Queue *item, char *ident){
 	if(string_compare(ident, item->ident))
 		return item;
 	
-	qee_get_item(item->next, ident);
+	return qee_get_item(item->next, ident);
 }
 
 void qee_free_queue(Queue *item){
