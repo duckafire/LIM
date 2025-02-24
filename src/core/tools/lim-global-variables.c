@@ -76,20 +76,4 @@ void lim_free_env(void){
 	qee_free_queue(lim.env_buf.table_from_lua);
 	qee_free_queue(lim.env_buf.func_from_header);
 	qee_free_queue(lim.env_buf.table_from_header);
-
-	Local_Env *cur, *below;
-	for(cur = lim.env_buf.lenv_stack_top; cur != NULL; cur = below){
-		fclose(cur->content);
-
-		free(cur->save_local_ident);
-		free(cur->save_parameter);
-		free(cur->save_for_loop);
-
-		qee_free_queue(cur->var);
-		qee_free_queue(cur->func);
-		qee_free_queue(cur->special);
-
-		below = cur->below;
-		free(cur);
-	}
 }

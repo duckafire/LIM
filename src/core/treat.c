@@ -42,7 +42,7 @@ void treat_const(char *str){
 
 	// checking included
 	add_layer_env(gident, NULL);
-	pop_layer_env(gident);
+	pop_layer_env(gident, false);
 
 
 	// parameters

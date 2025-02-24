@@ -71,8 +71,8 @@ void add_layer_env(char *kw, char *tk){
 	lim.env_buf.lenv_stack_top = lenv;
 }
 
-void pop_layer_env(char *kw){
-	if(!is_valid_close(kw))
+void pop_layer_env(char *kw, bool force){
+	if(!force && !is_valid_close(kw))
 		return;
 
 	char c;
@@ -111,4 +111,11 @@ void pop_layer_env(char *kw){
 	qee_free_queue(lenv->special);
 
 	free(lenv);
+}
+
+void finish_forgot_env(void){
+	Local_Env *cur;
+
+	while( (cur = lim.env_buf.lenv_stack_top) != NULL )
+		pop_layer_env(NULL, true);
 }

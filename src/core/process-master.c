@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include "tools/lim-global-variables.h"
@@ -8,6 +9,7 @@
 #include "check-content.h"
 #include "treat.h"
 #include "nick-man.h"
+#include "layer-env.h"
 
 static char c;
 
@@ -19,6 +21,7 @@ void read_source_file(void){
 	lim.files.source = fopen(lim.files.source_name, "r");
 	lim.env_buf.destine_file = tmpfile();
 
+	atexit(finish_forgot_env);
 	start_nickname_buffers();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
@@ -56,6 +59,7 @@ void read_source_file(void){
 		is_special_char(c, &tmp);
 	}
 
+	finish_forgot_env();
 	free_nickname_buffers();
 	string_set(&tmp, STR_END);
 

@@ -6,6 +6,7 @@
 static bool is_valid_open(char *kw, char *tk);
 static bool is_valid_close(char *kw);
 void add_layer_env(char *kw, char *tk);
-void pop_layer_env(char *kw);
+void pop_layer_env(char *kw, bool force);
+void finish_forgot_env(void);
 
 #endif
