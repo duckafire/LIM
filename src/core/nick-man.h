@@ -24,7 +24,7 @@ static void update_nick_current(char *nick_buf[], const int last_char);
 char* save_ident(char *ident, char *table_key, NICK_ID id, Queue **buf);
 
 static bool search_in_buffers(char *ident, short max, ...);
-char* get_nickname_of(char *ident);
+char* get_nickname_of(char *ident, bool is_std_hdr);
 
 void free_nickname_buffers(void);
 static void free_nick_buf(char *nick_buf[]);

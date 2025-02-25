@@ -25,19 +25,15 @@ void read_source_file(void){
 	start_nickname_buffers();
 
 	while((c = fgetc(lim.files.source)) != EOF || tmp != NULL){
-		if(clear_white_spaces(&c))
-			if(tmp == NULL)
-				break;
-
 		if(tmp != NULL){
 			pverbose(V_CONST_FOUND, tmp);
 			treat_const(tmp);
 
 			string_set(&tmp, STR_END);
-
-			if(c == EOF)
-				break;
 		}
+
+		if(clear_white_spaces(&c))
+			break;
 		
 		// NOTE: single from "ident.h"
 		// send its content to `treat.c`

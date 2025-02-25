@@ -177,7 +177,18 @@ static bool search_in_buffers(char *ident, short max, ...){
 	return false;
 }
 
-char* get_nickname_of(char *ident){
+char* get_nickname_of(char *ident, bool is_std_hdr){
+	// only from Lua Standard or header.lim
+	if(is_std_hdr){
+		if(search_in_buffers(ident, 4,
+			lim.env_buf.func_from_lua, lim.env_buf.table_from_lua,
+			lim.env_buf.func_from_header, lim.env_buf.table_from_header))
+			return cur_nick;
+
+		return ident;
+	}
+
+	// they never will be compacted
 	if(ident[0] == '_'){
 		if(ident[1] == '\0') // ident == "_"
 			return "__";
@@ -185,6 +196,7 @@ char* get_nickname_of(char *ident){
 		return ident; // ident == "_*"
 	}
 
+	// from input file
 	if(lim.env_buf.lenv_quant > 0){
 		Local_Env *cur_lenv;
 
@@ -193,14 +205,7 @@ char* get_nickname_of(char *ident){
 				return cur_nick;
 	}
 
-	if(search_in_buffers(ident, 7,
-		lim.env_buf.var,
-		lim.env_buf.func,
-		lim.env_buf.lib_func,
-		lim.env_buf.func_from_lua,
-		lim.env_buf.table_from_lua,
-		lim.env_buf.func_from_header,
-		lim.env_buf.table_from_header))
+	if(search_in_buffers(ident, 3, lim.env_buf.var, lim.env_buf.func, lim.env_buf.lib_func))
 		return cur_nick;
 
 	return ident;

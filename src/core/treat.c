@@ -152,7 +152,7 @@ void treat_ident(char *_ident, char *_table_key){
 	if(locald.start_declare)
 		gident_nick = save_ident(gident, gtable_key, NICK_IDENT, BUF_VAR);
 	else
-		gident_nick = get_nickname_of(gident);
+		gident_nick = get_nickname_of(gident, false);
 
 	fprintf(BUF_CONTENT, FORMAT(gtable_key), gident_nick, gtable_key);
 }
@@ -173,7 +173,7 @@ void treat_standard(char *_ident, char *_table_key, Queue **buf){
 	}
 
 
-	nick = get_nickname_of(full);
+	nick = get_nickname_of(full, true);
 	if(strcmp(nick, full) == 0) // nickname not defined
 		nick = save_ident(full, NULL, NICK_STD_HDR, buf);
 
@@ -210,7 +210,7 @@ static void declare_function(bool is_anony){
 			if(gtable_key == NULL)
 				fprintf(BUF_CONTENT, "function %s", save_ident(gident, NULL, NICK_LIB_FUNC, BUF_LIB_FUNC));
 			else
-				fprintf(BUF_CONTENT, "function %s%s", get_nickname_of(gident), gtable_key);
+				fprintf(BUF_CONTENT, "function %s%s", get_nickname_of(gident, false), gtable_key);
 
 		}else{
 			fprintf(BUF_CONTENT, "local function %s", save_ident(gident, NULL, NICK_IDENT, BUF_FUNC));
