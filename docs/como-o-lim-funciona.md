@@ -1205,7 +1205,7 @@ como seus nomes sugerem, são responsável por conter o algoritmo encarregado de
 leitura do *header.lim*, o que inclui a busca pelo arquivo, separação de seu conteúdo e
 afins.
 
-> [!IMPORTANTE]
+> [!IMPORTANT]
 > Para informações relacionadas ao funcionamento interno desse algoritmo, consulte:
 > [Lendo o *header.lim*](#lendo-o-headerlim).
 
@@ -1612,18 +1612,20 @@ o último valor salvo.
 * `char* save_ident(char *ident, char *table_key, NICK_ID id, Queue **buf)`: salva um
 identificador na memória (*`*buf`*) e lhe atribuí um apelido, com base em `id`.
 
-* `char* get_nickname_of(char *ident)`: busca por um apelido para `ident`, na seguinte
-ordem:
-	1. Variáveis locais.
-	2. Funções locais.
-	3. Parâmetros/identificador de blocos *for loop* (*locais*).
-	4. Variáveis "privadas".
-	5. Funções "privadas".
-	6. Funções adicionadas à biblioteca.
-	7. Funções do *Padrão Lua*.
-	8. Tabelas do *Padrão Lua*.
-	9. Funções registrados no *header.lim*.
-	10. Tabelas registrados no *header.lim*.
+* `char* get_nickname_of(char *ident, bool is_std_hdr)`: busca por um apelido para `ident`,
+na seguinte ordem:
+	* Se `is_std_hdr == true`:
+		1. Variáveis locais.
+		2. Funções locais.
+		3. Parâmetros/identificador de blocos *for loop* (*locais*).
+		4. Variáveis "privadas".
+		5. Funções "privadas".
+		6. Funções adicionadas à biblioteca.
+	* Do contrário:
+		1. Funções do *Padrão Lua*.
+		2. Tabelas do *Padrão Lua*.
+		3. Funções registrados no *header.lim*.
+		4. Tabelas registrados no *header.lim*.
 
 * `void free_nickname_buffers(void)`: encerra os *buffers* responsáveis por armazenar o
 estado atual de cada "classe" de apelido.
@@ -1643,8 +1645,8 @@ estado atual de cada "classe" de apelido.
 > *header.lim*.
 > 	* Formados por letras maiúsculas.
 >
-> * Globais: apelidos para variáveis, tabelas e funções declaradas dentro do ambiente raiz,
-> por meio da palavra-chave `local`, ou seja, para identificadores "privados".
+> * Globais: apelidos para variáveis, tabelas e funções declaradas dentro do "ambiente
+> raiz", por meio da palavra-chave `local`, ou seja, para identificadores "privados".
 > 	* Prefixados por `G`.
 >
 > * Locais: apelidos para variáveis, tabelas e funções declaradas dentro de blocos/
@@ -1661,6 +1663,9 @@ estado atual de cada "classe" de apelido.
 > `save_ident` não irá registrar identificadores iniciados com `'_'`, estes serão
 > retornados como estão, com exceção de `"_"`, que desencadeará o retorno de `"__"`. O
 > mesmo vale para `get_nickname_of`, em questão de retorno.
+> 
+> Se `get_nickname_of` não encontrar um apelido para o identificador dado como argumento,
+> ela retornará o próprio argumento.
 
 Ao contrário dos identificadores declarados dentro do arquivo de origem, aqueles oriundos
 do *Padrão Lua* e do *header.lim* **não** podem ser compactados durante sua declaração,
@@ -1690,4 +1695,167 @@ chamada à função `save_ident`.
 > 	NICK_FOR_LOOP,
 > 	NICK_LIB_FUNC,
 > }NICK_ID;
+> ```
+
+#### Linearmente falando
+
+Visto que todos os arquivos que compõem o "algoritmo principal" do núcleo foram
+esclarecidos, chegou a hora de retomarmos a explicação linear que ocorria anteriormente.
+
+Bom, agora que voltamos à `main`, e ao fluxo de execução do programa, estamos frente a
+frente com uma estrutura de código familiar:
+
+``` c
+lim_init_env();
+atexit(lim_free_env);
+
+read_source_file();
 ```
+
+Esta é responsável por inicializar a estrutura global de `./src/core/` e por chamar a
+função que detém o algoritmo de leitura e compactação, o qual extrairá, compactará e
+armazenará o conteúdo existente no arquivo de entrada.
+
+##### Compactando o arquivo de entrada
+
+Ao adentrarmos `read_source_file` podemos ver a *inicializações* de uma série de
+*utilitários*, os quais serão necessários para os processos posteriores. Sendo eles:
+
+``` c
+char *tmp = NULL;
+
+lim.files.source = fopen(lim.files.source_name, "r");
+lim.env_buf.destine_file = tmpfile();
+
+atexit(finish_forgot_env);
+start_nickname_buffers();
+```
+
+Seguidamente, uma repetição é iniciada, a qual é responsável por efetuar a leitura do
+arquivo de entrada. Para isso, tal *loop* extraí um caractere desse arquivo e o submete a
+uma série de testes e validações, os quais são desempenhados por funções oriundas de
+`./src/core/check-content.c/h`.
+
+Sempre que uma *constante* for encontrada, a mesma será armazenada em um endereço dinâmico,
+o qual será utilizado como argumento para `treat_const`
+(*em `read_source_file`, no ciclo posterior*). Tal função realizará uma bateria de
+verificações, até que o valor recebido seja impresso no *buffer* de destino.
+
+> [!NOTE]
+> `treat_const` é responsável por chamar `add_layer_env` e `pop_layer_env`; além disso,
+> essa função é a única capaz de inicializar contextos, o que é feito antes do conteúdo
+> em questão ser gravado na memória.
+
+Já os identificadores, como dito anteriormente, não são dados a `tmp`, ao invés disso
+`is_identifier` irá destiná-los, diretamente, ao seu devido tratamento em uma das
+seguintes funções:
+
+* `treat_ident`: receberá identificadores declarados no arquivo de entrada.
+* `treat_standard`: receberá identificadores oriundos do *Padrão Lua* e do *header.lim*.
+
+> [!NOTE]
+> Para conseguir distinguir a origem de cada cadeia extraída, `is_identifier` compara o
+> valor obtido com aqueles originados no *Padrão Lua* e no *header.lim*, caso um valor
+> igual seja encontrado em seus *"buffers"*, `treat_standard` será chamada, caso contrário
+> `treat_ident` será chamada.
+
+Depois da leitura do arquivo fonte ser concluída, as funções de encerramento a seguir serão
+chamadas:
+
+``` c
+finish_forgot_env();
+free_nickname_buffers();
+string_set(&tmp, STR_END);
+```
+
+Marcando assim o fim do algoritmo de compactação.
+
+##### Construindo o arquivo de saída
+
+Com o fim de `read_source_file`, estamos de volta à `main`, dessa vez para realizar a
+chamada da última função presente em tal estrutura de código, sendo ela
+`void build_destine_file(void)`.
+
+Como seu nome dá a entender, esta é responsável por efetuar a construção do arquivo de
+destino, ou seja, ela vai criar um arquivo persistente e, em uma dada ordem, imprimir nele
+*todo* o conteúdo extraído do arquivo de entrada.
+
+Seu algoritmo é bem simples, consistindo apenas na transferência dos dados
+(*e na impressão de mensagens verbosas*). Tal compartilhamento é efetuada na seguinte
+ordem:
+
+```
+-- FOO +-> Partição: top header
+-- FOO |   [do "header.lim"]
+-- FOO *
+```
+
+> Assim como *code scope*, esse trecho é opcional, pois depende da utilização do
+> *header.lim*. Nele é possível imprimir qualquer tipo de conteúdo. Veja também:
+> [O *header.lim*](https://github.com/duckafire/lim/blob/main/docs/o-header-lim.md).
+
+```
+      +-> Declaração da "tabela núcleo"
+      |
+<-------->
+local _={}
+```
+
+> A *tabela núcleo" é responsável por armazenar todo o conteúdo "público" presente na
+> biblioteca. Seu identificador foi pensado para ser mínimo e para não gerar conflito com
+> os apelidos gerados pelo Lim.
+> 
+> Caso um identificador nomeado como `"_"` seja encontrado no arquivo de entrada, ele será
+> *apelidado* como `"__"`.
+
+```
+ +-> Contêiner da biblioteca <-----------------------------------------+
+ |                                                                     |
+ |                 +> Partição: code scope                             |
+ |                 |  [do "header.lim"]                                |
+<>               <----------------------->                            <->
+do local P=print;local _txt="Hello world!";function _.msg()A(_txt)end end
+   <------------>                          <------------------------>
+    |                                        |
+    +-> Escopo de identif.                   +-> Conteúdo da
+        do "Padrão Lua" e                        biblioteca
+        do "header.lim"
+```
+
+> Essa é a estrutura base da biblioteca, a qual expande-se ilimitadamente para a direita.
+> 
+> Os identificadores declarados no "ambiente raiz" são classificados como:
+> 
+> * "Público": podem ser acessadas pelo código contido em qualquer parte do projeto que
+> seja posterior a declaração da biblioteca, por meio da "tabela de referência".
+> 
+> * "Privado": só podem ser acessados pelo código está presente dentro da biblioteca.
+
+```
+local lib=_
+<--------->
+       |
+       +-> "Tabela de referência"
+           à biblioteca
+```
+
+> Dado que, todas as "tabelas núcleo" possuem o mesmo identificador, as "tabelas de
+> referência" foram pensadas para deter a custodia do conteúdo "publico" da biblioteca,
+> assim evitando a perda dele após a declaração de outra biblioteca.
+
+``` lua
+-- FOO
+-- FOO
+-- FOO
+local _={}
+do local P=print;local _txt="Hello world!";function _.msg()A(_txt)end end
+local lib=_
+```
+
+> Baseado nos trechos acima, esse seria o código de saída.
+
+---
+
+# Considerações finais
+
+---
