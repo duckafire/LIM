@@ -226,7 +226,8 @@ Durante o desenvolvimento de um programa, é comum que arquivos partilhem códig
 os outros, sejam funções, variáveis ou semelhantes. Esta é uma funcionalidade
 indispensável, mas que torna-se um pesadelo caso gerenciada de maneira grotesca.
 
-Como forma de evitar o surgimento de uma grande teia de aranha, o conceito de "isolamento" foi empregado. Este consiste em limitar a interação entre arquivos, de modo a que eles
+Como forma de evitar o surgimento de uma grande teia de aranha, o conceito de "isolamento"
+foi empregado. Este consiste em limitar a interação entre arquivos, de modo a que eles
 não possam comunicar-se com arquivos localizados/posicionados anteriormente. Veja o
 exemplos:
 
@@ -731,7 +732,8 @@ Este era um pouco mais complexo, já que seus dados precisariam ser gravados, li
 obtidos imprevisíveis vezes, logo seu meio de armazenamento deveria ser rápido, expansível
 e flexível (*para que pudesse ser empregado em múltiplas situações*).
 
-Baseado nisso, bastava encontrar a melhor estrutura de dados para que tal problema desaparecesse. Após algumas ideias, cheguei a conclusão de que **filas** seriam a melhor
+Baseado nisso, bastava encontrar a melhor estrutura de dados para que tal problema
+desaparecesse. Após algumas ideias, cheguei a conclusão de que **filas** seriam a melhor
 escolha, por conta de sua flexibilidade, lógica simples e maleabilidade.
 
 > [!NOTE]
@@ -1105,7 +1107,8 @@ argumento de `start_reading`.
 
 ### Aprontando as saídas
 
-Depois que `start_reading` preenche os índices de seu argumento, o fluxo do programa retorna a `read_header_file`, lá o conteúdo de tais índices será convertido (*de `int`*)
+Depois que `start_reading` preenche os índices de seu argumento, o fluxo do programa retorna
+a `read_header_file`, lá o conteúdo de tais índices será convertido (*de `int`*)
 para `char` e será armazenado no endereço apontado pelo argumento de `read_header_file`, o
 qual receberá um espaço em memória justo, destinado a tal finalidade.
 

@@ -1,55 +1,72 @@
 <div align="center"><img src="https://github.com/duckafire/LIM/blob/main/lim-icon.png" width="200"/></div>
 <div align="center">
     <p>
-   		<a href=""><img alt="Last release" src="https://img.shields.io/badge/Last%20release-v0.1.0-%2325a319"/></a>
+   		<a href=""><img alt="Last release" src="https://img.shields.io/badge/Last%20release-v1.0.0-%2325a319"/></a>
     	<a href=""><img alt="LUA version" src="https://img.shields.io/badge/LUA%20version-5.3-blue"/></a>
 	</p>
 </div>
 
-# Indexes
+[lua]: https://lua.org "Lua website"
+[tinylibrary]: https://github.com/duckafire/TinyLibrary "Repository, in GitHub"
+[github-issues]: https://github.com/duckafire/LIM/issues "Github issues"
 
-###### Work in progress
+## Indexes
 
 * [Introduction](#introduction)
 * [Compaction process](#compaction-process)
 * [Basic commands](#basic-commands)
-* [Known bugs](#known-bugs)
-
-<br>
 
 > [!TIP]
-> [Read the documentation.](https://github.com/duckafire/LIM/tree/main/docs "./docs/")
+> [Read the documentation](https://github.com/duckafire/LIM/blob/main/docs/README.md).
 
-<br>
+---
 
-<hr>
+### Introduction
 
-# Introduction
-
-&emsp;The **L**ua L**i**brary Co**m**pactor, or only **Lim**, is a simple terminal program, to compact [Lua](https://lua.org "Lua website") scripts. It was created for easily the creation, maintain and update of libraries from [Tiny Library](https://github.com/duckafire/TinyLibrary "Repository, in GitHub"), but nothing prevent that it will be used in other contexts.
-
-<br>
+The Lua L**i**brary Co**m**pactor, or only **Lim**, is a simple terminal program to
+compact [Lua][lua] scripts. It was created for easily the creation, maintain and update of
+libraries from [Tiny Library][tinylibrary], but nothing prevent that it will be used in
+other contexts.
 
 > [!IMPORTANT]
-> **Lim cannot fix syntax and semantic errors in the code**, it single objective is to compact the code and mantain it working after the process, if it does not work before the compaction, it will not be work after it.
+> **Lim cannot fix syntax and semantic errors in the code**, it single objective is to
+> compact the code and maintain it is working after of the process. If it does not work
+> before the compaction, it will not work after it.
 
-<br>
+---
 
-# Compaction process
+### Compaction process
 
-&emsp;In summary, Lim will replace the identifiers to a lower string (`foo -> f`), will remove unnecessary white spaces and will group all the result content in a block `do end`, positioned in **one line**. In addition to the main line, there are other two, one above (with the declaration of the *library table*) and other below (with the declaration of the library name). Like this:
+**In summary**:
 
-<br>
+1. Lim will replace the identifiers, from input file, to a lower identifier (`foo -> a`).
+2. It will remove unnecessary white spaces.
+3. And it will group all the *result* content in a block `do end`, positioned in
+**one line**.
+
+In addition to the main line, there are other two lines, one above (with the declaration
+of the *core table*) and other below (with the declaration of the *reference table*). See
+this example:
+
+> Before compaction:
+
+``` lua
+function foo()
+	return "foo"
+end
+```
+
+> After compaction:
 
 ``` lua
 local _={}
-do _.foo=function() return "foo" end end
-local libfoo=_
+do function _.foo()return"foo"end end
+local lib=_
 ```
 
-<br>
+---
 
-# Basic commands
+### Basic commands
 
 ```
 # compact a file
@@ -65,15 +82,5 @@ lim --help
 lim --help --replace
 ```
 
-<br>
-
-# Known bugs
-
-1. *header.lim* structured like the tests `5`, `6`, `8`, `12`, `19`, `20`, `22` and `26` (from `./tests/run header-lim`) return a wrong *individual status* to last two buffers (both or one).
-
-<br>
-
 > [!NOTE]
-> Please reporte bugs [here](https://github.com/duckafire/LIM/issues "Github issues").
-
-<br>
+> Please report bugs [here][github-issues].
