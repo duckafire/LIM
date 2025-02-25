@@ -23,8 +23,8 @@ void show_help_messages(char *str){
 			"(li) license  -> Display Lim license." N
 			"(ls) list-syn -> List all Lim flags, with their synopsis." N
 			"(r)  rules    -> Display Lim semantic pattern for Lua script." N
-			"(s)  synopses -> Display a recommendad sinopsis to use all flags in simultaneous." N
-			"'Any flag'    -> Display information about it: sinopsis; how it works." N
+			"(s)  synopses -> Display a recommendad synopsis to use all flags in simultaneous." N
+			"'Any flag'    -> Display information about it: synopsis; how it works." N
 			);
 	}
 

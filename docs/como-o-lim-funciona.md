@@ -22,6 +22,7 @@
 			* [Definindo valores omitidos](#definindo-valores-omitidos)
 				* [Arquivo de destino](#arquivo-de-destino)
 				* [Tabela de referência](#tabela-de-referência)
+			* [Verificando o arquivo de saída](#verificando-o-arquivo-de-saída)
 			* [Compartilhando valores](#compartilhando-valores)
 	* [*Buffers*](#buffers)
 		* [Arquivos temporários](#arquivos-temporários)
@@ -47,6 +48,10 @@
 			* [Tratando fragmentos](#tratando-fragmentos)
 			* [Escopos de ambientes](#escopos-de-ambientes)
 			* [Apelidos](#apelidos)
+			* [Linearmente falando](#linearmente-falando)
+				* [Compactando o arquivo de entrada](#compactando-o-arquivo-de-entrada)
+				* [Construindo o arquivo de saída](#construindo-o-arquivo-de-saída)
+* [Considerações finais](#considerações-finais)
 
 ---
 
@@ -1854,8 +1859,42 @@ local lib=_
 
 > Baseado nos trechos acima, esse seria o código de saída.
 
+Ao fim desse rápido processo de transferência de dados, o fim de `build_destine_file` é
+alcançado, assim levando o fluxo de volta à `main`, que encerra o programa retornando `0`.
+
 ---
 
 # Considerações finais
+
+***Uau!*** Escrever isso foi uma experiência discutivelmente agradável, um desafio complexo
+e difícil, não porque eu não entendia o código, mas sim porque era custoso por meu
+conhecimento em palavras.
+
+Quando iniciei esse artigo, eu sabia que meu trabalho nele não seria breve, mas não poderia
+imaginar que essa empreitada duraria mais de **duas semanas e meia**. Certamente boa parte
+desse tempo foi gasta com correções de *bugs* e erros, além de melhorias no código
+(*sem mencionar minha vida pessoal*).
+
+Essa pequena aventura me proporcionou muito aprendizado, principalmente com relação a
+escrita de documentações e ao uso do *Markdown*.
+
+Foi um pouco estranho "criar" termos para nomear certas características do Lim e de seu
+código, mas foi divertido. Todavia espero que isso não tenha tornado esse assunto
+desnecessariamente complexo.
+
+Uma das melhores decisões que eu tomei, antes de iniciar essa pequena documentação, foi de
+não escrevê-la em inglês, isso me poupou **MUITO** tempo e me permitiu ser mais expressivo.
+*Como sei disso?* Bem, digamos que eu já tenha me desafiado a fazer algo do tipo, em escala
+menor, de maneira mais simples, mas fiz.
+
+Inicialmente eu pretendia explicar cada *milimetro* do código, mas isso séria
+exageradamente desnecessário, visto que o código deste projeto foi estruturado para ser o
+mais legível possível (*espero que tenha dado certo*).
+
+Acho que isso é tudo. Por fim, eu gostaria de agradecê-lo por ler *isto*, espero que tenha
+sido uma leitura agradável e clara, capaz de lhe sanar toda e qualquer dúvida relacionada a
+este projeto. Até qualquer hora.
+
+*- DuckAfire*
 
 ---
