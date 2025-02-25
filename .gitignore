@@ -1,4 +1,5 @@
 bin-alpha/
+bin/
 
 *.lua
 *.lim
